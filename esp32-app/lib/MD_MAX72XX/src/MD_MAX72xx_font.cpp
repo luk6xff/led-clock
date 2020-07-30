@@ -53,15 +53,15 @@ void MD_MAX72XX::loadFontInfo(void)
 {
   uint8_t c;
   uint16_t offset = 0;
-  
+
   setFontInfoDefault();
 
   if (_fontData != nullptr)
   {
     PRINTS("\nLoading font info");
     // Read the first character. If this is not the file type indicator
-    // then we have a version 0 file and the defaults are ok, otherwise 
-    // read the font info from the data table. 
+    // then we have a version 0 file and the defaults are ok, otherwise
+    // read the font info from the data table.
     c = pgm_read_byte(_fontData + offset++);
     if (c == FONT_FILE_INDICATOR)
     {
@@ -81,7 +81,7 @@ void MD_MAX72XX::loadFontInfo(void)
           _fontInfo.lastASCII  = pgm_read_byte(_fontData + offset++);
           _fontInfo.height     = pgm_read_byte(_fontData + offset++);
           break;
-        
+
         case 0:
         default:
           // nothing to do, use the library defaults
@@ -186,7 +186,7 @@ uint8_t MD_MAX72XX::getChar(uint16_t c, uint8_t size, uint8_t *buf)
     for (uint8_t i=0; i<size; i++)
       *buf++ = pgm_read_byte(_fontData+offset+i);
   }
-  
+
   return(size);
 }
 
@@ -374,8 +374,8 @@ MD_MAX72XX::fontType_t PROGMEM _sysfont[] =
   5, 48, 64, 255, 1, 1,		// 147 - 'Square Root'
   4, 31, 1, 1, 30,		// 148 - 'Superscript n'
   0,		// 149
-  0,		// 150  
-  0,		// 151  
+  0,		// 150
+  0,		// 151
   0,		// 152
   9, 1, 1, 127, 1, 127, 2, 12, 2, 127,		// 153 - 'Trademark'
   0,		// 154

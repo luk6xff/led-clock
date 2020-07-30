@@ -29,28 +29,11 @@ void blink_task(void *pvParameter)
     }
 }
 
-#if !CONFIG_AUTOSTART_ARDUINO
-void arduinoTask(void *pvParameter) {
-    pinMode(LED_BUILTIN, OUTPUT);
-    while(1) {
-        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-        delay(1000);
-    }
-}
-
-void app_main()
-{
-    // initialize arduino library before we start the tasks
-    initArduino();
-
-    xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
-    xTaskCreate(&arduinoTask, "arduino_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
-}
-#else
 
 #include <MD_MAX72xx.h>
 #include <SPI.h>
-
+// We always wait a bit between updates of the display
+#define  DELAYTIME  300  // in milliseconds
 #define PRINT(s, v) { Serial.print(F(s)); Serial.print(v); }
 
 // Define the number of devices we have in the chain and the hardware interface
@@ -74,7 +57,7 @@ const int LEDMATRIX_SEGMENTS = 4;
 const int LEDMATRIX_WIDTH    = LEDMATRIX_SEGMENTS * 8;
 
 // The LEDMatrixDriver class instance
-LEDMatrixDriver lmd(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN);
+//LEDMatrixDriver lmd(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN);
 
 
     // GENERIC_HW,   ///< Use 'generic' style hardware modules commonly available.
@@ -82,100 +65,44 @@ LEDMatrixDriver lmd(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN);
     // PAROLA_HW,    ///< Use the Parola style hardware modules.
     // ICSTATION_HW, ///< Use ICStation style hardware module.
 // SPI hardware interface
-//MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
+MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 // Arbitrary pins
 //MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
-// Text parameters
-#define CHAR_SPACING  1 // pixels between characters
+// Global variables
+uint32_t  lastTime = 0;
 
-// Global message buffers shared by Serial and Scrolling functions
-#define BUF_SIZE  5
-char message[BUF_SIZE] = "Helo";
-bool newMessageAvailable = true;
-
-void readSerial(void)
+typedef struct
 {
-  static uint8_t putIndex = 0;
+  uint8_t startDev; // start of zone
+  uint8_t endDev;   // end of zone
+  uint8_t ch;       // character to show
+  MD_MAX72XX::transformType_t tt;
+} zoneDef_t;
 
-  while (Serial.available())
+zoneDef_t Z[] =
+{
+#if MAX_DEVICES == 4
+  {0, 0, 49, MD_MAX72XX::TRC  },
+  {1, 1, 50, MD_MAX72XX::TRC  },
+  {2, 2, 51, MD_MAX72XX::TRC  },
+  {3, 3, 52, MD_MAX72XX::TRC  },
+#endif // MAX_DEVICES 4
+};
+
+#define ARRAY_SIZE(A) (sizeof(A)/sizeof(A[0]))
+
+void runTransformation(void)
+{
+  mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::OFF);
+
+  for (uint8_t i = 0; i < ARRAY_SIZE(Z); i++)
   {
-    message[putIndex] = (char)Serial.read();
-    if ((message[putIndex] == '\n') || (putIndex >= BUF_SIZE-3))  // end of message character or full buffer
-    {
-      // put in a message separator and end the string
-      message[putIndex] = '\0';
-      // restart the index for next filling spree and flag we have a message waiting
-      putIndex = 0;
-      newMessageAvailable = true;
-    }
-    else
-      // Just save the next char in next location
-      message[putIndex++];
+    mx.transform(Z[i].startDev, Z[i].endDev, Z[i].tt);
   }
+
+  mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
 }
-
-// void printText(uint8_t modStart, uint8_t modEnd, char *pMsg)
-// // Print the text string to the LED matrix modules specified.
-// // Message area is padded with blank columns after printing.
-// {
-//   uint8_t   state = 0;
-//   uint8_t   curLen;
-//   uint16_t  showLen;
-//   uint8_t   cBuf[8];
-//   int16_t   col = ((modEnd + 1) * COL_SIZE) - 1;
-
-//   mx.control(modStart, modEnd, MD_MAX72XX::UPDATE, MD_MAX72XX::OFF);
-
-//   do     // finite state machine to print the characters in the space available
-//   {
-//     switch(state)
-//     {
-//       case 0: // Load the next character from the font table
-//         // if we reached end of message, reset the message pointer
-//         if (*pMsg == '\0')
-//         {
-//           showLen = col - (modEnd * COL_SIZE);  // padding characters
-//           state = 2;
-//           break;
-//         }
-
-//         // retrieve the next character form the font file
-//         showLen = mx.getChar(*pMsg++, sizeof(cBuf)/sizeof(cBuf[0]), cBuf);
-//         curLen = 0;
-//         state++;
-//         // !! deliberately fall through to next state to start displaying
-
-//       case 1: // display the next part of the character
-//         mx.setColumn(col--, cBuf[curLen++]);
-
-//         // done with font character, now display the space between chars
-//         if (curLen == showLen)
-//         {
-//           showLen = CHAR_SPACING;
-//           state = 2;
-//         }
-//         break;
-
-//       case 2: // initialize state for displaying empty columns
-//         curLen = 0;
-//         state++;
-//         // fall through
-
-//       case 3:	// display inter-character spacing or end of message padding (blank columns)
-//         mx.setColumn(col--, 0);
-//         curLen++;
-//         if (curLen == showLen)
-//           state = 0;
-//         break;
-
-//       default:
-//         col = -1;   // this definitely ends the do loop
-//     }
-//   } while (col >= (modStart * COL_SIZE));
-
-//   mx.control(modStart, modEnd, MD_MAX72XX::UPDATE, MD_MAX72XX::OFF);
-// }
 
 
 
@@ -185,12 +112,23 @@ void setup()
     xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.println("Hello!");
-    Serial.print("\n[MD_MAX72XX Message Display]\nType a message for the display\nEnd message line with a newline");
-    //mx.begin();
+    mx.begin();
+    mx.control(MD_MAX72XX::WRAPAROUND, MD_MAX72XX::ON);
 
-	// init the display
-	lmd.setEnabled(true);
-	lmd.setIntensity(0);   // 0 = low, 10 = high
+    // set up the display characters
+    for (uint8_t i = 0; i < ARRAY_SIZE(Z); i ++)
+    {
+        mx.clear(Z[i].startDev, Z[i].endDev);
+        mx.setChar((Z[i].startDev*COL_SIZE)+COL_SIZE/2, Z[i].ch);
+    }
+    lastTime = millis();
+    // Enable the display
+    mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
+    mx.control(MD_MAX72XX::INTENSITY, 0);
+    runTransformation();
+  // // init the display
+	// lmd.setEnabled(true);
+	// lmd.setIntensity(0);   // 0 = low, 10 = high
 }
 
 
@@ -199,62 +137,56 @@ int x = 0, s = 1, dir = 3, c = 0;
 
 void loop()
 {
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-    //delay(1000);
-    //printText(0, MAX_DEVICES-1, "test");
-    // readSerial();
-    // if (newMessageAvailable)
-    // {
-    //     PRINT("\nProcessing new message: ", message);
-    //     printText(0, MAX_DEVICES-1, message);
-    //     newMessageAvailable = false;
-    // }
-
-
-  switch( dir )
+  if (millis() - lastTime >= DELAYTIME)
   {
-    case 0:
-      lmd.scroll(LEDMatrixDriver::scrollDirection::scrollDown);
-      lmd.setPixel(x,0,true);
-      break;
-    case 1:
-      lmd.scroll(LEDMatrixDriver::scrollDirection::scrollUp);
-      lmd.setPixel(x,7,true);
-      break;
-    case 2:
-      lmd.scroll(LEDMatrixDriver::scrollDirection::scrollLeft);
-      lmd.setPixel(7,x,true);
-      break;
-    case 3:
-      lmd.scroll(LEDMatrixDriver::scrollDirection::scrollRight);
-      lmd.setPixel(0,x,true);
-      break;
-  };
-
-  // Show the content of the frame buffer
-  lmd.display();
-
-  // Increase / Reset the effect counter
-  if( c++ > 50 )  // after 50 loos
-  {
-    //if( ++dir > 3 ) // we switch to the next effect
-    //dir = 0;
-    // And reset counter and pixel values
-    //c=0;
-    //x=0;
-    //s=1;
-
-    // Also clearing the buffer gives a better look to this example.
-    //lmd.clear();
+    //runTransformation();
+    lastTime = millis();
   }
 
-  // Move the pixel up and down
-  x += s;
-  if( x == 7 )
-    s = -1;
-  else if( x == 0 )
-    s = +1;
 
-  delay(ANIM_DELAY);
+//   switch( dir )
+//   {
+//     case 0:
+//       lmd.scroll(LEDMatrixDriver::scrollDirection::scrollDown);
+//       lmd.setPixel(x,0,true);
+//       break;
+//     case 1:
+//       lmd.scroll(LEDMatrixDriver::scrollDirection::scrollUp);
+//       lmd.setPixel(x,7,true);
+//       break;
+//     case 2:
+//       lmd.scroll(LEDMatrixDriver::scrollDirection::scrollLeft);
+//       lmd.setPixel(7,x,true);
+//       break;
+//     case 3:
+//       lmd.scroll(LEDMatrixDriver::scrollDirection::scrollRight);
+//       lmd.setPixel(0,x,true);
+//       break;
+//   };
+
+//   // Show the content of the frame buffer
+//   lmd.display();
+
+//   // Increase / Reset the effect counter
+//   if( c++ > 50 )  // after 50 loos
+//   {
+//     //if( ++dir > 3 ) // we switch to the next effect
+//     //dir = 0;
+//     // And reset counter and pixel values
+//     //c=0;
+//     //x=0;
+//     //s=1;
+
+//     // Also clearing the buffer gives a better look to this example.
+//     //lmd.clear();
+//   }
+
+//   // Move the pixel up and down
+//   x += s;
+//   if( x == 7 )
+//     s = -1;
+//   else if( x == 0 )
+//     s = +1;
+
+//   delay(ANIM_DELAY);
 }
-#endif
