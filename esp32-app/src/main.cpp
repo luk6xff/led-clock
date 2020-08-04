@@ -5,6 +5,10 @@
 #include "sdkconfig.h"
 #include <Arduino.h>
 
+#include <MD_MAX72xx.h>
+#include <MD_Parola.h>
+#include <SPI.h>
+
 /* Can run 'make menuconfig' to choose the GPIO to blink,
    or you can edit the following line and set a number here.
 */
@@ -19,7 +23,8 @@ void blink_task(void *pvParameter)
     gpio_pad_select_gpio(BLINK_GPIO);
     /* Set the GPIO as a push/pull output */
     gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
-    while(1) {
+    while(1)
+    {
         /* Blink off (output low) */
         gpio_set_level(BLINK_GPIO, 0);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -29,164 +34,124 @@ void blink_task(void *pvParameter)
     }
 }
 
-
-#include <MD_MAX72xx.h>
-#include <SPI.h>
-// We always wait a bit between updates of the display
-#define  DELAYTIME  300  // in milliseconds
-#define PRINT(s, v) { Serial.print(F(s)); Serial.print(v); }
-
-// Define the number of devices we have in the chain and the hardware interface
-// NOTE: These pin numbers will probably not work with your hardware and may
-// need to be adapted
-#define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW
+#define HARDWARE_TYPE MD_MAX72XX::DR1CR0RR0_HW//FC16_HW
 #define MAX_DEVICES 4
 
-#define CLK_PIN   35//18  // or SCK
-#define DATA_PIN  //23  // or MOSI
-#define CS_PIN    5// or SS
+#define CLK_PIN   35// SPI SCK
+#define CS_PIN    5 // SPI SS
 
+#define MAX_CLK_ZONES 1
+#define ZONE_SIZE 4
+#define MAX_DEVICES (MAX_CLK_ZONES * ZONE_SIZE)
+MD_Parola P = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 
-#include <LEDMatrixDriver.hpp>
-// Define the ChipSelect pin for the led matrix (Dont use the SS or MISO pin of your Arduino!)
-// Other pins are Arduino specific SPI pins (MOSI=DIN, SCK=CLK of the LEDMatrix) see https://www.arduino.cc/en/Reference/SPI
-const uint8_t LEDMATRIX_CS_PIN = 5;
+#define ZONE_UPPER  1
+#define ZONE_LOWER  0
 
-// Number of 8x8 segments you are connecting
-const int LEDMATRIX_SEGMENTS = 4;
-const int LEDMATRIX_WIDTH    = LEDMATRIX_SEGMENTS * 8;
+#define SPEED_TIME  75
+#define PAUSE_TIME  0
 
-// The LEDMatrixDriver class instance
-//LEDMatrixDriver lmd(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN);
+#define TIME_MSG_LEN  10
 
+// Hardware adaptation parameters for scrolling
+bool invertUpperZone = false;
 
-    // GENERIC_HW,   ///< Use 'generic' style hardware modules commonly available.
-    // FC16_HW,      ///< Use FC-16 style hardware module.
-    // PAROLA_HW,    ///< Use the Parola style hardware modules.
-    // ICSTATION_HW, ///< Use ICStation style hardware module.
-// SPI hardware interface
-MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
-// Arbitrary pins
-//MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+// Turn on debug statements to the serial output
+#define  DEBUG  0
 
 // Global variables
-uint32_t  lastTime = 0;
+char  time_msg_buf[TIME_MSG_LEN];    // hh:mm:ss\0
 
-typedef struct
+void getTime(char *psz, bool f = true)
+// Code for reading clock time
+// Simulated clock runs 1 minute every seond
 {
-  uint8_t startDev; // start of zone
-  uint8_t endDev;   // end of zone
-  uint8_t ch;       // character to show
-  MD_MAX72XX::transformType_t tt;
-} zoneDef_t;
+#if USE_DS1307
+  RTC.readTime();
+  sprintf(psz, "%02d%c%02d", RTC.h, (f ? ':' : ' '), RTC.m);
+#else
+  uint16_t  h, m;
 
-zoneDef_t Z[] =
-{
-#if MAX_DEVICES == 4
-  {0, 0, 49, MD_MAX72XX::TRC  },
-  {1, 1, 50, MD_MAX72XX::TRC  },
-  {2, 2, 51, MD_MAX72XX::TRC  },
-  {3, 3, 52, MD_MAX72XX::TRC  },
-#endif // MAX_DEVICES 4
-};
-
-#define ARRAY_SIZE(A) (sizeof(A)/sizeof(A[0]))
-
-void runTransformation(void)
-{
-  mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::OFF);
-
-  for (uint8_t i = 0; i < ARRAY_SIZE(Z); i++)
-  {
-    mx.transform(Z[i].startDev, Z[i].endDev, Z[i].tt);
-  }
-
-  mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
+  m = millis()/1000;
+  h = (m/60) % 24;
+  m %= 60;
+  sprintf(psz, "%02d%c%02d", h, (f ? ':' : ' '), m);
+#endif
 }
 
+// void createHString(char *pH, char *pL)
+// {
+//   for (; *pL != '\0'; pL++)
+//     *pH++ = *pL | 0x80;   // offset character
 
+//   *pH = '\0'; // terminate the string
+// }
 
-void setup()
+void setup(void)
 {
+
     Serial.begin(9600);
+    // Create blink task
     xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.println("Hello!");
-    mx.begin();
-    mx.control(MD_MAX72XX::WRAPAROUND, MD_MAX72XX::ON);
+    //P.begin();
+//    P.getGraphicObject()->transform(MD_MAX72XX::transformType_t::TRC);
+    //P.displayText("HeLLo!", PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
+    //P.getGraphicObject()->transform(MD_MAX72XX::transformType_t::TRC);
 
-    // set up the display characters
-    for (uint8_t i = 0; i < ARRAY_SIZE(Z); i ++)
-    {
-        mx.clear(Z[i].startDev, Z[i].endDev);
-        mx.setChar((Z[i].startDev*COL_SIZE)+COL_SIZE/2, Z[i].ch);
-    }
-    lastTime = millis();
-    // Enable the display
-    mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
-    mx.control(MD_MAX72XX::INTENSITY, 0);
-    runTransformation();
-  // // init the display
-	// lmd.setEnabled(true);
-	// lmd.setIntensity(0);   // 0 = low, 10 = high
-}
+//   invertUpperZone = (HARDWARE_TYPE == MD_MAX72XX::GENERIC_HW || HARDWARE_TYPE == MD_MAX72XX::PAROLA_HW);
 
+//   // initialise the LED display
+  P.begin(MAX_CLK_ZONES);
 
-const int ANIM_DELAY = 200;
-int x = 0, s = 1, dir = 3, c = 0;
+//   // Set up zones for 2 halves of the display
+  P.setZone(ZONE_LOWER, 0, ZONE_SIZE);
+  //P.setZone(ZONE_UPPER, ZONE_SIZE, MAX_DEVICES - 1);
+//   P.setFont(numeric7SegDouble);
 
-void loop()
-{
-  if (millis() - lastTime >= DELAYTIME)
-  {
-    //runTransformation();
-    lastTime = millis();
-  }
+//   P.setCharSpacing(P.getCharSpacing() * 2); // double height --> double spacing
 
-
-//   switch( dir )
+//   if (invertUpperZone)
 //   {
-//     case 0:
-//       lmd.scroll(LEDMatrixDriver::scrollDirection::scrollDown);
-//       lmd.setPixel(x,0,true);
-//       break;
-//     case 1:
-//       lmd.scroll(LEDMatrixDriver::scrollDirection::scrollUp);
-//       lmd.setPixel(x,7,true);
-//       break;
-//     case 2:
-//       lmd.scroll(LEDMatrixDriver::scrollDirection::scrollLeft);
-//       lmd.setPixel(7,x,true);
-//       break;
-//     case 3:
-//       lmd.scroll(LEDMatrixDriver::scrollDirection::scrollRight);
-//       lmd.setPixel(0,x,true);
-//       break;
-//   };
+//     P.setZoneEffect(ZONE_UPPER, true, PA_FLIP_UD);
+//     P.setZoneEffect(ZONE_UPPER, true, PA_FLIP_LR);
 
-//   // Show the content of the frame buffer
-//   lmd.display();
-
-//   // Increase / Reset the effect counter
-//   if( c++ > 50 )  // after 50 loos
+//     P.displayZoneText(ZONE_LOWER, time_msg_buf, PA_RIGHT, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
+//     P.displayZoneText(ZONE_UPPER, szTimeH, PA_LEFT, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
+//   }
+//   else
 //   {
-//     //if( ++dir > 3 ) // we switch to the next effect
-//     //dir = 0;
-//     // And reset counter and pixel values
-//     //c=0;
-//     //x=0;
-//     //s=1;
-
-//     // Also clearing the buffer gives a better look to this example.
-//     //lmd.clear();
+     P.displayZoneText(ZONE_LOWER, time_msg_buf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
+//     P.displayZoneText(ZONE_UPPER, szTimeH, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
 //   }
 
-//   // Move the pixel up and down
-//   x += s;
-//   if( x == 7 )
-//     s = -1;
-//   else if( x == 0 )
-//     s = +1;
+// #if USE_DS1307
+//   RTC.control(DS1307_CLOCK_HALT, DS1307_OFF);
+//   RTC.control(DS1307_12H, DS1307_OFF);
+// #endif
+}
 
-//   delay(ANIM_DELAY);
+void loop(void)
+{
+  static uint32_t	lastTime = 0; // millis() memory
+  static bool	flasher = false;  // seconds passing flasher
+
+  P.displayAnimate();
+  if (P.getZoneStatus(ZONE_LOWER))// && P.getZoneStatus(ZONE_UPPER))
+  {
+    // Adjust the time string if we have to. It will be adjusted
+    // every second at least for the flashing colon separator.
+    if (millis() - lastTime >= 1000)
+    {
+      lastTime = millis();
+      getTime(time_msg_buf, flasher);
+      flasher = !flasher;
+
+      P.displayReset();
+
+      // synchronise the start
+      P.synchZoneStart();
+    }
+  }
 }
