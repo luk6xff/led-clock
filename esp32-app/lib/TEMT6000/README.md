@@ -10,22 +10,24 @@ Simple demo code how to use the library on [ARDUINO] platform
 #include "TEMT6000/platform/temt6000-arduino.h"
 
 // PINOUT FOR ESP32 WROOM DEVBOARD
-// TEMT6000
-#define TEMT6000_I2C_ADDR         0x68
-#define TEMT6000_SDA              PB_7
-#define TEMT6000_SCL              PB_6
+#define TEMT600_ANALOG_PIN 34
+
 int main(void)
 {
-    temt6000_mbed mbed_dev =
+    temt6000_arduino arduino_dev =
     {
-        .i2c = &i2c,
+        TEMT600_ANALOG_PIN, // analog_gpio_pin
     };
 
     temt6000 dev =
     {
-        .i2c_addr = TEMT6000_I2C_ADDR;
+        3.3f, // vdd_value
+        4096, // adc_max_value
+        8,    // adc_samples_num
     };
-    temt6000_mbed_init(dev, mbed_dev);
+    temt6000_arduino_init(dev, arduino_dev);
+
+    printf("Illuminance value: %3.2f [lx]", temt6000_get_light(&dev))
 
     return 0;
 }

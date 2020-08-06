@@ -18,12 +18,6 @@ extern "C" {
 #include <stdbool.h>
 
 
-typedef enum
-{
-    TEMT6000_OK     = 0,
-    TEMT6000_ERROR  = 1
-} temt6000_status;
-
 /**
  * @brief TEMT6000 dev object
  */

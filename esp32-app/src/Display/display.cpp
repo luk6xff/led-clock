@@ -75,7 +75,7 @@ void Display::processAutoIntensityLevelControl()
     static uint8_t last_intensity_level = 0;
 
     // Logarithmic level of sensor illuminance in lux [lx]
-    const uint8_t level[] = {0,0,1,2,4,5,6,8,10,12}; // 0 = low, 15 = high
+    const uint8_t level[] = {0,1,2,4,6,8,9,10,11,12}; // 0 = low, 15 = high
     const uint16_t max_light_illuminance = 1000;
 
     // Calculate linear level
