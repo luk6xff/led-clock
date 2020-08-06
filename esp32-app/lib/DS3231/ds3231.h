@@ -219,7 +219,7 @@ typedef struct
 /**
  * @brief Init function
  *
- * @param[in] I2C bus module addr;
+ * @param[in] dev - ds3231 device object
  *
  */
 void ds3231_init(ds3231* const dev);

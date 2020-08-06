@@ -10,6 +10,7 @@
 #include <MD_MAX72xx.h>
 #include <MD_Parola.h>
 #include <SPI.h>
+#include "light_sensor.h"
 
 
 #define DISPLAY_MAX72XX_HW_TYPE     MD_MAX72XX::DR1CR0RR0_HW//FC16_HW
@@ -43,6 +44,11 @@ public:
 
     MD_Parola* getDispObject();
 
+    void enableAutoIntensityLevelControl(bool enable);
+
+    void processAutoIntensityLevelControl();
+
+    void setIntensityLevel(uint8_t level);
 
 private:
 
@@ -51,5 +57,18 @@ private:
      */
     MD_Parola m_mx;
 
-    uint8_t m_disp_txt_buf[DISPLAY_MSG_MAX_LEN];
+    /**
+     * @brief Light sensor object
+     */
+    LightSensor m_lightSensor;
+
+    /**
+     * @brief Display data buffer
+     */
+    uint8_t m_dispTxtBuf[DISPLAY_MSG_MAX_LEN];
+
+    /**
+     * @brief Sensor controlled display intensity level
+     */
+    bool m_autoIntensityLevelStatus;
 };

@@ -12,6 +12,7 @@
 #include "hw_config.h"
 #include "Display/display.h"
 #include "Clock/system_rtc.h"
+#include "Display/light_sensor.h"
 
 
 #define BLINK_GPIO (gpio_num_t)CONFIG_BLINK_GPIO
@@ -67,6 +68,7 @@ Display::MAX72xxConfig cfg =
 };
 
 Display disp(cfg);
+LightSensor light;
 
 
 void setup(void)
