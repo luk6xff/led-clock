@@ -9,9 +9,11 @@
 #include <MD_Parola.h>
 #include <SPI.h>
 
-/* Can run 'make menuconfig' to choose the GPIO to blink,
-   or you can edit the following line and set a number here.
-*/
+#include "hw_config.h"
+#include "Display/display.h"
+#include "Clock/system_rtc.h"
+
+
 #define BLINK_GPIO (gpio_num_t)CONFIG_BLINK_GPIO
 
 #ifndef LED_BUILTIN
@@ -34,33 +36,8 @@ void blink_task(void *pvParameter)
     }
 }
 
-#define HARDWARE_TYPE MD_MAX72XX::DR1CR0RR0_HW//FC16_HW
-#define MAX_DEVICES 4
-
-#define CLK_PIN   35// SPI SCK
-#define CS_PIN    5 // SPI SS
-
-#define MAX_CLK_ZONES 1
-#define ZONE_SIZE 4
-#define MAX_DEVICES (MAX_CLK_ZONES * ZONE_SIZE)
-MD_Parola P = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
-
-#define ZONE_UPPER  1
-#define ZONE_LOWER  0
-
-#define SPEED_TIME  75
-#define PAUSE_TIME  0
-
-#define TIME_MSG_LEN  10
-
-// Hardware adaptation parameters for scrolling
-bool invertUpperZone = false;
-
 // Turn on debug statements to the serial output
 #define  DEBUG  0
-
-// Global variables
-char  time_msg_buf[TIME_MSG_LEN];    // hh:mm:ss\0
 
 void getTime(char *psz, bool f = true)
 // Code for reading clock time
@@ -79,79 +56,46 @@ void getTime(char *psz, bool f = true)
 #endif
 }
 
-// void createHString(char *pH, char *pL)
-// {
-//   for (; *pL != '\0'; pL++)
-//     *pH++ = *pL | 0x80;   // offset character
 
-//   *pH = '\0'; // terminate the string
-// }
+Display::MAX72xxConfig cfg =
+{
+    DISPLAY_MAX72XX_HW_TYPE,
+    DISPLAY_MAX72XX_MODULES_NUM,
+    DISPLAY_DIN_PIN,
+    DISPLAY_CLK_PIN,
+    DISPLAY_CS_PIN,
+};
+
+Display disp(cfg);
+
 
 void setup(void)
 {
-
     Serial.begin(9600);
     // Create blink task
     xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.println("Hello!");
-    //P.begin();
-//    P.getGraphicObject()->transform(MD_MAX72XX::transformType_t::TRC);
-    //P.displayText("HeLLo!", PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
-    //P.getGraphicObject()->transform(MD_MAX72XX::transformType_t::TRC);
-
-//   invertUpperZone = (HARDWARE_TYPE == MD_MAX72XX::GENERIC_HW || HARDWARE_TYPE == MD_MAX72XX::PAROLA_HW);
-
-//   // initialise the LED display
-  P.begin(MAX_CLK_ZONES);
-
-//   // Set up zones for 2 halves of the display
-  P.setZone(ZONE_LOWER, 0, ZONE_SIZE);
-  //P.setZone(ZONE_UPPER, ZONE_SIZE, MAX_DEVICES - 1);
-//   P.setFont(numeric7SegDouble);
-
-//   P.setCharSpacing(P.getCharSpacing() * 2); // double height --> double spacing
-
-//   if (invertUpperZone)
-//   {
-//     P.setZoneEffect(ZONE_UPPER, true, PA_FLIP_UD);
-//     P.setZoneEffect(ZONE_UPPER, true, PA_FLIP_LR);
-
-//     P.displayZoneText(ZONE_LOWER, time_msg_buf, PA_RIGHT, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
-//     P.displayZoneText(ZONE_UPPER, szTimeH, PA_LEFT, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
-//   }
-//   else
-//   {
-     P.displayZoneText(ZONE_LOWER, time_msg_buf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
-//     P.displayZoneText(ZONE_UPPER, szTimeH, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
-//   }
-
-// #if USE_DS1307
-//   RTC.control(DS1307_CLOCK_HALT, DS1307_OFF);
-//   RTC.control(DS1307_12H, DS1307_OFF);
-// #endif
+    auto rtc = SystemRtc::instance();
 }
+
 
 void loop(void)
 {
-  static uint32_t	lastTime = 0; // millis() memory
-  static bool	flasher = false;  // seconds passing flasher
+    static uint32_t	lastTime = 0; // millis() memory
+    static bool	flasher = false;  // seconds passing flasher
 
-  P.displayAnimate();
-  if (P.getZoneStatus(ZONE_LOWER))// && P.getZoneStatus(ZONE_UPPER))
-  {
-    // Adjust the time string if we have to. It will be adjusted
-    // every second at least for the flashing colon separator.
-    if (millis() - lastTime >= 1000)
+    disp.update();
+    if (disp.getDispObject()->getZoneStatus(DISPLAY_ZONE_0))
     {
-      lastTime = millis();
-      getTime(time_msg_buf, flasher);
-      flasher = !flasher;
-
-      P.displayReset();
-
-      // synchronise the start
-      P.synchZoneStart();
+        // Adjust the time string if we have to. It will be adjusted
+        // every second at least for the flashing colon separator.
+        if (millis() - lastTime >= 1000)
+        {
+            lastTime = millis();
+            getTime((char*)disp.getDispTxtBuffer(), flasher);
+            flasher = !flasher;
+            disp.reset();
+        }
     }
-  }
 }
