@@ -9,18 +9,6 @@ LightSensor::LightSensor()
     dev.vdd_value = 3.3;
     dev_arduino.analog_gpio_pin = TEMT600_ANALOG_PIN;
     temt6000_arduino_init(&dev, &dev_arduino);
-
-    temt6000_arduino arduino_dev1 =
-    {
-        TEMT600_ANALOG_PIN, // analog_gpio_pin
-    };
-
-    temt6000 dev1 =
-    {
-        3.3f, // vdd_value
-        4096, // adc_max_value
-        8,    // adc_samples_num
-    };
 }
 
 //-----------------------------------------------------------------------------
