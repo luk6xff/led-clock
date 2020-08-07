@@ -1,0 +1,27 @@
+{
+    "name": "SX1278",
+    "description": "Lora Module SX1278 (RA-01, RA-02) library",
+    "platforms": "*",
+    "frameworks": [
+        "mbed", 
+        "arduino"
+    ],
+    "keywords": [
+        "SX1278",
+        "LORA",
+        "RA-01",
+        "RA-02"
+    ],
+    "version": "0.0.1",
+    "authors": {
+        "name": "Lukasz Uszko",
+        "url": "https://github.com/luk6xff/DevLibs/tree/master/SX1278"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/luk6xff/DevLibs/tree/master/SX1278"
+    },
+    "build": {
+        "extraScript": "lib_build.py"
+    }
+}
