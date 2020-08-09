@@ -22,38 +22,41 @@ const char GatewayMsg[] = "Hello FROM LORA GATEWAY!";
 const char ClientMsg[] = "Hello FROM LORA CLIENT!";
 
 
-
 //------------------------------------------------------------------------------
 Radio::Radio()
+    : spi(HSPI)
 {
-    // Set arduin_dev
+    // Set arduino_dev
     arduino_dev.spi_settings = SPISettings();
-    arduino_dev.spi = &SPI;
-    // TODO
-    // arduino_dev.nss =
-    // arduino_dev.reset =
-    // arduino_dev.dio0 =
-    // arduino_dev.dio1 =
-    // arduino_dev.dio2 =
-    // arduino_dev.dio3 =
-    // arduino_dev.dio4 =
-    // arduino_dev.dio5 =
-    // Set dev
-    // dev.events->TxDone = on_tx_done;
-    // dev.events->RxDone = on_rx_done;
-    // dev.events->TxTimeout = on_tx_timeout;
-    // dev.events->RxTimeout = on_rx_timeout;
-    // dev.events->RxError = on_rx_error;
-    sx1278_arduino_init(&dev, &arduino_dev);
+    arduino_dev.spi =   &spi;
+    arduino_dev.mosi =  GPIO_NUM_13;
+    arduino_dev.miso =  GPIO_NUM_12;
+    arduino_dev.sck =   GPIO_NUM_14;
+    arduino_dev.nss =   GPIO_NUM_15;
+    arduino_dev.reset = GPIO_NUM_27;
+    arduino_dev.dio0 =  GPIO_NUM_26;
+    arduino_dev.dio1 =  -1; // Not used
+    arduino_dev.dio2 =  -1;
+    arduino_dev.dio3 =  -1;
+    arduino_dev.dio4 =  -1;
+    arduino_dev.dio5 =  -1;
 
+    // Set dev
+    dev.events->tx_done = on_tx_done;
+    // dev.events->rx_done = on_rx_done;
+    // dev.events->tx_timeout = on_tx_timeout;
+    // dev.events->rx_timeout = on_rx_timeout;
+    // dev.events->rx_error = on_rx_error;
+    sx1278_arduino_init(&dev, &arduino_dev);
     sx1278_set_channel(&dev, RF_FREQUENCY);
 
     // Verify if SX1278 connected to the the board
-    while(sx1278_read(&dev, REG_VERSION) == 0x00)
+    while (sx1278_read(&dev, REG_VERSION) == 0x00)
     {
-        Serial.printf("Radio could not be detected!\n\r");
+        Serial.printf("SX1278 Radio could not be detected!\n\r");
         sx1278_delay_ms(1000);
     }
+    Serial.printf("REG_VERSION: 0x%x", sx1278_read(&dev, REG_VERSION));
 
     sx1278_set_max_payload_length(&dev, MODEM_LORA, MAX_PAYLOAD_LENGTH);
     sx1278_set_tx_config(&dev, MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
@@ -68,10 +71,7 @@ Radio::Radio()
                           LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
                           LORA_IQ_INVERSION_ON, true);
 
-    while(true)
-    {
-        sx1278_set_rx(&dev, RX_TIMEOUT_VALUE);
-    }
+    sx1278_set_rx(&dev, RX_TIMEOUT_VALUE);
 }
 
 //------------------------------------------------------------------------------
@@ -90,26 +90,26 @@ void Radio::on_rx_done(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr
     Serial.printf("> RssiValue: %d\n\r", rssi);
     Serial.printf("> SnrValue: %d\n\r", snr);
     Serial.printf("> PAYLOAD: %s\n\r", payload);
-    Serial.printf("> OnRxDone\n\r");
+    Serial.printf("> Onrx_done\n\r");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_tx_timeout(void)
 {
     sx1278_set_sleep(&dev);
-    Serial.printf("> OnTxTimeout\n\r");
+    Serial.printf("> Ontx_timeout\n\r");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_timeout(void)
 {
     sx1278_set_sleep(&dev);
-    Serial.printf("> OnRxTimeout\n\r");
+    Serial.printf("> Onrx_timeout\n\r");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_error(void)
 {
     sx1278_set_sleep(&dev);
-    Serial.printf("> OnRxError\n\r");
+    Serial.printf("> Onrx_error\n\r");
 }

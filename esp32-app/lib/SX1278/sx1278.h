@@ -146,12 +146,12 @@ typedef struct
     /**
      * @brief Callback when Transmission is done.
      */
-    void (*TxDone)(void);
+    void (*tx_done)(void);
 
     /**
      * @brief Callback when Transmission is timed out.
      */
-    void (*TxTimeout)(void);
+    void (*tx_timeout)(void);
 
     /**
      * @brief Rx Done callback prototype.
@@ -163,31 +163,31 @@ typedef struct
      *                     FSK : N/A (set to 0)
      *                     LoRa: SNR value in dB
      */
-    void (*RxDone)(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
+    void (*rx_done)(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
 
     /**
      * @brief Callback when Reception is timed out.
      */
-    void (*RxTimeout)(void);
+    void (*rx_timeout)(void);
 
     /**
      * @brief Callback when Reception ends up in error.
      */
-    void (*RxError)(void);
+    void (*rx_error)(void);
 
     /**
      * @brief  FHSS Change Channel callback prototype.
      *
-     * @param[in] currentChannel   Index number of the current channel
+     * @param[in] current_channel   Index number of the current channel
      */
-    void (*FhssChangeChannel)(uint8_t currentChannel);
+    void (*fhss_change_channel)(uint8_t current_channel);
 
     /**
      * @brief CAD Done callback prototype.
      *
-     * @param[in] channelActivityDetected    True, if Channel activity detected.
+     * @param[in] channel_activity_detected    True, if Channel activity detected.
      */
-    void (*CadDone) (bool channelActivityDetected);
+    void (*cad_done) (bool channel_activity_detected);
 } RadioEvents_t;
 
 
@@ -302,7 +302,7 @@ typedef struct
      * @brief Timeout value in milliseconds (ms) after which the radio driver reports
      * a timeout if the radio was unable to transmit.
      */
-    uint32_t TxTimeout;
+    uint32_t txTimeout;
 
     /**
      * @brief Timeout value in symbols (symb) after which the radio driver reports a timeout
@@ -445,7 +445,7 @@ typedef struct
      * @brief Timeout in milliseconds (ms) after which the radio driver reports an error
      * if the radio was unable to transmit.
      */
-    uint32_t TxTimeout;
+    uint32_t txTimeout;
 
     /**
      * @brief Change the network mode to Public or Private.
@@ -896,9 +896,9 @@ extern void sx1278_io_deinit(sx1278* const dev);
 /**
  * @brief Initializes DIO IRQ handlers
  *
- * @param[in] irqHandlers Array containing the IRQ callback functions
+ * @param[in] irq_handlers Array containing the IRQ callback functions
  */
-extern void sx1278_ioirq_init(sx1278* const dev, DioIrqHandler *irqHandlers);
+extern void sx1278_ioirq_init(sx1278* const dev, DioIrqHandler *irq_handlers);
 
 /**
  * @brief Resets the SX1278

@@ -48,7 +48,7 @@ void sx1278_io_init(sx1278* const dev)
     // Set SS high
     digitalWrite(pd->nss, HIGH);
     // Start SPI
-    pd->spi->begin();
+    pd->spi->begin(pd->sck, pd->miso, pd->mosi, pd->nss);
     sx1278_delay_ms(10);
 }
 
@@ -60,7 +60,7 @@ void sx1278_io_deinit(sx1278* const dev)
 
 
 //-----------------------------------------------------------------------------
-void sx1278_ioirq_init(sx1278* const dev, DioIrqHandler *irqHandlers)
+void sx1278_ioirq_init(sx1278* const dev, DioIrqHandler *irq_handlers)
 {
 
     sx1278_arduino* const pd = (sx1278_arduino*)dev->platform_dev;
@@ -78,6 +78,7 @@ void sx1278_ioirq_init(sx1278* const dev, DioIrqHandler *irqHandlers)
         while(1);
         return;
     }
+    // Only dio0 used
     pinMode(pd->dio0, INPUT);
     attachInterruptArg(digitalPinToInterrupt(pd->dio0), dev->dio_irq[0], dev, RISING);
 }

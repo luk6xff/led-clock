@@ -1247,17 +1247,17 @@
 #define RF_PREAMBLEDETECT_DETECTORTOL_31            0x1F
 
 /*!
- * RegRxTimeout1
+ * Regrx_timeout1
  */
 #define RF_RXTIMEOUT1_TIMEOUTRXRSSI                 0x00  // Default
 
 /*!
- * RegRxTimeout2
+ * Regrx_timeout2
  */
 #define RF_RXTIMEOUT2_TIMEOUTRXPREAMBLE             0x00  // Default
 
 /*!
- * RegRxTimeout3
+ * Regrx_timeout3
  */
 #define RF_RXTIMEOUT3_TIMEOUTSIGNALSYNC             0x00  // Default
 

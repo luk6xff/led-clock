@@ -76,7 +76,7 @@ void sx1278_io_deinit(sx1278* const dev)
 
 
 //-----------------------------------------------------------------------------
-void sx1278_ioirq_init(sx1278* const dev, DioIrqHandler *irqHandlers)
+void sx1278_ioirq_init(sx1278* const dev, DioIrqHandler *irq_handlers)
 {
     sx1278_mbed* const pd = (sx1278_mbed*)dev->platform_dev;
     // dio0 - dio4

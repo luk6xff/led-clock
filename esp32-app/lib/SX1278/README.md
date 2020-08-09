@@ -47,19 +47,19 @@ Simple snippet how to quickly use the library for LORA communication on mbed pla
 static RadioEvents_t RadioEvents;
 
 // Function to be executed on Radio Tx Done event
-void OnTxDone(void);
+void Ontx_done(void);
 
 // Function to be executed on Radio Rx Done event
-void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
+void on_rx_done(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
 
 // Function executed on Radio Tx Timeout event
-void OnTxTimeout(void);
+void on_tx_timeout(void);
 
 // Function executed on Radio Rx Timeout event
-void OnRxTimeout(void);
+void on_rx_timeout(void);
 
 // Function executed on Radio Rx Error event
-void OnRxError(void);
+void on_rx_error(void);
 
 const char GatewayMsg[] = "Hello FROM LORA GATEWAY!";
 const char ClientMsg[] = "Hello FROM LORA CLIENT!";
@@ -70,11 +70,11 @@ const char ClientMsg[] = "Hello FROM LORA CLIENT!";
 int main()
 {
     // Radio initialization
-    RadioEvents.TxDone = OnTxDone;
-    RadioEvents.RxDone = OnRxDone;
-    RadioEvents.TxTimeout = OnTxTimeout;
-    RadioEvents.RxTimeout = OnRxTimeout;
-    RadioEvents.RxError = OnRxError;
+    RadioEvents.tx_done = Ontx_done;
+    RadioEvents.rx_done = on_rx_done;
+    RadioEvents.tx_timeout = on_tx_timeout;
+    RadioEvents.rx_timeout = on_rx_timeout;
+    RadioEvents.rx_error = on_rx_error;
     SX1278MbedInit(&RadioEvents,SX1278_MOSI, SX1278_MISO, SX1278_SCLK, SX1278_NSS, SX1278_RST, \
                     SX1278_DIO0, SX1278_DIO1, SX1278_DIO2, SX1278_DIO3, NC, NC);
     sx1278_set_channel(RF_FREQUENCY);
@@ -109,41 +109,41 @@ int main()
 }
 
 //-----------------------------------------------------------------------------
-void OnTxDone(void)
+void Ontx_done(void)
 {
     sx1278_set_sleep();
-    debug_if(DEBUG_ON, "> OnTxDone\n\r");
+    debug_if(DEBUG_ON, "> Ontx_done\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
+void on_rx_done(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
     sx1278_set_sleep();
     debug_if(DEBUG_ON, "> RssiValue: %d\n\r", rssi);
     debug_if(DEBUG_ON, "> SnrValue: %d\n\r", snr);
     debug_if(DEBUG_ON, "> PAYLOAD: %s\n\r", payload);
-    debug_if(DEBUG_ON, "> OnRxDone\n\r");
+    debug_if(DEBUG_ON, "> on_rx_done\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void OnTxTimeout(void)
+void on_tx_timeout(void)
 {
     sx1278_set_sleep();
-    debug_if(DEBUG_ON, "> OnTxTimeout\n\r");
+    debug_if(DEBUG_ON, "> on_tx_timeout\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void OnRxTimeout(void)
+void on_rx_timeout(void)
 {
     sx1278_set_sleep();
-    debug_if(DEBUG_ON, "> OnRxTimeout\n\r");
+    debug_if(DEBUG_ON, "> on_rx_timeout\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void OnRxError(void)
+void on_rx_error(void)
 {
     sx1278_set_sleep();
-    debug_if(DEBUG_ON, "> OnRxError\n\r");
+    debug_if(DEBUG_ON, "> on_rx_error\n\r");
 }
 
 //-----------------------------------------------------------------------------
@@ -191,19 +191,19 @@ void OnRxError(void)
 static RadioEvents_t RadioEvents;
 
 // Function to be executed on Radio Tx Done event
-void OnTxDone(void);
+void Ontx_done(void);
 
 // Function to be executed on Radio Rx Done event
-void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
+void on_rx_done(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
 
 // Function executed on Radio Tx Timeout event
-void OnTxTimeout(void);
+void on_tx_timeout(void);
 
 // Function executed on Radio Rx Timeout event
-void OnRxTimeout(void);
+void on_rx_timeout(void);
 
 // Function executed on Radio Rx Error event
-void OnRxError(void);
+void on_rx_error(void);
 
 const char GatewayMsg[] = "Hello FROM LORA GATEWAY!";
 const char ClientMsg[] = "Hello FROM LORA CLIENT!";
@@ -214,11 +214,11 @@ const char ClientMsg[] = "Hello FROM LORA CLIENT!";
 int main()
 {
     // Radio initialization
-    RadioEvents.TxDone = OnTxDone;
-    RadioEvents.RxDone = OnRxDone;
-    RadioEvents.TxTimeout = OnTxTimeout;
-    RadioEvents.RxTimeout = OnRxTimeout;
-    RadioEvents.RxError = OnRxError;
+    RadioEvents.tx_done = Ontx_done;
+    RadioEvents.rx_done = on_rx_done;
+    RadioEvents.tx_timeout = on_tx_timeout;
+    RadioEvents.rx_timeout = on_rx_timeout;
+    RadioEvents.rx_error = on_rx_error;
     SX1278MbedInit(&RadioEvents,SX1278_MOSI, SX1278_MISO, SX1278_SCLK, SX1278_NSS, SX1278_RST, \
                     SX1278_DIO0, SX1278_DIO1, SX1278_DIO2, SX1278_DIO3, NC, NC);
     sx1278_set_channel(RF_FREQUENCY);
@@ -250,42 +250,42 @@ int main()
 }
 
 //-----------------------------------------------------------------------------
-void OnTxDone(void)
+void Ontx_done(void)
 {
     sx1278_set_sleep();
-    debug_if(DEBUG_ON, "> OnTxDone\n\r");
+    debug_if(DEBUG_ON, "> Ontx_done\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
+void on_rx_done(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
     sx1278_send((uint8_t*)GatewayMsg, sizeof(GatewayMsg));
     sx1278_set_sleep();
     debug_if(DEBUG_ON, "> RssiValue: %d\n\r", rssi);
     debug_if(DEBUG_ON, "> SnrValue: %d\n\r", snr);
     debug_if(DEBUG_ON, "> PAYLOAD: %s\n\r", payload);
-    debug_if(DEBUG_ON, "> OnRxDone\n\r");
+    debug_if(DEBUG_ON, "> on_rx_done\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void OnTxTimeout(void)
+void on_tx_timeout(void)
 {
     sx1278_set_sleep();
-    debug_if(DEBUG_ON, "> OnTxTimeout\n\r");
+    debug_if(DEBUG_ON, "> on_tx_timeout\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void OnRxTimeout(void)
+void on_rx_timeout(void)
 {
     sx1278_set_sleep();
-    debug_if(DEBUG_ON, "> OnRxTimeout\n\r");
+    debug_if(DEBUG_ON, "> on_rx_timeout\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void OnRxError(void)
+void on_rx_error(void)
 {
     sx1278_set_sleep();
-    debug_if(DEBUG_ON, "> OnRxError\n\r");
+    debug_if(DEBUG_ON, "> on_rx_error\n\r");
 }
 ```
 

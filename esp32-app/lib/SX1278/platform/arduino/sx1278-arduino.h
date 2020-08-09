@@ -20,6 +20,9 @@ typedef struct
 {
     SPISettings spi_settings;
     SPIClass* spi;
+    int mosi;
+    int miso;
+    int sck;
     int nss;
     int reset;
     int dio0;

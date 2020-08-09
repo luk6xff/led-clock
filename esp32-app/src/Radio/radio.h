@@ -18,6 +18,7 @@ private:
     void on_rx_error(void);
 
 private:
+    SPIClass spi;
     sx1278 dev;
     sx1278_arduino arduino_dev;
 };
