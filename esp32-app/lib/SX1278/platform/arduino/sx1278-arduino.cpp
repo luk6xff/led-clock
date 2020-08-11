@@ -60,7 +60,7 @@ void sx1278_io_deinit(sx1278* const dev)
 
 
 //-----------------------------------------------------------------------------
-void sx1278_ioirq_init(sx1278* const dev, DioIrqHandler *irq_handlers)
+void sx1278_ioirq_init(sx1278* const dev)
 {
 
     sx1278_arduino* const pd = (sx1278_arduino*)dev->platform_dev;
@@ -95,7 +95,7 @@ void sx1278_reset(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_write_buffer(sx1278* const dev, uint8_t addr, uint8_t *buffer, uint8_t size)
+void sx1278_write_buffer(sx1278* const dev, uint8_t addr, const uint8_t *buffer, const uint8_t size)
 {
     sx1278_arduino* const pd = (sx1278_arduino*)dev->platform_dev;
 

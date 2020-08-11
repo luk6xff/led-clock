@@ -177,7 +177,7 @@ bool sx1278_init(sx1278* const dev)
     sx1278_rx_chain_calibration(dev);
     sx1278_set_op_mode(dev, RF_OPMODE_SLEEP);
 
-    sx1278_ioirq_init(dev, dev->dio_irq);
+    sx1278_ioirq_init(dev);
     sx1278_radio_registers_init(dev);
     sx1278_set_modem(dev, MODEM_FSK);
     dev->settings.State = RF_IDLE;

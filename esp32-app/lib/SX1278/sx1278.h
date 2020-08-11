@@ -898,7 +898,7 @@ extern void sx1278_io_deinit(sx1278* const dev);
  *
  * @param[in] irq_handlers Array containing the IRQ callback functions
  */
-extern void sx1278_ioirq_init(sx1278* const dev, DioIrqHandler *irq_handlers);
+extern void sx1278_ioirq_init(sx1278* const dev);
 
 /**
  * @brief Resets the SX1278
@@ -912,7 +912,7 @@ extern void sx1278_reset(sx1278* const dev);
  * @param[in] buffer Buffer containing the new register's values
  * @param[in] size   Number of registers to be written
  */
-extern void sx1278_write_buffer(sx1278* const dev, uint8_t addr, uint8_t *buffer, uint8_t size);
+extern void sx1278_write_buffer(sx1278* const dev, uint8_t addr, const uint8_t *buffer, const uint8_t size);
 
 /**
  * @brief Reads multiple radio registers starting at address

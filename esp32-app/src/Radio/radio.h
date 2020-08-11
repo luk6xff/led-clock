@@ -11,11 +11,11 @@ public:
     Radio();
 
 private:
-    void on_tx_done(void);
-    void on_rx_done(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
-    void on_tx_timeout(void);
-    void on_rx_timeout(void);
-    void on_rx_error(void);
+    static void on_tx_done(void);
+    static void on_rx_done(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
+    static void on_tx_timeout(void);
+    static void on_rx_timeout(void);
+    static void on_rx_error(void);
 
 private:
     SPIClass spi;

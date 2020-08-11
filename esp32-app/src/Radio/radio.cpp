@@ -1,6 +1,6 @@
 #include "radio.h"
 #include "hw_config.h"
-
+#include <functional>
 
 // Radio LORA settings
 #define RF_FREQUENCY                                RF_FREQUENCY_434_0
@@ -22,6 +22,46 @@ const char GatewayMsg[] = "Hello FROM LORA GATEWAY!";
 const char ClientMsg[] = "Hello FROM LORA CLIENT!";
 
 
+// A nice way to register class member function as "C" callback
+#include <functional>
+
+template <typename T>
+struct Callback;
+
+template <typename Ret, typename... Params>
+struct Callback<Ret(Params...)>
+{
+    template <typename... Args>
+    static Ret callback(Args... args)
+    {
+        return func(args...);
+    }
+    static std::function<Ret(Params...)> func;
+};
+
+template <typename Ret, typename... Params>
+std::function<Ret(Params...)> Callback<Ret(Params...)>::func;
+
+typedef void (*on_func_callback)(void);
+
+template<typename T>
+on_func_callback makeCCallback(void (T::*method)(), T* r)
+{
+    Callback<void()>::func = std::bind(method, r);
+    void (*c_function_pointer)() = static_cast<decltype(c_function_pointer)>(Callback<void()>::callback);
+    return c_function_pointer;
+}
+
+typedef void (*on_rx_done_func_callback)(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
+
+template<typename T>
+on_rx_done_func_callback makeCCallback2(void (T::*method)(uint8_t *, uint16_t, int16_t, int8_t), T* r)
+{
+    Callback<void(uint8_t*, uint16_t, int16_t, int8_t)>::func = std::bind(method, r, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 );
+    void (*c_function_pointer)(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) = static_cast<decltype(c_function_pointer)>(Callback<void(uint8_t *, uint16_t, int16_t, int8_t)>::callback);
+    return c_function_pointer;
+}
+RadioEvents_t events;
 //------------------------------------------------------------------------------
 Radio::Radio()
     : spi(HSPI)
@@ -42,11 +82,12 @@ Radio::Radio()
     arduino_dev.dio5 =  -1;
 
     // Set dev
-    dev.events->tx_done = on_tx_done;
-    // dev.events->rx_done = on_rx_done;
-    // dev.events->tx_timeout = on_tx_timeout;
-    // dev.events->rx_timeout = on_rx_timeout;
-    // dev.events->rx_error = on_rx_error;
+    dev.events = &events;
+    dev.events->tx_done = &Radio::on_tx_done;
+    dev.events->rx_done = &Radio::on_rx_done;
+    dev.events->tx_timeout = &Radio::on_tx_timeout;
+    dev.events->rx_timeout = &Radio::on_rx_timeout;
+    dev.events->rx_error = &Radio::on_rx_error;
     sx1278_arduino_init(&dev, &arduino_dev);
     sx1278_set_channel(&dev, RF_FREQUENCY);
 
@@ -78,38 +119,34 @@ Radio::Radio()
 //-----------------------------------------------------------------------------
 void Radio::on_tx_done(void)
 {
-    sx1278_set_sleep(&dev);
     Serial.printf("> on_tx_done\n\r");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_done(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-    sx1278_send(&dev, (uint8_t*)GatewayMsg, sizeof(GatewayMsg));
-    sx1278_set_sleep(&dev);
+    //sx1278_send(&dev, (uint8_t*)GatewayMsg, sizeof(GatewayMsg));
+    //sx1278_set_sleep(&dev);
+    Serial.printf("> on_rx_done\n\r");
     Serial.printf("> RssiValue: %d\n\r", rssi);
     Serial.printf("> SnrValue: %d\n\r", snr);
     Serial.printf("> PAYLOAD: %s\n\r", payload);
-    Serial.printf("> Onrx_done\n\r");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_tx_timeout(void)
 {
-    sx1278_set_sleep(&dev);
-    Serial.printf("> Ontx_timeout\n\r");
+    Serial.printf("> on_tx_timeout\n\r");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_timeout(void)
 {
-    sx1278_set_sleep(&dev);
-    Serial.printf("> Onrx_timeout\n\r");
+    Serial.printf("> on_rx_timeout\n\r");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_error(void)
 {
-    sx1278_set_sleep(&dev);
-    Serial.printf("> Onrx_error\n\r");
+    Serial.printf("> on_rx_error\n\r");
 }
