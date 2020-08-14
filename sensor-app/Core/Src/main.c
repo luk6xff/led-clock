@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <sx1278-cube-hal.h>
+#include "BMP180/platform/cube/bmp180-cube-hal.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -107,10 +108,15 @@ sx1278_cube_hal dev_cube =
 	.reset_port = SX1278_RESET_GPIO_Port,
 	.reset_pin = SX1278_RESET_Pin,
 };
-
 RadioEvents_t events;
-
 sx1278 dev;
+
+// BMP180 SENSOR
+bmp180 bmp180_dev;
+bmp180_cube_hal bmp180_cube_hal_dev =
+{
+
+};
 /* USER CODE END 0 */
 
 /**
@@ -421,6 +427,13 @@ void on_tx_done(void)
 void on_tx_timeout(void)
 {
     dbg("> on_tx_timeout\n\r");
+}
+
+//-----------------------------------------------------------------------------
+static void sensors_init()
+{
+	// Set dev
+	bmp180_cube_hal_init(bmp180_dev, bmp180_cube_hal_dev);
 }
 
 /* USER CODE END 4 */

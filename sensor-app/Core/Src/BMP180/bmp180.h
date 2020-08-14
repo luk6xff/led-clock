@@ -119,26 +119,26 @@ void bmp180_init(bmp180* const dev);
  * @param[in] dev - bmp180 device object
  * @param altitude (in meter)
  * @param overSamplingSetting
- * @return 1 on success, 0 on error
+ * @return true on success, false on error
  */
 bool bmp180_set_configuration(bmp180* const dev, float altitude, int overSamplingSetting);
 
-// /**
-//  * @brief Read pressure and temperature from the BMP180.
-//  *
-//  * @param[in] dev - bmp180 device object
-//  * @param pressure [hPa]
-//  * @param temperature [C]
-//  * @return 1 on success, 0 on error
-//  */
-// bool bmp180_read_data(bmp180* const dev);
+/**
+ * @brief Read pressure and temperature from the BMP180.
+ *
+ * @param[in] dev - bmp180 device object
+ * @param temperature [C]
+ * @param pressure [hPa]
+ * @return true on success, false on error
+ */
+bool bmp180_read_data(bmp180* const dev, float* temperature, float* pressure);
 
 /**
  * @brief Get temperature from a previous measurement
  *
  * @param[in] dev - bmp180 device object
  * @param[out] temperature - temperature  value in [C]
- * @return 1 on success, 0 on error
+ * @return true on success, false on error
  */
 bool bmp180_get_temperature(bmp180* const dev, float* temperature);
 
@@ -147,20 +147,10 @@ bool bmp180_get_temperature(bmp180* const dev, float* temperature);
  *
  * @param[in] dev - bmp180 device object
  * @param[out] pressure - pressure value in [hPa]
- * @return 1 on success, 0 on error
+ * @return true on success, false on error
  */
 bool bmp180_get_pressure(bmp180* const dev, float* pressure);
 
-
-
-
-
-
-
-long x1, x2, x3, b3, b5, b6;
-unsigned long b4, b7;
-    int32_t b6, x1, x2, x3, b3, p;
-    uint32_t b4, b7;
 
 
 //-----------------------------------------------------------------------------
@@ -172,7 +162,7 @@ unsigned long b4, b7;
  * @param[in] dev - bmp180 device object
  * @param[in] buf - pointer to buffer which will be send to device
  * @param[in] buf_size - number of bytes to be written
- * @return return value = 1 on success, 0 on failure
+ * @return return value = true on success, false on failure
  */
 extern bool bmp180_write(bmp180* const dev, const uint8_t* buf, const size_t buf_size);
 
@@ -182,7 +172,7 @@ extern bool bmp180_write(bmp180* const dev, const uint8_t* buf, const size_t buf
  * @param[in] dev - bmp180 device object
  * @param[out] buf - pointer to buffer which will be filled with read data from the device
  * @param[in] buf_size - number of bytes to be read
- * @return return value = 1 on success, 0 on failure
+ * @return return value = true on success, false on failure
  */
 extern bool bmp180_read(bmp180* const dev, uint8_t* buf, const size_t buf_size);
 
