@@ -24,7 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <sx1278-cube-hal.h>
-#include "BMP180/platform/cube/bmp180-cube-hal.h"
+#include "lib/BMP180/platform/cube/bmp180-cube-hal.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -100,7 +100,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 }
 
 // LORA SX1278 RADIO
-sx1278_cube_hal dev_cube =
+sx1278_cube_hal radio_cube_hal_dev =
 {
 	.spi = &hspi1,
 	.nss_port = SX1278_NSS_GPIO_Port,
@@ -108,15 +108,16 @@ sx1278_cube_hal dev_cube =
 	.reset_port = SX1278_RESET_GPIO_Port,
 	.reset_pin = SX1278_RESET_Pin,
 };
-RadioEvents_t events;
-sx1278 dev;
+RadioEvents_t radio_events;
+sx1278 radio_dev;
 
 // BMP180 SENSOR
 bmp180 bmp180_dev;
 bmp180_cube_hal bmp180_cube_hal_dev =
 {
-
+  .i2c = &hi2c1;
 };
+static float temperature, pressure, humidity;
 /* USER CODE END 0 */
 
 /**
@@ -152,6 +153,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   radio_init();
+  sensors_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -161,7 +163,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-      sx1278_send(&dev, (uint8_t*)ClientMsg, sizeof(ClientMsg));
+      // Read data
+      bmp180_read_data(&bmp180_dev, &temperature, &pressure);
+      dbg("> Data sent to the client\n\r");
+      sprintf(dbg_buf, "T:%3.1f, P:%3.1f", temperature, pressure);
+      dbg(dbg_buf);
+      // Send result data
+      sx1278_send(&radio_dev, (uint8_t*)ClientMsg, sizeof(ClientMsg));
       sx1278_delay_ms(RX_TIMEOUT_VALUE);
       dbg("> Data sent to the client\n\r");
   }
@@ -178,10 +186,10 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /** Configure the main internal regulator output voltage 
+  /** Configure the main internal regulator output voltage
   */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
   RCC_OscInitStruct.MSIState = RCC_MSI_ON;
@@ -192,7 +200,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -242,13 +250,13 @@ static void MX_I2C1_Init(void)
   {
     Error_Handler();
   }
-  /** Configure Analogue filter 
+  /** Configure Analogue filter
   */
   if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     Error_Handler();
   }
-  /** Configure Digital filter 
+  /** Configure Digital filter
   */
   if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
   {
@@ -390,27 +398,27 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void radio_init()
 {
-	// Set dev
-	dev.events = &events;
-	dev.events->tx_done = on_tx_done;
-	dev.events->rx_done = NULL;
-	dev.events->tx_timeout = on_tx_timeout;
-	dev.events->rx_timeout = NULL;
-	dev.events->rx_error = NULL;
-	sx1278_cube_hal_init(&dev, &dev_cube);
-	sx1278_set_channel(&dev, RF_FREQUENCY);
+	// Set radio_dev
+	radio_dev.events = &radio_events;
+	radio_dev.events->tx_done = on_tx_done;
+	radio_dev.events->rx_done = NULL;
+	radio_dev.events->tx_timeout = on_tx_timeout;
+	radio_dev.events->rx_timeout = NULL;
+	radio_dev.events->rx_error = NULL;
+	sx1278_cube_hal_init(&radio_dev, &radio_cube_hal_dev);
+	sx1278_set_channel(&radio_dev, RF_FREQUENCY);
 
 	// Verify if SX1278 connected to the the board
-	while (sx1278_read(&dev, REG_VERSION) == 0x00)
+	while (sx1278_read(&radio_dev, REG_VERSION) == 0x00)
 	{
 	    dbg("SX1278 cannot be detected!");
 	    sx1278_delay_ms(1000);
 	}
-	sprintf(dbg_buf, "REG_VERSION: 0x%x", sx1278_read(&dev, REG_VERSION));
+	sprintf(dbg_buf, "REG_VERSION: 0x%x", sx1278_read(&radio_dev, REG_VERSION));
 	dbg(dbg_buf);
 
-	sx1278_set_max_payload_length(&dev, MODEM_LORA, MAX_PAYLOAD_LENGTH);
-	sx1278_set_tx_config(&dev, MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
+	sx1278_set_max_payload_length(&radio_dev, MODEM_LORA, MAX_PAYLOAD_LENGTH);
+	sx1278_set_tx_config(&radio_dev, MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
 	                      LORA_SPREADING_FACTOR, LORA_CODINGRATE,
 	                      LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
 	                      LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
@@ -432,8 +440,8 @@ void on_tx_timeout(void)
 //-----------------------------------------------------------------------------
 static void sensors_init()
 {
-	// Set dev
-	bmp180_cube_hal_init(bmp180_dev, bmp180_cube_hal_dev);
+	// Set radio_dev
+	bmp180_cube_hal_init(&bmp180_dev, &bmp180_cube_hal_dev);
 }
 
 /* USER CODE END 4 */
@@ -459,7 +467,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: dbg("Wrong parameters value: file %s on line %d\r\n", file, line) */

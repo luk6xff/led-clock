@@ -37,7 +37,7 @@ bool bmp180_read(bmp180* const dev, uint8_t* buf, const size_t buf_size)
 }
 
 //-----------------------------------------------------------------------------
-extern void bmp180_delay_ms(uint32_t delay_ms)
+void bmp180_delay_ms(uint32_t delay_ms)
 {
     wait_ms(delay_ms);
 }
