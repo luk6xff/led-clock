@@ -7,7 +7,7 @@
  */
 
 #include "bmp180.h"
-
+#include <math.h> // pow
 
 // Uncomment to test the documentation algorithm against the documentation example
 // Result should be 699.64 hPa and 15°C
@@ -49,21 +49,20 @@ static float bmp180_calc_true_pressure(bmp180* const dev, int32_t up);
 //------------------------------------------------------------------------------
 void bmp180_init(bmp180* const dev)
 {
-    dev->oss = BMP180_OSS_NORMAL;
-    bmp180_set_configuration(dev, 64, BMP180_OSS_ULTRA_LOW_POWER); // 64m altitude compensation and low power oversampling
+    bmp180_set_configuration(dev, dev->altitude, dev->oss);
 }
 
 //------------------------------------------------------------------------------
-bool bmp180_set_configuration(bmp180* const dev, float altitude, int overSamplingSetting)
+bool bmp180_set_configuration(bmp180* const dev, float altitude, bmp180_oversampling_t oss)
 {
     uint8_t data[22];
     int errors = 0;
 
     dev->altitude = altitude;
-    dev->oss = overSamplingSetting;
+    dev->oss = oss;
 
     // read calibration data
-    data[0]=0xAA;
+    data[0] = BMP180_REG_AC1;
     errors += bmp180_write(dev, data, 1);
     errors += bmp180_read(dev, data, sizeof(data)); // // read 11 x 16 bits at this position
     bmp180_delay_ms(10);
@@ -99,12 +98,45 @@ bool bmp180_set_configuration(bmp180* const dev, float altitude, int overSamplin
     return errors ? 1 : 0;
 }
 
-// //------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+bool bmp180_reset(bmp180* const dev)
+{
+    uint8_t data;
+    data = BMP180_REG_RESET;
+    if (!bmp180_write(dev, &data, 1))
+    {
+    	return false;
+    }
+
+    data = 0xB6;
+    if (!bmp180_write(dev, &data, 1))
+    {
+    	return false;
+    }
+
+    return true;
+}
+
+//------------------------------------------------------------------------------
+bool bmp180_check_id(bmp180* const dev)
+{
+    uint8_t data[2];
+    data[0] = BMP180_REG_CHIP_ID;
+    bmp180_write(dev, data, 1);
+    bmp180_read(dev, data, 1);
+
+    if (data[0] != 0x55)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+//------------------------------------------------------------------------------
 bool bmp180_read_data(bmp180* const dev, float* temperature, float* pressure)
 {
-    int32_t t, p;
-
-    if (!bmp180_read_raw_temperature(dev, temperature) || !bmp180_get_pressure(dev, pressure))
+    if (!bmp180_get_temperature(dev, temperature) || !bmp180_get_pressure(dev, pressure))
     {
         return false;
     }
@@ -147,14 +179,14 @@ int bmp180_read_raw_temperature(bmp180* const dev, int32_t* pUt)
     uint8_t data[2];
 
     // Request temperature measurement
-    data[0] = 0xF4;
-    data[1] = 0x2E;
+    data[0] = BMP180_REG_CTRL;
+    data[1] = BMP180_CMD_MEASURE_TEMP;
     errors = bmp180_write(dev, data, sizeof(data)); // write 0x2E into reg 0xF4
 
     bmp180_delay_ms(4.5F);
 
     // Read raw temperature data
-    data[0] = 0xF6;
+    data[0] = BMP180_REG_DATA;
     errors += bmp180_write(dev, data, 1);
     errors += bmp180_read(dev, data, sizeof(data)); // get 16 bits at this position
 
@@ -186,8 +218,8 @@ int bmp180_read_raw_pressure(bmp180* const dev, int32_t* pUp)
     uint8_t data[2];
 
     // Request pressure measurement
-    data[0] = 0xF4;
-    data[1] = 0x34 + (dev->oss << 6);
+    data[0] = BMP180_REG_CTRL;
+    data[1] = BMP180_CMD_MEASURE_PRESSURE_0  + (dev->oss << 6);
     errors = bmp180_write(dev, data, sizeof(data)); // write 0x34 + (dev->oss << 6) into reg 0xF4
 
     switch (dev->oss)
@@ -215,7 +247,7 @@ int bmp180_read_raw_pressure(bmp180* const dev, int32_t* pUp)
     }
 
     // Read raw pressure data
-    data[0] = 0xF6;
+    data[0] = BMP180_REG_DATA;
     errors += bmp180_write(dev, data, 1);
     errors += bmp180_read(dev, data, sizeof(data)); // get 16 bits at this position
 

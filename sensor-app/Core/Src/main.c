@@ -84,6 +84,7 @@ static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 static void radio_init();
+static void sensors_init();
 void on_tx_done(void);
 void on_tx_timeout(void);
 
@@ -112,10 +113,15 @@ RadioEvents_t radio_events;
 sx1278 radio_dev;
 
 // BMP180 SENSOR
-bmp180 bmp180_dev;
+bmp180 bmp180_dev =
+{
+	.i2c_addr = BMP180_DEFAULT_I2C_ADDRESS,
+	.oss = BMP180_OSS_NORMAL,
+	.altitude = 400, // Ubiad house 400 meters altitude compensation
+};
 bmp180_cube_hal bmp180_cube_hal_dev =
 {
-  .i2c = &hi2c1;
+	.i2c = &hi2c1,
 };
 static float temperature, pressure, humidity;
 /* USER CODE END 0 */
@@ -166,7 +172,7 @@ int main(void)
       // Read data
       bmp180_read_data(&bmp180_dev, &temperature, &pressure);
       dbg("> Data sent to the client\n\r");
-      sprintf(dbg_buf, "T:%3.1f, P:%3.1f", temperature, pressure);
+      sprintf(dbg_buf, "T:%d, P:%d", (int)temperature, (int)pressure);
       dbg(dbg_buf);
       // Send result data
       sx1278_send(&radio_dev, (uint8_t*)ClientMsg, sizeof(ClientMsg));

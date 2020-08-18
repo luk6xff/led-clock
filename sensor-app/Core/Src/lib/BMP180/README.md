@@ -11,11 +11,12 @@ Simple demo code how to use the library on [MBED] platform
 
 // PINOUT FOR MBED BOARD_DISCO_L476VG
 // BMP180
-#define BMP180_I2C_ADDR         0x68
+#define BMP180_I2C_ADDR         BMP180_DEFAULT_I2C_ADDRESS
 #define BMP180_SDA              PB_7
 #define BMP180_SCL              PB_6
 int main(void)
 {
+    float temperature, pressure;
     I2C i2c(BMP180_SDA, BMP180_SCL);
     bmp180_mbed mbed_dev =
     {
@@ -24,24 +25,19 @@ int main(void)
 
     bmp180 dev =
     {
-        .i2c_addr = BMP180_I2C_ADDR;
+        .i2c_addr = BMP180_DEFAULT_I2C_ADDRESS,
+        .oss = BMP180_OSS_NORMAL,
+        .altitude = 64, // 64 meters altitude compensation
     };
     bmp180_mbed_init(dev, mbed_dev);
 
-    bmp180_time_t     time;
-    bmp180_calendar_t cal;
-
-    if (bmp180_get_time(&time) != 0)
+    while(1)
     {
-        return -1;
+        // Read data
+        bmp180_read_data(&bmp180_dev, &temperature, &pressure);
+        printf("T:%3.1f, P:%3.1f", temperature, pressure);
     }
 
-    if (bmp180_get_calendar(&cal) != 0)
-    {
-        return -1;
-    }
-
-    printf("%d-%d-%d, %d:%d:%d", cal.year, cal.month, cal.date time.hours, time.minutes, time.seconds);
     return 0;
 }
 ```

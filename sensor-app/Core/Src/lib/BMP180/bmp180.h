@@ -18,36 +18,19 @@ extern "C" {
 #include <stddef.h>
 #include <stdbool.h>
 
+// BMP180 Default I2C address
+#define BMP180_DEFAULT_I2C_ADDRESS    (0xEF)
 
-///  default address is 0xEF
-#define BMP180_I2C_ADDRESS 0xEF
-
-// Oversampling settings
-#define BMP180_OSS_ULTRA_LOW_POWER 0        // 1 sample  and  4.5ms for conversion
-#define BMP180_OSS_NORMAL          1        // 2 samples and  7.5ms for conversion
-#define BMP180_OSS_HIGH_RESOLUTION 2        // 4 samples and 13.5ms for conversion
-#define BMP180_OSS_ULTRA_HIGH_RESOLUTION 3  // 8 samples and 25.5ms for conversion
-
-#define BMP180_ADDRESS                (0x77)
-
+// BMP180 Registers
+#define BMP180_REG_RESET              (0xE0)
 #define BMP180_REG_CHIP_ID            (0xD0)
-#define BMP180_REG_VERSION            (0xD1)
-#define BMP180_REG_SOFT_RESET         (0xE0)
-
+#define BMP180_REG_CTRL               (0xF4)
+#define BMP180_REG_DATA               (0xF6)
 #define BMP180_REG_AC1                (0xAA)
-#define BMP180_REG_AC2                (0xAC)
-#define BMP180_REG_AC3                (0xAE)
-#define BMP180_REG_AC4                (0xB0)
-#define BMP180_REG_AC5                (0xB2)
-#define BMP180_REG_AC6                (0xB4)
-#define BMP180_REG_B1                 (0xB6)
-#define BMP180_REG_B2                 (0xB8)
-#define BMP180_REG_MB                 (0xBA)
-#define BMP180_REG_MC                 (0xBC)
-#define BMP180_REG_MD                 (0xBE)
 #define BMP180_REG_CONTROL            (0xF4)
 #define BMP180_REG_DATA               (0xF6)
 
+// BMP180 Commands
 #define BMP180_CMD_MEASURE_TEMP       (0x2E) // Max conversion time 4.5ms
 #define BMP180_CMD_MEASURE_PRESSURE_0 (0x34) // Max conversion time 4.5ms (OSS = 0)
 #define BMP180_CMD_MEASURE_PRESSURE_1 (0x74) // Max conversion time 7.5ms (OSS = 1)
@@ -79,17 +62,17 @@ typedef union
 
 
 /**
- * @brief   Oversampling ratio.
+ * @brief   BMP180 Oversampling settings
  * @details Dictates how many pressure samples to take. Conversion time varies
  *          depending on the number of samples taken. Refer to data sheet
  *          for timing specifications.
  */
 typedef enum
 {
-    ULTRA_LOW_POWER       = 0, ///< 1 pressure sample
-    STANDARD              = 1, ///< 2 pressure samples
-    HIGH_RESOLUTION       = 2, ///< 4 pressure samples
-    ULTRA_HIGH_RESOLUTION = 3, ///< 8 pressure samples
+	BMP180_OSS_ULTRA_LOW_POWER       = 0, ///< 1 sample  and  4.5ms for conversion
+	BMP180_OSS_NORMAL                = 1, ///< 2 samples and  7.5ms for conversion
+	BMP180_OSS_HIGH_RESOLUTION       = 2, ///< 4 samples and 13.5ms for conversion
+	BMP180_OSS_ULTRA_HIGH_RESOLUTION = 3, ///< 8 samples and 25.5ms for conversion
 } bmp180_oversampling_t;
 
 /**
@@ -118,10 +101,28 @@ void bmp180_init(bmp180* const dev);
  *
  * @param[in] dev - bmp180 device object
  * @param altitude (in meter)
- * @param overSamplingSetting
+ * @param oss
  * @return true on success, false on error
  */
-bool bmp180_set_configuration(bmp180* const dev, float altitude, int overSamplingSetting);
+bool bmp180_set_configuration(bmp180* const dev, float altitude, bmp180_oversampling_t oss);
+
+/**
+ * @brief   Reset BMP180.
+ * @details Performs a soft reset of the device. Same sequence as power on reset.
+ *
+ * @param[in] dev - bmp180 device object
+ * @returns 0 if no errors, -1 if error.
+ */
+bool bmp180_reset(bmp180* const dev);
+
+/**
+ * @brief   Check ID.
+ * @details Checks the device ID, should be 0x55 on reset.
+ *
+ * @param[in] dev - bmp180 device object
+ * @return true on success, false on error
+ */
+bool bmp180_check_id(bmp180* const dev);
 
 /**
  * @brief Read pressure and temperature from the BMP180.
