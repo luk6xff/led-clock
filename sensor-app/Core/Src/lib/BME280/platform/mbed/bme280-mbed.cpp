@@ -34,6 +34,7 @@ bool bme280_mbed_init(bme280 *const dev, bme280_mbed* const mbed_dev)
 bool bme280_mbed_deinit(void)
 {
     // Empty
+	return true;
 }
 
 //-----------------------------------------------------------------------------

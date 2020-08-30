@@ -22,8 +22,8 @@ typedef struct
     DigitalOut* spi_cs;
 } bme280_mbed;
 
-void bme280_mbed_init(bme280 *const dev, bme280_mbed* const mbed_dev);
+bool bme280_mbed_init(bme280 *const dev, bme280_mbed* const mbed_dev);
 
-void bme280_mbed_deinit();
+bool bme280_mbed_deinit();
 
 #endif // __BME280_MBED_H__
