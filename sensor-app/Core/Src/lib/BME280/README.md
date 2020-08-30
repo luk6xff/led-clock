@@ -16,7 +16,7 @@ Simple demo code how to use the library on [MBED] platform
 #define BME280_SCL              PB_6
 int main(void)
 {
-    float temperature, pressure;
+    float temperature, pressure, humidity, altitude;
     I2C i2c(BME280_SDA, BME280_SCL);
     bme280_mbed mbed_dev =
     {
@@ -25,17 +25,20 @@ int main(void)
 
     bme280 dev =
     {
+        .intf = BME280_INTF_I2C,
         .i2c_addr = BME280_DEFAULT_I2C_ADDRESS,
-        .oss = BME280_OSS_NORMAL,
-        .altitude = 64, // 64 meters altitude compensation
+        .t_fine = 0,
+        .t_fine_adjust = 0,
     };
     bme280_mbed_init(dev, mbed_dev);
 
     while(1)
     {
         // Read data
-        bme280_read_data(&bme280_dev, &temperature, &pressure);
-        printf("T:%3.1f, P:%3.1f", temperature, pressure);
+        bme280_read_data(dev, &temperature, &pressure, &humidity);
+        printf("T:%3.1f[C], P:%3.1f[hPa], H:%3.1f[%%]\n\r", temperature, pressure/100.f, humidity);
+        bme280_read_altitude(dev, SEA_LEVEL_PRESSURE_HPA, &altitude);
+        printf("Altitude:%3.1f[m]\n\r", altitude);
     }
 
     return 0;

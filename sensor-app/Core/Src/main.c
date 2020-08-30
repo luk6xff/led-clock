@@ -131,9 +131,10 @@ bmp180_cube_hal bmp180_cube_hal_dev =
 // BME280 SENSOR
 bme280 bme280_dev =
 {
-	.i2c_addr = BME280_DEFAULT_I2C_ADDRESS,
+	.intf = BME280_INTF_I2C,
+	.i2c_addr = 0xEC,
+	.t_fine = 0,
 	.t_fine_adjust = 0,
-	.altitude = 400, // Ubiad house 400 meters altitude compensation
 };
 bme280_cube_hal bme280_cube_hal_dev =
 {
@@ -176,7 +177,7 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  radio_init();
+//  radio_init();
   sensors_init();
   /* USER CODE END 2 */
 
@@ -195,15 +196,28 @@ int main(void)
       dbg(dbg_buf);
 #else
 
-      bme280_read_data(&bme280_dev, &temperature, &pressure, &humidity);
-      dbg("> READ_DATA:\n\r");
-      sprintf(dbg_buf, "T:%d, P:%d, H:%d\n\r", (int)temperature, (int)pressure, (int)humidity);
+      if (bme280_read_data(&bme280_dev, &temperature, &pressure, &humidity))
+      {
+          dbg("> READ_DATA:\n\r");
+          sprintf(dbg_buf, "T:%d, P:%d, H:%d\n\r", (int)temperature, (int)pressure, (int)humidity);
+          dbg(dbg_buf);
+      }
+      else
+      {
+          dbg("> READ_DATA_FAILED\n\r");
+          sprintf(dbg_buf, "T:%d, P:%d, H:%d\n\r", (int)temperature, (int)pressure, (int)humidity);
+          dbg(dbg_buf);
+      }
+      float altitude;
+      bme280_read_altitude(&bme280_dev, SEA_LEVEL_PRESSURE_HPA, &altitude);
+      sprintf(dbg_buf, "Altitude:%d, \n\r", (int)altitude);
       dbg(dbg_buf);
+
 #endif
       // Send result data
-      sx1278_send(&radio_dev, (uint8_t*)ClientMsg, sizeof(ClientMsg));
-      sx1278_delay_ms(RX_TIMEOUT_VALUE);
-      dbg("> DATA_SENT\n\r");
+//      sx1278_send(&radio_dev, (uint8_t*)ClientMsg, sizeof(ClientMsg));
+//      sx1278_delay_ms(RX_TIMEOUT_VALUE);
+      //dbg("> DATA_SENT\n\r");
   }
   /* USER CODE END 3 */
 }
@@ -374,10 +388,10 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -441,13 +455,11 @@ static void radio_init()
 	sx1278_set_channel(&radio_dev, RF_FREQUENCY);
 
 	// Verify if SX1278 connected to the the board
-	while (sx1278_read(&radio_dev, REG_VERSION) == 0x00)
+	while (sx1278_read(&radio_dev, REG_VERSION) != 0x12)
 	{
 	    dbg("SX1278 cannot be detected!");
 	    sx1278_delay_ms(1000);
 	}
-	sprintf(dbg_buf, "SX1278_REG_VER: 0x%x", sx1278_read(&radio_dev, REG_VERSION));
-	dbg(dbg_buf);
 
 	sx1278_set_max_payload_length(&radio_dev, MODEM_LORA, MAX_PAYLOAD_LENGTH);
 	sx1278_set_tx_config(&radio_dev, MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
@@ -485,7 +497,7 @@ static void sensors_init()
 	if (!bme280_cube_hal_init(&bme280_dev, &bme280_cube_hal_dev))
 	{
 		uint8_t id = bme280_sensor_id(&bme280_dev);
-	    sprintf(dbg_buf, "Sensors init failed!, id:%d\n\r", id);
+		sprintf(dbg_buf, "Sensors init failed!, id:%d\n\r", id);
 		dbg(dbg_buf);
 		Error_Handler();
 	}

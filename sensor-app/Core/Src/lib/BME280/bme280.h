@@ -19,10 +19,25 @@ extern "C" {
 #include <stdbool.h>
 
 // BME280 Default I2C address
-#define BME280_DEFAULT_I2C_ADDRESS    (0x77)
+#define BME280_DEFAULT_I2C_ADDRESS  (0x77)
 
-// BME280 Registers
-enum bme280_registers
+// Sea level atmospheric pressure
+#define SEA_LEVEL_PRESSURE_HPA      (1013.25f) //[hPa]
+
+
+/**
+ * @brief BME280 Communnication interface type SPI/I2C
+ */
+typedef enum
+{
+    BME280_INTF_SPI = 0,
+    BME280_INTF_I2C = 1,
+} bme280_intf_type;
+
+/**
+ * @brief BME280 Registers
+ */
+typedef enum
 {
     BME280_REGISTER_DIG_T1 = 0x88,
     BME280_REGISTER_DIG_T2 = 0x8A,
@@ -51,52 +66,48 @@ enum bme280_registers
 
     BME280_REGISTER_CAL26 = 0xE1, // R calibration stored in 0xE1-0xF0
 
-    BME280_REGISTER_CONTROLHUMID = 0xF2,
+    BME280_REGISTER_CTRL_HUM = 0xF2,
     BME280_REGISTER_STATUS = 0XF3,
-    BME280_REGISTER_CONTROL = 0xF4,
+	BME280_REGISTER_CTRL_MEAS = 0xF4,
     BME280_REGISTER_CONFIG = 0xF5,
     BME280_REGISTER_PRESSUREDATA = 0xF7,
     BME280_REGISTER_TEMPDATA = 0xFA,
     BME280_REGISTER_HUMIDDATA = 0xFD
-};
+} bme280_registers;
 
 
 /**
  * @brief BME280 calibration data
  */
-typedef union
+typedef struct
 {
-    uint8_t data[33];
-    struct
-    {
-        uint16_t dig_T1; ///< temperature compensation value
-        int16_t dig_T2;  ///< temperature compensation value
-        int16_t dig_T3;  ///< temperature compensation value
+    uint16_t dig_T1; ///< temperature compensation value
+    int16_t dig_T2;  ///< temperature compensation value
+    int16_t dig_T3;  ///< temperature compensation value
 
-        uint16_t dig_P1; ///< pressure compensation value
-        int16_t dig_P2;  ///< pressure compensation value
-        int16_t dig_P3;  ///< pressure compensation value
-        int16_t dig_P4;  ///< pressure compensation value
-        int16_t dig_P5;  ///< pressure compensation value
-        int16_t dig_P6;  ///< pressure compensation value
-        int16_t dig_P7;  ///< pressure compensation value
-        int16_t dig_P8;  ///< pressure compensation value
-        int16_t dig_P9;  ///< pressure compensation value
+    uint16_t dig_P1; ///< pressure compensation value
+    int16_t dig_P2;  ///< pressure compensation value
+    int16_t dig_P3;  ///< pressure compensation value
+    int16_t dig_P4;  ///< pressure compensation value
+    int16_t dig_P5;  ///< pressure compensation value
+    int16_t dig_P6;  ///< pressure compensation value
+    int16_t dig_P7;  ///< pressure compensation value
+    int16_t dig_P8;  ///< pressure compensation value
+    int16_t dig_P9;  ///< pressure compensation value
 
-        uint8_t dig_H1; ///< humidity compensation value
-        int16_t dig_H2; ///< humidity compensation value
-        uint8_t dig_H3; ///< humidity compensation value
-        int16_t dig_H4; ///< humidity compensation value
-        int16_t dig_H5; ///< humidity compensation value
-        int8_t dig_H6;  ///< humidity compensation value
-    };
+    uint8_t dig_H1; ///< humidity compensation value
+    int16_t dig_H2; ///< humidity compensation value
+    uint8_t dig_H3; ///< humidity compensation value
+    int16_t dig_H4; ///< humidity compensation value
+    int16_t dig_H5; ///< humidity compensation value
+    int8_t dig_H6;  ///< humidity compensation value
 } bme280_calibration;
 
 
 /**
  * @brief sampling rates
  */
-enum bme280_sensor_sampling
+typedef enum
 {
     SAMPLING_NONE = 0b000,
     SAMPLING_X1   = 0b001,
@@ -104,34 +115,34 @@ enum bme280_sensor_sampling
     SAMPLING_X4   = 0b011,
     SAMPLING_X8   = 0b100,
     SAMPLING_X16  = 0b101
-};
+} bme280_sensor_sampling;
 
 /**
  * @brief power modes
  */
-enum sensor_mode
+typedef enum
 {
     MODE_SLEEP  = 0b00,
     MODE_FORCED = 0b01,
     MODE_NORMAL = 0b11
-};
+} bme280_sensor_mode;
 
 /**
  * @brief filter values
  */
-enum sensor_filter
+typedef enum
 {
     FILTER_OFF = 0b000,
     FILTER_X2  = 0b001,
     FILTER_X4  = 0b010,
     FILTER_X8  = 0b011,
     FILTER_X16 = 0b100
-};
+} bme280_sensor_filter;
 
 /**
  * @brief standby duration in ms
  */
-enum standby_duration
+typedef enum
 {
     STANDBY_MS_0_5  = 0b000,
     STANDBY_MS_10   = 0b110,
@@ -141,19 +152,65 @@ enum standby_duration
     STANDBY_MS_250  = 0b011,
     STANDBY_MS_500  = 0b100,
     STANDBY_MS_1000 = 0b101
-};
+} bme280_standby_duration;
+
+
+/**
+ * @brief BME280_REGISTER_CONFIG [0xF5] structure.
+ */
+typedef union
+{
+    struct
+    {
+        uint8_t spi3w_en : 1; ///< unused - don't set
+        uint8_t none : 1;     ///< unused - don't set
+        bme280_sensor_filter filter : 3; ///< filter settings
+        bme280_standby_duration t_sb : 3; ///< inactive duration (standby time) in normal mode
+    };
+    uint8_t reg;
+
+} config_reg;
+
+/**
+ * @brief BME280_REGISTER_CTRL_MEAS [0xF4] structure.
+ */
+typedef union
+{
+    struct
+    {
+        bme280_sensor_mode mode : 2; ///< device mode
+        bme280_sensor_sampling osrs_p : 3; ///< pressure oversampling
+        bme280_sensor_sampling osrs_t : 3; ///< temperature oversampling
+    };
+    uint8_t reg;
+
+} ctrl_meas_reg;
+
+/**
+ * @brief BME280_REGISTER_CTRL_HUM [oxF2] structure.
+ */
+typedef union
+{
+    struct
+    {
+        bme280_sensor_sampling osrs_h : 3; ///< pressure oversampling
+        uint8_t none : 5;                  ///< unused - don't set
+    };
+    uint8_t reg;
+
+} ctrl_hum_reg;
+
 
 /**
  * @brief BME280 dev object
  */
 typedef struct
 {
-    uint8_t i2c_addr; // I2C device address
+    bme280_intf_type intf; ///< Interface type
+    uint8_t i2c_addr;      ///< I2C device address
     bme280_calibration calib;
     float t_fine;
-    // Add to compensate temp readings and in turn to pressure and humidity readings
-    int32_t t_fine_adjust;
-    float altitude;
+    int32_t t_fine_adjust; ///< Add to compensate temp readings and in turn to pressure and humidity readings
     void* platform_dev;
 } bme280;
 
@@ -227,29 +284,20 @@ bool bme280_read_pressure(bme280 *const dev, float *pressure);
  */
 bool bme280_read_humidity(bme280 *const dev, float *humidity);
 
-
-/**
- * @brief return true if chip is busy reading cal data
- * @return true if reading calibration, false otherwise
- */
-bool bme280_is_reading_calibration(bme280 *const dev);
-
-/**
- * @brief Returns the pressure from the sensor
- * @return the pressure value (in Pascal) read from the device
- */
-
 /**
  * @brief Calculates the altitude (in meters) from the specified atmospheric
  *        pressure (in hPa), and sea-level pressure (in hPa).
- * @param  sea_level      Sea-level pressure in hPa
- * @return the altitude value read from the device
+ * @note  Equation taken from BMP180 datasheet (page 16).
+ * @param[in]  sea_level - Sea-level pressure in hPa
+ * @param[out] altitude  - The altitude value read from the device
+ * @return true on success, false on error
  */
-float bme280_read_altitude(bme280 *const dev, float sea_level);
+bool bme280_read_altitude(bme280 *const dev, const float sea_level_pressure, float *altitude);
 
 /**
  * @brief Calculates the pressure at sea level (in hPa) from the specified
  *        altitude (in meters), and atmospheric pressure (in hPa).
+ * @note  Equation taken from BMP180 datasheet (page 17):
  * @param  altitude      Altitude in meters
  * @param  atmospheric   Atmospheric pressure in hPa
  * @return the pressure at sea level (in hPa) from the specified altitude

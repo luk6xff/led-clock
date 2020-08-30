@@ -18,6 +18,8 @@
 typedef struct
 {
     I2C* i2c;
+    SPI* spi;
+    DigitalOut* spi_cs;
 } bme280_mbed;
 
 void bme280_mbed_init(bme280 *const dev, bme280_mbed* const mbed_dev);

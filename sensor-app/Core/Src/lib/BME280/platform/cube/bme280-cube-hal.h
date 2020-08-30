@@ -18,6 +18,9 @@
 typedef struct
 {
     I2C_HandleTypeDef* i2c;
+    SPI_HandleTypeDef* spi;
+    GPIO_TypeDef* spi_cs_port;
+    uint16_t      spi_cs_pin;
 } bme280_cube_hal;
 
 bool bme280_cube_hal_init(bme280 *const dev, bme280_cube_hal* const cube_hal_dev);
