@@ -54,7 +54,6 @@
 const char GatewayMsg[] = "Hello FROM LORA GATEWAY!";
 const char ClientMsg[] = "Hello FROM LORA CLIENT!";
 
-#define SENSOR_BME280
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -115,19 +114,6 @@ sx1278_cube_hal radio_cube_hal_dev =
 RadioEvents_t radio_events;
 sx1278 radio_dev;
 
-#ifndef SENSOR_BME280
-// BMP180 SENSOR
-bmp180 bmp180_dev =
-{
-	.i2c_addr = BMP180_DEFAULT_I2C_ADDRESS,
-	.oss = BMP180_OSS_NORMAL,
-	.altitude = 400, // Ubiad house 400 meters altitude compensation
-};
-bmp180_cube_hal bmp180_cube_hal_dev =
-{
-	.i2c = &hi2c1,
-};
-#else
 // BME280 SENSOR
 bme280 bme280_dev =
 {
@@ -140,7 +126,7 @@ bme280_cube_hal bme280_cube_hal_dev =
 {
 	.i2c = &hi2c1,
 };
-#endif
+
 // Last measured values
 static float temperature, pressure, humidity;
 /* USER CODE END 0 */
@@ -189,13 +175,6 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
       // Read data from the sensor
-#ifndef SENSOR_BME280
-      bmp180_read_data(&bmp180_dev, &temperature, &pressure);
-      dbg("> READ_DATA:\n\r");
-      sprintf(dbg_buf, "T:%d, P:%d", (int)temperature, (int)pressure);
-      dbg(dbg_buf);
-#else
-
       if (bme280_read_data(&bme280_dev, &temperature, &pressure, &humidity))
       {
           dbg("> READ_DATA:\n\r");
@@ -213,7 +192,6 @@ int main(void)
       sprintf(dbg_buf, "Altitude:%d, \n\r", (int)altitude);
       dbg(dbg_buf);
 
-#endif
       // Send result data
 //      sx1278_send(&radio_dev, (uint8_t*)ClientMsg, sizeof(ClientMsg));
 //      sx1278_delay_ms(RX_TIMEOUT_VALUE);
@@ -484,16 +462,7 @@ void on_tx_timeout(void)
 //-----------------------------------------------------------------------------
 static void sensors_init()
 {
-#ifndef SENSOR_BME280
-	// Set radio_dev
-	if (!bmp180_cube_hal_init(&bmp180_dev, &bmp180_cube_hal_dev))
-	{
-		dbg("Sensors init failed!\n\r");
-		Error_Handler();
-	}
-
-#else
-	// Set radio_dev
+	// Set sensors_dev
 	if (!bme280_cube_hal_init(&bme280_dev, &bme280_cube_hal_dev))
 	{
 		uint8_t id = bme280_sensor_id(&bme280_dev);
@@ -501,7 +470,6 @@ static void sensors_init()
 		dbg(dbg_buf);
 		Error_Handler();
 	}
-#endif
 }
 
 /* USER CODE END 4 */
