@@ -23,37 +23,37 @@
  *
  * @return temperature [C]
  */
-static int bmp180_read_raw_temperature(bmp180* const dev, int32_t* pUt);
+static int bmp180_read_raw_temperature(bmp180 *const dev, int32_t* pUt);
 
 /**
  * @brief Reads raw pressure value from the sensor
  *
  * @return pressure [hPa]
  */
-static int bmp180_read_raw_pressure(bmp180* const dev, int32_t* pUp);
+static int bmp180_read_raw_pressure(bmp180 *const dev, int32_t* pUp);
 
 /**
  * @brief Calculation of the temperature from the digital output
  */
-static float bmp180_calc_true_temperature(bmp180* const dev, int32_t ut);
+static float bmp180_calc_true_temperature(bmp180 *const dev, int32_t ut);
 
 /**
  * @brief Calculation of the pressure from the digital output
  */
-static float bmp180_calc_true_pressure(bmp180* const dev, int32_t up);
+static float bmp180_calc_true_pressure(bmp180 *const dev, int32_t up);
 
 
 //------------------------------------------------------------------------------
 // @brief FUNCTIONS DEFINITIONS
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void bmp180_init(bmp180* const dev)
+bool bmp180_init(bmp180 *const dev)
 {
-    bmp180_set_configuration(dev, dev->altitude, dev->oss);
+    return bmp180_set_configuration(dev, dev->altitude, dev->oss);
 }
 
 //------------------------------------------------------------------------------
-bool bmp180_set_configuration(bmp180* const dev, float altitude, bmp180_oversampling_t oss)
+bool bmp180_set_configuration(bmp180 *const dev, float altitude, bmp180_oversampling_t oss)
 {
     uint8_t data[22];
     int errors = 0;
@@ -95,11 +95,11 @@ bool bmp180_set_configuration(bmp180* const dev, float altitude, bmp180_oversamp
     dev->oss = 0;
 #endif // #ifdef BMP180_TEST_FORMULA
 
-    return errors ? 1 : 0;
+    return errors ? true : false;
 }
 
 //------------------------------------------------------------------------------
-bool bmp180_reset(bmp180* const dev)
+bool bmp180_reset(bmp180 *const dev)
 {
     uint8_t data;
     data = BMP180_REG_RESET;
@@ -118,7 +118,7 @@ bool bmp180_reset(bmp180* const dev)
 }
 
 //------------------------------------------------------------------------------
-bool bmp180_check_id(bmp180* const dev)
+bool bmp180_check_id(bmp180 *const dev)
 {
     uint8_t data[2];
     data[0] = BMP180_REG_CHIP_ID;
@@ -134,7 +134,7 @@ bool bmp180_check_id(bmp180* const dev)
 }
 
 //------------------------------------------------------------------------------
-bool bmp180_read_data(bmp180* const dev, float* temperature, float* pressure)
+bool bmp180_read_data(bmp180 *const dev, float *temperature, float *pressure)
 {
     if (!bmp180_get_temperature(dev, temperature) || !bmp180_get_pressure(dev, pressure))
     {
@@ -144,7 +144,7 @@ bool bmp180_read_data(bmp180* const dev, float* temperature, float* pressure)
 }
 
 //------------------------------------------------------------------------------
-bool bmp180_get_temperature(bmp180* const dev, float* temperature)
+bool bmp180_get_temperature(bmp180 *const dev, float *temperature)
 {
     int32_t t;
 
@@ -158,7 +158,7 @@ bool bmp180_get_temperature(bmp180* const dev, float* temperature)
 }
 
 //------------------------------------------------------------------------------
-bool bmp180_get_pressure(bmp180* const dev, float* pressure)
+bool bmp180_get_pressure(bmp180 *const dev, float *pressure)
 {
     int32_t p;
 
@@ -173,7 +173,7 @@ bool bmp180_get_pressure(bmp180* const dev, float* pressure)
 }
 
 //------------------------------------------------------------------------------
-int bmp180_read_raw_temperature(bmp180* const dev, int32_t* pUt)
+int bmp180_read_raw_temperature(bmp180 *const dev, int32_t* pUt)
 {
     int errors = 0;
     uint8_t data[2];
@@ -212,7 +212,7 @@ int bmp180_read_raw_temperature(bmp180* const dev, int32_t* pUt)
 }
 
 //------------------------------------------------------------------------------
-int bmp180_read_raw_pressure(bmp180* const dev, int32_t* pUp)
+int bmp180_read_raw_pressure(bmp180 *const dev, int32_t* pUp)
 {
     int errors = 0;
     uint8_t data[2];
@@ -272,7 +272,7 @@ int bmp180_read_raw_pressure(bmp180* const dev, int32_t* pUp)
 }
 
 //------------------------------------------------------------------------------
-float bmp180_calc_true_temperature(bmp180* const dev, int32_t ut)
+float bmp180_calc_true_temperature(bmp180 *const dev, int32_t ut)
 {
     int32_t t, x1, x2;
 
@@ -287,7 +287,7 @@ float bmp180_calc_true_temperature(bmp180* const dev, int32_t ut)
 }
 
 //------------------------------------------------------------------------------
-float bmp180_calc_true_pressure(bmp180* const dev, int32_t up)
+float bmp180_calc_true_pressure(bmp180 *const dev, int32_t up)
 {
     int32_t p, x1, x2, x3, b3, b6;
     uint32_t b4, b7;

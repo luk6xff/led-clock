@@ -20,8 +20,8 @@ typedef struct
     I2C_HandleTypeDef* i2c;
 } bmp180_cube_hal;
 
-void bmp180_cube_hal_init(bmp180* const dev, bmp180_cube_hal* const cube_hal_dev);
+bool bmp180_cube_hal_init(bmp180 *const dev, bmp180_cube_hal* const cube_hal_dev);
 
-void bmp180_cube_hal_deinit();
+bool bmp180_cube_hal_deinit();
 
 #endif // __BMP180_MBED_H__

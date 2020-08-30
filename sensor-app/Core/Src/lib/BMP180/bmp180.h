@@ -92,9 +92,9 @@ typedef struct
  * @brief Init function
  *
  * @param[in] dev - bmp180 device object
- *
+ * @return true on success, false on error
  */
-void bmp180_init(bmp180* const dev);
+bool bmp180_init(bmp180 *const dev);
 
 /**
  * @brief Set config params and read BMP180 calibration parameters
@@ -104,7 +104,7 @@ void bmp180_init(bmp180* const dev);
  * @param oss
  * @return true on success, false on error
  */
-bool bmp180_set_configuration(bmp180* const dev, float altitude, bmp180_oversampling_t oss);
+bool bmp180_set_configuration(bmp180 *const dev, float altitude, bmp180_oversampling_t oss);
 
 /**
  * @brief   Reset BMP180.
@@ -113,7 +113,7 @@ bool bmp180_set_configuration(bmp180* const dev, float altitude, bmp180_oversamp
  * @param[in] dev - bmp180 device object
  * @returns 0 if no errors, -1 if error.
  */
-bool bmp180_reset(bmp180* const dev);
+bool bmp180_reset(bmp180 *const dev);
 
 /**
  * @brief   Check ID.
@@ -122,7 +122,7 @@ bool bmp180_reset(bmp180* const dev);
  * @param[in] dev - bmp180 device object
  * @return true on success, false on error
  */
-bool bmp180_check_id(bmp180* const dev);
+bool bmp180_check_id(bmp180 *const dev);
 
 /**
  * @brief Read pressure and temperature from the BMP180.
@@ -132,7 +132,7 @@ bool bmp180_check_id(bmp180* const dev);
  * @param pressure [hPa]
  * @return true on success, false on error
  */
-bool bmp180_read_data(bmp180* const dev, float* temperature, float* pressure);
+bool bmp180_read_data(bmp180 *const dev, float *temperature, float *pressure);
 
 /**
  * @brief Get temperature from a previous measurement
@@ -141,7 +141,7 @@ bool bmp180_read_data(bmp180* const dev, float* temperature, float* pressure);
  * @param[out] temperature - temperature  value in [C]
  * @return true on success, false on error
  */
-bool bmp180_get_temperature(bmp180* const dev, float* temperature);
+bool bmp180_get_temperature(bmp180 *const dev, float *temperature);
 
 /**
  * @brief Get pressure from a previous measurement
@@ -150,7 +150,7 @@ bool bmp180_get_temperature(bmp180* const dev, float* temperature);
  * @param[out] pressure - pressure value in [hPa]
  * @return true on success, false on error
  */
-bool bmp180_get_pressure(bmp180* const dev, float* pressure);
+bool bmp180_get_pressure(bmp180 *const dev, float *pressure);
 
 
 
@@ -165,7 +165,7 @@ bool bmp180_get_pressure(bmp180* const dev, float* pressure);
  * @param[in] buf_size - number of bytes to be written
  * @return return value = true on success, false on failure
  */
-extern bool bmp180_write(bmp180* const dev, const uint8_t* buf, const size_t buf_size);
+extern bool bmp180_write(bmp180 *const dev, const uint8_t* buf, const size_t buf_size);
 
 /**
  * @brief Read data via I2C from BMP180 registers
@@ -175,7 +175,7 @@ extern bool bmp180_write(bmp180* const dev, const uint8_t* buf, const size_t buf
  * @param[in] buf_size - number of bytes to be read
  * @return return value = true on success, false on failure
  */
-extern bool bmp180_read(bmp180* const dev, uint8_t* buf, const size_t buf_size);
+extern bool bmp180_read(bmp180 *const dev, uint8_t* buf, const size_t buf_size);
 
 /**
  * @brief Miliseconds delay function.

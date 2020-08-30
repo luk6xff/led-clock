@@ -148,8 +148,11 @@ enum standby_duration
  */
 typedef struct
 {
-    uint8_t i2c_addr; // i2c device address
+    uint8_t i2c_addr; // I2C device address
     bme280_calibration calib;
+    float t_fine;
+    // Add to compensate temp readings and in turn to pressure and humidity readings
+    int32_t t_fine_adjust;
     float altitude;
     void* platform_dev;
 } bme280;
@@ -159,109 +162,112 @@ typedef struct
  *
  * @param[in] dev - bme280 device object
  */
-bool bme280_init(bme280* const dev);
+bool bme280_init(bme280 *const dev);
 
 /**
  * @brief Set config params and read BME280 calibration parameters
  * @param[in] dev - bme280 device object
  * @param altitude (in meter)
  * @param oss
- * @returns 0 if no errors, 1 on error
+ * @return 0 if no errors, 1 on error
  */
-bool bme280_set_configuration(bme280* const dev);
+bool bme280_set_configuration(bme280 *const dev);
 
 /**
  * @brief Resets BME280.
  *
  * @details Performs a soft reset of the device. Same sequence as power on reset.
  * @param[in] dev - bme280 device object
- * @returns 0 if no errors, 1 on error
+ * @return 0 if no errors, 1 on error
  */
-bool bme280_reset(bme280* const dev);
+bool bme280_reset(bme280 *const dev);
 
 /**
  * @brief Returns sensor ID.
  *
  * @param[in] dev - bme280 device object
- * @returns Sensor ID 0x60 for BME280, 0x56, 0x57, 0x58 BMP280
+ * @return Sensor ID 0x60 for BME280, 0x56, 0x57, 0x58 BMP280
  */
-uint8_t bme280_sensor_id(bme280* const dev);
+uint8_t bme280_sensor_id(bme280 *const dev);
 
-// /**
-//  * @brief Read pressure and temperature from the BME280.
-//  *
-//  * @param[in] dev - bme280 device object
-//  * @param temperature [C]
-//  * @param pressure [hPa]
-//  * @return true on success, false on error
-//  */
-// bool bme280_read_data(bme280* const dev, float* temperature, float* pressure,  float* humidity);
+/**
+ * @brief Read pressure and temperature from the BME280.
+ *
+ * @param[in] dev - bme280 device object
+ * @param temperature [C]
+ * @param pressure [hPa]
+ * @param humidity [%]
+ * @return true on success, false on error
+ */
+bool bme280_read_data(bme280 *const dev, float *temperature, float *pressure,  float *humidity);
 
 /**
  * @brief Returns the temperature from the sensor
  *
  * @param[in] dev - bme280 device object
  * @param[out] temperature - temperature  value in [C]
- * @return 0 on success, 1 on error
+ * @return true on success, false on error
  */
-bool bme280_read_temperature(bme280* const dev, float* temperature);
+bool bme280_read_temperature(bme280 *const dev, float *temperature);
 
 /**
  * @brief Returns the pressure from the sensor
  *
  * @param[in] dev - bme280 device object
  * @param[out] pressure - pressure value in Pascal [Pa]
- * @return 0 on success, 1 on error
+ * @return true on success, false on error
  */
-bool bme280_read_pressure(bme280* const dev, float* pressure);
+bool bme280_read_pressure(bme280 *const dev, float *pressure);
 
-/*!
- *  @brief  Returns the humidity from the sensor
- *  @return 0 on success, 1 on error
+/**
+ * @brief  Returns the humidity from the sensor
+ *
+ * @param[out] pressure - pressure value in [%]
+ * @return true on success, false on error
  */
-bool read_humidity(bme280* const dev, float* humidity);
+bool bme280_read_humidity(bme280 *const dev, float *humidity);
 
 
 /**
  * @brief return true if chip is busy reading cal data
- * @returns true if reading calibration, false otherwise
+ * @return true if reading calibration, false otherwise
  */
-bool bme280_is_reading_calibration(bme280* const dev);
+bool bme280_is_reading_calibration(bme280 *const dev);
 
-/*!
- *   @brief  Returns the pressure from the sensor
- *   @returns the pressure value (in Pascal) read from the device
+/**
+ * @brief Returns the pressure from the sensor
+ * @return the pressure value (in Pascal) read from the device
  */
 
-/*!
- *   Calculates the altitude (in meters) from the specified atmospheric
- *   pressure (in hPa), and sea-level pressure (in hPa).
- *   @param  seaLevel      Sea-level pressure in hPa
- *   @returns the altitude value read from the device
+/**
+ * @brief Calculates the altitude (in meters) from the specified atmospheric
+ *        pressure (in hPa), and sea-level pressure (in hPa).
+ * @param  sea_level      Sea-level pressure in hPa
+ * @return the altitude value read from the device
  */
-float bme280_read_altitude(bme280* const dev, float seaLevel);
+float bme280_read_altitude(bme280 *const dev, float sea_level);
 
-/*!
- *   Calculates the pressure at sea level (in hPa) from the specified
- * altitude (in meters), and atmospheric pressure (in hPa).
- *   @param  altitude      Altitude in meters
- *   @param  atmospheric   Atmospheric pressure in hPa
- *   @returns the pressure at sea level (in hPa) from the specified altitude
+/**
+ * @brief Calculates the pressure at sea level (in hPa) from the specified
+ *        altitude (in meters), and atmospheric pressure (in hPa).
+ * @param  altitude      Altitude in meters
+ * @param  atmospheric   Atmospheric pressure in hPa
+ * @return the pressure at sea level (in hPa) from the specified altitude
  */
-float bme280_sea_level_for_altitude(bme280* const dev, float altitude, float atmospheric);
+float bme280_sea_level_for_altitude(float altitude, float atmospheric);
 
-/*!
- *   Returns the current temperature compensation value in degrees Celcius
- *   @returns the current temperature compensation value in degrees Celcius
+/**
+ * @brief Returns the current temperature compensation value in degrees Celcius
+ * @return the current temperature compensation value in degrees Celcius
  */
-float bme280_get_temperature_compensation(bme280* const dev);
+float bme280_get_temperature_compensation(bme280 *const dev);
 
-/*!
- *  Sets a value to be added to each temperature reading. This adjusted
- *  temperature is used in pressure and humidity readings.
- *  @param  adjustment  Value to be added to each tempature reading in Celcius
+/**
+ * @brief Sets a value to be added to each temperature reading. This adjusted
+ *        temperature is used in pressure and humidity readings.
+ * @param adjustment  Value to be added to each tempature reading in Celcius
  */
-void bme280_set_temperature_compensation(bme280* const dev, float adjustment);
+void bme280_set_temperature_compensation(bme280 *const dev, float adjustment);
 
 
 //-----------------------------------------------------------------------------
@@ -275,7 +281,7 @@ void bme280_set_temperature_compensation(bme280* const dev, float adjustment);
  * @param[in] buf_size - number of bytes to be written
  * @return return value = true on success, false on failure
  */
-extern bool bme280_write(bme280* const dev, const uint8_t* buf, const size_t buf_size);
+extern bool bme280_write(bme280 *const dev, const uint8_t* buf, const size_t buf_size);
 
 /**
  * @brief Read data via I2C from BME280 registers
@@ -285,7 +291,7 @@ extern bool bme280_write(bme280* const dev, const uint8_t* buf, const size_t buf
  * @param[in] buf_size - number of bytes to be read
  * @return return value = true on success, false on failure
  */
-extern bool bme280_read(bme280* const dev, uint8_t* buf, const size_t buf_size);
+extern bool bme280_read(bme280 *const dev, uint8_t* buf, const size_t buf_size);
 
 /**
  * @brief Miliseconds delay function.

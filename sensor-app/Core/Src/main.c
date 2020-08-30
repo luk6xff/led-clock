@@ -24,7 +24,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <sx1278-cube-hal.h>
-#include "lib/BMP180/platform/cube/bmp180-cube-hal.h"
+//#include "lib/BMP180/platform/cube/bmp180-cube-hal.h"
+#include "lib/BME280/platform/cube/bme280-cube-hal.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,6 +53,8 @@
 
 const char GatewayMsg[] = "Hello FROM LORA GATEWAY!";
 const char ClientMsg[] = "Hello FROM LORA CLIENT!";
+
+#define SENSOR_BME280
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -67,7 +70,7 @@ SPI_HandleTypeDef hspi1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-char dbg_buf[20];
+char dbg_buf[32];
 static void dbg(const char* msg)
 {
 	/* Place your implementation of fputc here */
@@ -112,6 +115,7 @@ sx1278_cube_hal radio_cube_hal_dev =
 RadioEvents_t radio_events;
 sx1278 radio_dev;
 
+#ifndef SENSOR_BME280
 // BMP180 SENSOR
 bmp180 bmp180_dev =
 {
@@ -123,6 +127,20 @@ bmp180_cube_hal bmp180_cube_hal_dev =
 {
 	.i2c = &hi2c1,
 };
+#else
+// BME280 SENSOR
+bme280 bme280_dev =
+{
+	.i2c_addr = BME280_DEFAULT_I2C_ADDRESS,
+	.t_fine_adjust = 0,
+	.altitude = 400, // Ubiad house 400 meters altitude compensation
+};
+bme280_cube_hal bme280_cube_hal_dev =
+{
+	.i2c = &hi2c1,
+};
+#endif
+// Last measured values
 static float temperature, pressure, humidity;
 /* USER CODE END 0 */
 
@@ -169,15 +187,23 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-      // Read data
+      // Read data from the sensor
+#ifndef SENSOR_BME280
       bmp180_read_data(&bmp180_dev, &temperature, &pressure);
-      dbg("> Data sent to the client\n\r");
+      dbg("> READ_DATA:\n\r");
       sprintf(dbg_buf, "T:%d, P:%d", (int)temperature, (int)pressure);
       dbg(dbg_buf);
+#else
+
+      bme280_read_data(&bme280_dev, &temperature, &pressure, &humidity);
+      dbg("> READ_DATA:\n\r");
+      sprintf(dbg_buf, "T:%d, P:%d, H:%d\n\r", (int)temperature, (int)pressure, (int)humidity);
+      dbg(dbg_buf);
+#endif
       // Send result data
       sx1278_send(&radio_dev, (uint8_t*)ClientMsg, sizeof(ClientMsg));
       sx1278_delay_ms(RX_TIMEOUT_VALUE);
-      dbg("> Data sent to the client\n\r");
+      dbg("> DATA_SENT\n\r");
   }
   /* USER CODE END 3 */
 }
@@ -420,7 +446,7 @@ static void radio_init()
 	    dbg("SX1278 cannot be detected!");
 	    sx1278_delay_ms(1000);
 	}
-	sprintf(dbg_buf, "REG_VERSION: 0x%x", sx1278_read(&radio_dev, REG_VERSION));
+	sprintf(dbg_buf, "SX1278_REG_VER: 0x%x", sx1278_read(&radio_dev, REG_VERSION));
 	dbg(dbg_buf);
 
 	sx1278_set_max_payload_length(&radio_dev, MODEM_LORA, MAX_PAYLOAD_LENGTH);
@@ -446,8 +472,24 @@ void on_tx_timeout(void)
 //-----------------------------------------------------------------------------
 static void sensors_init()
 {
+#ifndef SENSOR_BME280
 	// Set radio_dev
-	bmp180_cube_hal_init(&bmp180_dev, &bmp180_cube_hal_dev);
+	if (!bmp180_cube_hal_init(&bmp180_dev, &bmp180_cube_hal_dev))
+	{
+		dbg("Sensors init failed!\n\r");
+		Error_Handler();
+	}
+
+#else
+	// Set radio_dev
+	if (!bme280_cube_hal_init(&bme280_dev, &bme280_cube_hal_dev))
+	{
+		uint8_t id = bme280_sensor_id(&bme280_dev);
+	    sprintf(dbg_buf, "Sensors init failed!, id:%d\n\r", id);
+		dbg(dbg_buf);
+		Error_Handler();
+	}
+#endif
 }
 
 /* USER CODE END 4 */
@@ -460,7 +502,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+  while(1);
   /* USER CODE END Error_Handler_Debug */
 }
 

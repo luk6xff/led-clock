@@ -20,7 +20,7 @@ typedef struct
     I2C* i2c;
 } bme280_mbed;
 
-void bme280_mbed_init(bme280* const dev, bme280_mbed* const mbed_dev);
+void bme280_mbed_init(bme280 *const dev, bme280_mbed* const mbed_dev);
 
 void bme280_mbed_deinit();
 

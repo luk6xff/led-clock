@@ -9,20 +9,21 @@
 #include "bme280-cube-hal.h"
 
 //------------------------------------------------------------------------------
-void bme280_cube_hal_init(bme280* const dev, bme280_cube_hal* const cube_hal_dev)
+bool bme280_cube_hal_init(bme280 *const dev, bme280_cube_hal* const cube_hal_dev)
 {
     dev->platform_dev = cube_hal_dev;
-    bme280_init(dev);
+    return bme280_init(dev);
 }
 
 //------------------------------------------------------------------------------
-void bme280_cube_hal_deinit(void)
+bool bme280_cube_hal_deinit(void)
 {
     // Empty
+    return true;
 }
 
 //-----------------------------------------------------------------------------
-bool bme280_write(bme280* const dev, const uint8_t* buf, const size_t buf_size)
+bool bme280_write(bme280 *const dev, const uint8_t* buf, const size_t buf_size)
 {
     bme280_cube_hal* const pd = (bme280_cube_hal*)dev->platform_dev;
     HAL_StatusTypeDef status = HAL_I2C_Master_Transmit(pd->i2c, dev->i2c_addr, buf, buf_size, 1000);
@@ -34,7 +35,7 @@ bool bme280_write(bme280* const dev, const uint8_t* buf, const size_t buf_size)
 }
 
 //-----------------------------------------------------------------------------
-bool bme280_read(bme280* const dev, uint8_t* buf, const size_t buf_size)
+bool bme280_read(bme280 *const dev, uint8_t* buf, const size_t buf_size)
 {
     bme280_cube_hal* const pd = (bme280_cube_hal*)dev->platform_dev;
     HAL_StatusTypeDef status = HAL_I2C_Master_Receive(pd->i2c, dev->i2c_addr, buf, buf_size, 1000);

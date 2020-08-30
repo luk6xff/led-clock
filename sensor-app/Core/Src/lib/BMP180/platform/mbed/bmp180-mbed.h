@@ -20,7 +20,7 @@ typedef struct
     I2C* i2c;
 } bmp180_mbed;
 
-void bmp180_mbed_init(bmp180* const dev, bmp180_mbed* const mbed_dev);
+void bmp180_mbed_init(bmp180 *const dev, bmp180_mbed* const mbed_dev);
 
 void bmp180_mbed_deinit();
 

@@ -20,8 +20,8 @@ typedef struct
     I2C_HandleTypeDef* i2c;
 } bme280_cube_hal;
 
-void bme280_cube_hal_init(bme280* const dev, bme280_cube_hal* const cube_hal_dev);
+bool bme280_cube_hal_init(bme280 *const dev, bme280_cube_hal* const cube_hal_dev);
 
-void bme280_cube_hal_deinit();
+bool bme280_cube_hal_deinit();
 
 #endif // __BME280_MBED_H__
