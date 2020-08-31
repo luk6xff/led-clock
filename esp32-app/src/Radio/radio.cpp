@@ -18,10 +18,58 @@
 #define RX_TIMEOUT_VALUE                            8000      // in ms
 #define MAX_PAYLOAD_LENGTH                          60        // bytes
 
-const char GatewayMsg[] = "Hello FROM LORA GATEWAY!";
-const char ClientMsg[] = "Hello FROM LORA CLIENT!";
+/**
+ * @brief Radio Msg frame status field description
+ */
+typedef enum
+{
+	MSG_NO_ERROR   = 1<<0,
+	MSG_READ_ERROR = 1<<1,
+	MSG_INIT_ERROR = 1<<2,
+	MSG_BATT_LOW   = 1<<3,
+} radio_msg_frame_status;
 
+/**
+ * @brief Radio Msg frame footprint, sent to the clock
+ */
+typedef struct
+{
+	uint8_t hdr[3];
+	uint8_t status;
+	float temperature;
+	float pressure;
+	float humidity;
+	float altitude;
+	uint16_t checksum;
+} radio_msg_frame;
 
+//------------------------------------------------------------------------------
+uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len)
+{
+    uint8_t i;
+    uint16_t sum = 0;
+
+    for (i = 0; i < data_len; i++)
+    {
+        sum = sum ^ data[i];
+    }
+    return sum;
+}
+
+//------------------------------------------------------------------------------
+static void parse_incoming_msg(uint8_t *payload, uint16_t size)
+{
+    const radio_msg_frame *mf = (const radio_msg_frame *)payload;
+    const uint16_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_frame)-sizeof(radio_msg_frame::checksum)));
+    if (mf->checksum != checksum)
+    {
+        Serial.printf("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x\n\r", mf->checksum, checksum);
+        return;
+    }
+    Serial.printf("T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%], A:%3.1f[m]\n\r", mf->temperature, mf->pressure, mf->humidity, mf->altitude);
+}
+
+//------------------------------------------------------------------------------
 // A nice way to register class member function as "C" callback
 #include <functional>
 
@@ -131,6 +179,7 @@ void Radio::on_rx_done(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr
     Serial.printf("> RssiValue: %d\n\r", rssi);
     Serial.printf("> SnrValue: %d\n\r", snr);
     Serial.printf("> PAYLOAD: %s\n\r", payload);
+    parse_incoming_msg(payload, size);
 }
 
 //-----------------------------------------------------------------------------

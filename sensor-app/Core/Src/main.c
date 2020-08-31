@@ -39,7 +39,7 @@ typedef enum
 	MSG_READ_ERROR = 1<<1,
 	MSG_INIT_ERROR = 1<<2,
 	MSG_BATT_LOW   = 1<<3,
-} msg_frame_status;
+} radio_msg_frame_status;
 /**
  * @brief Msg frame footprint, sent to the clock
  */
@@ -52,7 +52,7 @@ typedef struct
 	float humidity;
 	float altitude;
 	uint16_t checksum;
-} msg_frame;
+} radio_msg_frame;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -105,7 +105,7 @@ static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-uint16_t checksum(const uint8_t *data, const uint8_t data_len);
+uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len);
 static void radio_init();
 static void sensors_init();
 void on_tx_done(void);
@@ -152,7 +152,7 @@ bme280_cube_hal bme280_cube_hal_dev =
 static float temperature, pressure, humidity, altitude;
 
 // Msg frame
-static msg_frame msgf =
+static radio_msg_frame msgf =
 {
 	.hdr = {'L','U','6'},
 };
@@ -219,7 +219,7 @@ int main(void)
       msgf.pressure = pressure;
       msgf.humidity = humidity;
       msgf.altitude = altitude;;
-      msgf.checksum = checksum((const uint8_t*)&msgf, (sizeof(msgf)-sizeof(msgf.checksum)));
+      msgf.checksum = radio_msg_frame_checksum((const uint8_t*)&msgf, (sizeof(msgf)-sizeof(msgf.checksum)));
       // Send result data
       sx1278_send(&radio_dev, (uint8_t*)&msgf, sizeof(msgf));
       sx1278_delay_ms(RX_TIMEOUT_VALUE);
@@ -499,16 +499,16 @@ static void sensors_init()
 }
 
 //-----------------------------------------------------------------------------
-uint16_t checksum(const uint8_t *data, const uint8_t data_len)
+uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len)
 {
     uint8_t i;
-    uint16_t xor = 0;
+    uint16_t sum = 0;
 
     for (i = 0; i < data_len; i++)
     {
-        xor = xor ^ data[i];
+    	sum = sum ^ data[i];
     }
-    return xor;
+    return sum;
 }
 
 /* USER CODE END 4 */
