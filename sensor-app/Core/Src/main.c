@@ -24,17 +24,40 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <sx1278-cube-hal.h>
-//#include "lib/BMP180/platform/cube/bmp180-cube-hal.h"
 #include "lib/BME280/platform/cube/bme280-cube-hal.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+/**
+ * @brief Msg frame status field description
+ */
+typedef enum
+{
+	MSG_NO_ERROR   = 1<<0,
+	MSG_READ_ERROR = 1<<1,
+	MSG_INIT_ERROR = 1<<2,
+	MSG_BATT_LOW   = 1<<3,
+} msg_frame_status;
+/**
+ * @brief Msg frame footprint, sent to the clock
+ */
+typedef struct
+{
+	uint8_t hdr[3];
+	uint8_t status;
+	float temperature;
+	float pressure;
+	float humidity;
+	float altitude;
+	uint16_t checksum;
+} msg_frame;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 // Radio LORA settings
 #define RF_FREQUENCY                                RF_FREQUENCY_434_0
 #define TX_OUTPUT_POWER                             14        // dBm
@@ -50,9 +73,6 @@
 #define LORA_CRC_ENABLED                            true
 #define RX_TIMEOUT_VALUE                            8000      // in ms
 #define MAX_PAYLOAD_LENGTH                          60        // bytes
-
-const char GatewayMsg[] = "Hello FROM LORA GATEWAY!";
-const char ClientMsg[] = "Hello FROM LORA CLIENT!";
 
 /* USER CODE END PD */
 
@@ -85,6 +105,7 @@ static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
+uint16_t checksum(const uint8_t *data, const uint8_t data_len);
 static void radio_init();
 static void sensors_init();
 void on_tx_done(void);
@@ -98,7 +119,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == SX1278_DIO0_Pin)
 	{
-		dbg("EXT");
+		dbg("EXT\n");
 	}
 }
 
@@ -128,7 +149,13 @@ bme280_cube_hal bme280_cube_hal_dev =
 };
 
 // Last measured values
-static float temperature, pressure, humidity;
+static float temperature, pressure, humidity, altitude;
+
+// Msg frame
+static msg_frame msgf =
+{
+	.hdr = {'L','U','6'},
+};
 /* USER CODE END 0 */
 
 /**
@@ -163,7 +190,7 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-//  radio_init();
+  radio_init();
   sensors_init();
   /* USER CODE END 2 */
 
@@ -177,25 +204,26 @@ int main(void)
       // Read data from the sensor
       if (bme280_read_data(&bme280_dev, &temperature, &pressure, &humidity))
       {
-          dbg("> READ_DATA:\n\r");
-          sprintf(dbg_buf, "T:%d, P:%d, H:%d\n\r", (int)temperature, (int)pressure, (int)humidity);
+          dbg("RD_D\n\r");
+          // bme280_read_altitude(&bme280_dev, SEA_LEVEL_PRESSURE_HPA, &altitude);
+          sprintf(dbg_buf, "T:%d, P:%d, H:%d, A:%d\n\r", (int)temperature, (int)pressure, (int)humidity, (int)altitude);
           dbg(dbg_buf);
+          msgf.status = MSG_NO_ERROR;
       }
       else
       {
-          dbg("> READ_DATA_FAILED\n\r");
-          sprintf(dbg_buf, "T:%d, P:%d, H:%d\n\r", (int)temperature, (int)pressure, (int)humidity);
-          dbg(dbg_buf);
+          dbg("RD_F\n");
+          msgf.status = MSG_READ_ERROR;
       }
-      float altitude;
-      bme280_read_altitude(&bme280_dev, SEA_LEVEL_PRESSURE_HPA, &altitude);
-      sprintf(dbg_buf, "Altitude:%d, \n\r", (int)altitude);
-      dbg(dbg_buf);
-
+      msgf.temperature = temperature;
+      msgf.pressure = pressure;
+      msgf.humidity = humidity;
+      msgf.altitude = altitude;;
+      msgf.checksum = checksum((const uint8_t*)&msgf, (sizeof(msgf)-sizeof(msgf.checksum)));
       // Send result data
-//      sx1278_send(&radio_dev, (uint8_t*)ClientMsg, sizeof(ClientMsg));
-//      sx1278_delay_ms(RX_TIMEOUT_VALUE);
-      //dbg("> DATA_SENT\n\r");
+      sx1278_send(&radio_dev, (uint8_t*)&msgf, sizeof(msgf));
+      sx1278_delay_ms(RX_TIMEOUT_VALUE);
+      dbg("DT_S\n\r");
   }
   /* USER CODE END 3 */
 }
@@ -435,7 +463,7 @@ static void radio_init()
 	// Verify if SX1278 connected to the the board
 	while (sx1278_read(&radio_dev, REG_VERSION) != 0x12)
 	{
-	    dbg("SX1278 cannot be detected!");
+	    dbg("RD_N\n");
 	    sx1278_delay_ms(1000);
 	}
 
@@ -450,13 +478,13 @@ static void radio_init()
 
 void on_tx_done(void)
 {
-    dbg("> on_tx_done\n\r");
+    dbg("OT_D\n\r");
 }
 
 //-----------------------------------------------------------------------------
 void on_tx_timeout(void)
 {
-    dbg("> on_tx_timeout\n\r");
+    dbg("OT_T\n\r");
 }
 
 //-----------------------------------------------------------------------------
@@ -465,11 +493,22 @@ static void sensors_init()
 	// Set sensors_dev
 	if (!bme280_cube_hal_init(&bme280_dev, &bme280_cube_hal_dev))
 	{
-		uint8_t id = bme280_sensor_id(&bme280_dev);
-		sprintf(dbg_buf, "Sensors init failed!, id:%d\n\r", id);
-		dbg(dbg_buf);
+		dbg("SI_F\n\r");
 		Error_Handler();
 	}
+}
+
+//-----------------------------------------------------------------------------
+uint16_t checksum(const uint8_t *data, const uint8_t data_len)
+{
+    uint8_t i;
+    uint16_t xor = 0;
+
+    for (i = 0; i < data_len; i++)
+    {
+        xor = xor ^ data[i];
+    }
+    return xor;
 }
 
 /* USER CODE END 4 */
