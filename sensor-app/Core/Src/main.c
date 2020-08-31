@@ -204,7 +204,6 @@ int main(void)
       // Read data from the sensor
       if (bme280_read_data(&bme280_dev, &temperature, &pressure, &humidity))
       {
-          dbg("RD_D\n\r");
           // bme280_read_altitude(&bme280_dev, SEA_LEVEL_PRESSURE_HPA, &altitude);
           sprintf(dbg_buf, "T:%d, P:%d, H:%d, A:%d\n\r", (int)temperature, (int)pressure, (int)humidity, (int)altitude);
           dbg(dbg_buf);

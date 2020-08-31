@@ -66,7 +66,24 @@ static void parse_incoming_msg(uint8_t *payload, uint16_t size)
         Serial.printf("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x\n\r", mf->checksum, checksum);
         return;
     }
-    Serial.printf("T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%], A:%3.1f[m]\n\r", mf->temperature, mf->pressure, mf->humidity, mf->altitude);
+
+    if (~(mf->status & MSG_NO_ERROR))
+    {
+        Serial.printf("MSG_NO_ERROR\n\r");
+        Serial.printf("T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%], A:%3.1f[m]\n\r", mf->temperature, mf->pressure, mf->humidity, mf->altitude);
+    }
+	else if (mf->status & MSG_READ_ERROR)
+    {
+        Serial.printf("MSG_READ_ERROR\n\r");
+    }
+	else if (mf->status & MSG_INIT_ERROR)
+    {
+        Serial.printf("MSG_INIT_ERROR\n\r");
+    }
+	if (mf->status & MSG_BATT_LOW)
+    {
+        Serial.printf("MSG_BATT_LOW\n\r");
+    }
 }
 
 //------------------------------------------------------------------------------
