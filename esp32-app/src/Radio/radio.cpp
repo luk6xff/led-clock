@@ -40,7 +40,7 @@ typedef struct
 	float pressure;
 	float humidity;
 	float altitude;
-	uint16_t checksum;
+	uint32_t checksum;
 } radio_msg_frame;
 
 //------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len)
 static void parse_incoming_msg(uint8_t *payload, uint16_t size)
 {
     const radio_msg_frame *mf = (const radio_msg_frame *)payload;
-    const uint16_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_frame)-sizeof(radio_msg_frame::checksum)));
+    const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_frame)-sizeof(mf->checksum)));
     if (mf->checksum != checksum)
     {
         Serial.printf("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x\n\r", mf->checksum, checksum);

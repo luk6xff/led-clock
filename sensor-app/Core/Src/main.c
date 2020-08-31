@@ -51,7 +51,7 @@ typedef struct
 	float pressure;
 	float humidity;
 	float altitude;
-	uint16_t checksum;
+	uint32_t checksum;
 } radio_msg_frame;
 /* USER CODE END PTD */
 
@@ -200,7 +200,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+      /* USER CODE BEGIN 3 */
       // Read data from the sensor
       if (bme280_read_data(&bme280_dev, &temperature, &pressure, &humidity))
       {
@@ -222,8 +222,8 @@ int main(void)
       msgf.checksum = radio_msg_frame_checksum((const uint8_t*)&msgf, (sizeof(msgf)-sizeof(msgf.checksum)));
       // Send result data
       sx1278_send(&radio_dev, (uint8_t*)&msgf, sizeof(msgf));
-      sx1278_delay_ms(RX_TIMEOUT_VALUE);
       dbg("DT_S\n\r");
+      sx1278_delay_ms(RX_TIMEOUT_VALUE);
   }
   /* USER CODE END 3 */
 }
