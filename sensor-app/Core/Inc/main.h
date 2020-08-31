@@ -58,6 +58,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define SENSOR_VDD_Pin GPIO_PIN_1
+#define SENSOR_VDD_GPIO_Port GPIOA
 #define DBG_LPUART1_TX_Pin GPIO_PIN_2
 #define DBG_LPUART1_TX_GPIO_Port GPIOA
 #define SX1278_DIO0_Pin GPIO_PIN_3

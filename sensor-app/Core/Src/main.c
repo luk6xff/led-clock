@@ -71,7 +71,7 @@ typedef struct
 #define LORA_NB_SYMB_HOP                            4
 #define LORA_IQ_INVERSION_ON                        false
 #define LORA_CRC_ENABLED                            true
-#define RX_TIMEOUT_VALUE                            8000      // in ms
+#define RX_TIMEOUT_VALUE                            3000      // in ms
 #define MAX_PAYLOAD_LENGTH                          60        // bytes
 
 /* USER CODE END PD */
@@ -84,9 +84,13 @@ typedef struct
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
+RTC_HandleTypeDef hrtc;
+
 SPI_HandleTypeDef hspi1;
 
 UART_HandleTypeDef huart2;
+
+WWDG_HandleTypeDef hwwdg;
 
 /* USER CODE BEGIN PV */
 char dbg_buf[32];
@@ -104,10 +108,13 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_WWDG_Init(void);
+static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len);
 static void radio_init();
 static void sensors_init();
+static void standby_state_enter();
 void on_tx_done(void);
 void on_tx_timeout(void);
 
@@ -189,7 +196,18 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI1_Init();
   MX_USART2_UART_Init();
+  //MX_WWDG_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+  dbg("LUK6\n\r");
+
+  // Check and handle if the system was resumed from StandBy mode
+  if(__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
+  {
+    // Clear Standby flag
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
+  }
+
   radio_init();
   sensors_init();
   /* USER CODE END 2 */
@@ -200,7 +218,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-      /* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
       // Read data from the sensor
       if (bme280_read_data(&bme280_dev, &temperature, &pressure, &humidity))
       {
@@ -223,6 +241,18 @@ int main(void)
       sx1278_send(&radio_dev, (uint8_t*)&msgf, sizeof(msgf));
       dbg("DT_S\n\r");
       sx1278_delay_ms(RX_TIMEOUT_VALUE);
+      //standby_state_enter();
+      /**
+       * @note WWDG Watchdog init function done in wwdg.c (MX_WWDG_Init(void))
+       *	   Window time configured with following values:
+       * 	   (PCLK1 (1048000[Hz]) / 4096 / LL_WWDG_PRESCALER_8) = 31.99[Hz] (~30[ms])
+       * 	   WWDG Window value = 80 means that the WWDG counter should be refreshed only
+       *   	   when the counter is below 80 (and greater than 64) otherwise a reset will
+       *  	   be generated.
+       *  	   WWDG Downcounter value = 127, WWDG timeout = 30 ms * 64 = 1920[ms]
+       * 	   127 / 32 =~ 4[s]
+       */
+      //HAL_WWDG_Refresh(&hwwdg);
   }
   /* USER CODE END 3 */
 }
@@ -237,12 +267,13 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /** Configure the main internal regulator output voltage
+  /** Configure the main internal regulator output voltage 
   */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks
+  /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_MSI;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.MSIState = RCC_MSI_ON;
   RCC_OscInitStruct.MSICalibrationValue = 0;
   RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_4;
@@ -251,7 +282,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks
+  /** Initializes the CPU, AHB and APB busses clocks 
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -264,9 +295,11 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_I2C1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_I2C1
+                              |RCC_PERIPHCLK_RTC;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -301,13 +334,13 @@ static void MX_I2C1_Init(void)
   {
     Error_Handler();
   }
-  /** Configure Analogue filter
+  /** Configure Analogue filter 
   */
   if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     Error_Handler();
   }
-  /** Configure Digital filter
+  /** Configure Digital filter 
   */
   if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
   {
@@ -316,6 +349,47 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+  /** Initialize RTC Only 
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Enable the WakeUp 
+  */
+  if (HAL_RTCEx_SetWakeUpTimer(&hrtc, 0, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
 
 }
 
@@ -393,10 +467,40 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
+  * @brief WWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_WWDG_Init(void)
+{
+
+  /* USER CODE BEGIN WWDG_Init 0 */
+
+  /* USER CODE END WWDG_Init 0 */
+
+  /* USER CODE BEGIN WWDG_Init 1 */
+
+  /* USER CODE END WWDG_Init 1 */
+  hwwdg.Instance = WWDG;
+  hwwdg.Init.Prescaler = WWDG_PRESCALER_8;
+  hwwdg.Init.Window = 80;
+  hwwdg.Init.Counter = 127;
+  hwwdg.Init.EWIMode = WWDG_EWI_DISABLE;
+  if (HAL_WWDG_Init(&hwwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN WWDG_Init 2 */
+
+  /* USER CODE END WWDG_Init 2 */
+
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -405,6 +509,9 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SX1278_NSS_GPIO_Port, SX1278_NSS_Pin, GPIO_PIN_RESET);
@@ -418,10 +525,17 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA0 PA1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+  /*Configure GPIO pin : PA0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SENSOR_VDD_Pin SX1278_NSS_Pin */
+  GPIO_InitStruct.Pin = SENSOR_VDD_Pin|SX1278_NSS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SX1278_DIO0_Pin */
@@ -429,13 +543,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SX1278_DIO0_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : SX1278_NSS_Pin */
-  GPIO_InitStruct.Pin = SX1278_NSS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SX1278_NSS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SX1278_RESET_Pin */
   GPIO_InitStruct.Pin = SX1278_RESET_Pin;
@@ -498,6 +605,35 @@ static void sensors_init()
 }
 
 //-----------------------------------------------------------------------------
+static void standby_state_enter()
+{
+	// Put sensor and radio into sleep mode
+	sx1278_set_sleep(&radio_dev);
+	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_RESET);
+
+	// Enable Ultra low power mode */
+	HAL_PWREx_EnableUltraLowPower();
+
+	// Enable the fast wake up from Ultra low power mode
+	HAL_PWREx_EnableFastWakeUp();
+
+	// Disable all used wakeup sources
+	HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
+
+	// Clear all related wakeup flags
+	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+
+	// Disable All interrupts
+	__disable_irq();
+
+	// Setting the Wake up time
+	HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 10,  RTC_WAKEUPCLOCK_CK_SPRE_16BITS);
+
+	// Enter the Standby mode
+	HAL_PWR_EnterSTANDBYMode();
+}
+
+//-----------------------------------------------------------------------------
 uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len)
 {
     uint8_t i;
@@ -533,7 +669,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{
+{ 
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: dbg("Wrong parameters value: file %s on line %d\r\n", file, line) */
