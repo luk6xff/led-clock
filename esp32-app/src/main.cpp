@@ -1,12 +1,5 @@
-#include <stdio.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include <driver/gpio.h>
-#include "sdkconfig.h"
-#include <Arduino.h>
 
-#include "nvs_flash.h"
-#include "esp_event.h"
+
 
 #include <MD_MAX72xx.h>
 #include <MD_Parola.h>
@@ -52,7 +45,7 @@ void blink_task(void *pvParameter)
 //------------------------------------------------------------------------------
 void setup(void)
 {
-    Serial.begin(9600);
+
     // Create blink task
     xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
     pinMode(LED_BUILTIN, OUTPUT);
