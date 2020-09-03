@@ -30,6 +30,8 @@ Display::Display(const MAX72xxConfig& cfg)
 void Display::update()
 {
     m_mx.displayAnimate();
+    static int i = 0;
+    if (i++ % 100000 == 0)  // TODO
     processAutoIntensityLevelControl();
 }
 

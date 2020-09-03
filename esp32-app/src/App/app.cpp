@@ -61,7 +61,7 @@ App& App::instance()
 void App::setup()
 {
     Serial.begin(9600);
-    Serial.printf( "Starting ESP32-radio running on CPU %d at %d MHz.  Version %s.  Free memory %d",
+    Serial.printf( "\r\nStarting <LUK6XFF LED_CLOCK 2020> running on CPU %d at %d MHz.  Version %s.  Free memory %d\r\n",
                     xPortGetCoreID(),
                     ESP.getCpuFreqMHz(),
                     VERSION,
