@@ -1,6 +1,6 @@
 
 
-
+#include "App/app.h"
 #include <MD_MAX72xx.h>
 #include <MD_Parola.h>
 #include <SPI.h>
@@ -47,8 +47,10 @@ void setup(void)
 {
 
     // Create blink task
-    xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+    //xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
     pinMode(LED_BUILTIN, OUTPUT);
+
+    App::instance().setup();
     Serial.println("Hello!");
 }
 

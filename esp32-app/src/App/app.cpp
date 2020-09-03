@@ -51,7 +51,7 @@ App::App()
 }
 
 //------------------------------------------------------------------------------
-static App& instance()
+App& App::instance()
 {
     static App app;
     return app;

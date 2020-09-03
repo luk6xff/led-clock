@@ -70,7 +70,7 @@ void Display::processAutoIntensityLevelControl()
 
     // Measure light
     const float light_val = m_lightSensor.getIlluminace();
-    //Serial.printf("LIGHT_VALUE: %3.2f\r\n", light_val);
+    Serial.printf("LIGHT_VALUE: %3.2f\r\n", light_val);
     // Last display intensty level
     static uint8_t last_intensity_level = 0;
 
