@@ -24,7 +24,7 @@ typedef struct
  * @brief Initialize eeprom with MBED dependent parameters.
  *
  */
-void at24cxx_mbed_init(at24cxx* const dev, at24cxx_mbed* const mbed_dev);
+void at24cxx_mbed_init(at24cxx *const dev, at24cxx_mbed *const mbed_dev);
 
 /**
  * @brief Deinitalize eeprom.

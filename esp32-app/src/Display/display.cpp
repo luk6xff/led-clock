@@ -1,6 +1,7 @@
 
 #include "display.h"
 #include "fonts.h"
+#include "../App/utils.h"
 
 
 
@@ -30,8 +31,6 @@ Display::Display(const MAX72xxConfig& cfg)
 void Display::update()
 {
     m_mx.displayAnimate();
-    static int i = 0;
-    if (i++ % 100000 == 0)  // TODO
     processAutoIntensityLevelControl();
 }
 
@@ -71,25 +70,32 @@ void Display::processAutoIntensityLevelControl()
     }
 
     // Measure light
-    const float light_val = m_lightSensor.getIlluminace();
-    Serial.printf("LIGHT_VALUE: %3.2f\r\n", light_val);
+    const float lightVal = m_lightSensor.getIlluminance();
+    if (lightVal == -1)
+    {
+        err("LightSensor - Illuminance value error!");
+    }
     // Last display intensty level
-    static uint8_t last_intensity_level = 0;
+    static uint8_t lastIntensityLevel = 0;
 
     // Logarithmic level of sensor illuminance in lux [lx]
-    const uint8_t level[] = {0,1,2,4,6,8,9,10,11,12}; // 0 = low, 15 = high
-    const uint16_t max_light_illuminance = 1000;
+    const uint8_t level[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}; // 0 = low, 15 = high
+    const uint16_t maxLightIlluminance = 1000;
 
     // Calculate linear level
-    int l = (light_val  * sizeof(level)) / max_light_illuminance;
+    int l = (lightVal * sizeof(level)) / maxLightIlluminance;
 
     // Get logarithmic level
+    if (l >= sizeof(level))
+    {
+        l = sizeof(level) - 1;
+    }
     l = level[l];
 
-    if (last_intensity_level != l)
+    if (lastIntensityLevel != l)
     {
-        last_intensity_level = l;
-        setIntensityLevel(last_intensity_level);
+        lastIntensityLevel = l;
+        setIntensityLevel(lastIntensityLevel);
     }
 }
 

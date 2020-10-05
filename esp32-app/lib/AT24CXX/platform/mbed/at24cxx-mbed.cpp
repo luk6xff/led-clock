@@ -4,20 +4,20 @@
 
 
 //-----------------------------------------------------------------------------
-void at24cxx_mbed_init(at24cxx* const dev, at24cxx_mbed* const mbed_dev)
+void at24cxx_mbed_init(at24cxx *const dev, at24cxx_mbed *const mbed_dev)
 {
     dev->platform_dev = mbed_dev;
     at24cxx_init(dev);
 }
 
 //-----------------------------------------------------------------------------
-void at24cxx_mbed_deinit(at24cxx* const dev)
+void at24cxx_mbed_deinit(at24cxx *const dev)
 {
     at24cxx_io_deinit(dev);
 }
 
 //-----------------------------------------------------------------------------
-at24cxx_status at24cxx_io_init(at24cxx* const dev)
+at24cxx_status at24cxx_io_init(at24cxx *const dev)
 {
     at24cxx_mbed* pd = (at24cxx_mbed*)dev->platform_dev;
     // Set I2C frequency
@@ -26,15 +26,15 @@ at24cxx_status at24cxx_io_init(at24cxx* const dev)
 }
 
 //-----------------------------------------------------------------------------
-at24cxx_status at24cxx_io_deinit(at24cxx* const dev)
+at24cxx_status at24cxx_io_deinit(at24cxx *const dev)
 {
     // Empty
     return AT24CXX_NOERR;
 }
 
 //-----------------------------------------------------------------------------
-at24cxx_status at24cxx_write_buffer(const at24cxx* const dev, uint32_t addr,
-                                    const uint8_t* buf, size_t buf_size)
+at24cxx_status at24cxx_write_buffer(const at24cxx *const dev, uint32_t addr,
+                                    const uint8_t *buf, size_t buf_size)
 {
     // Check space
 	if (!at24cxx_check_space(dev, addr, buf_size))
@@ -42,7 +42,7 @@ at24cxx_status at24cxx_write_buffer(const at24cxx* const dev, uint32_t addr,
         return AT24CXX_OUT_OF_RANGE;
     }
 
-    const at24cxx_mbed* const pd = (at24cxx_mbed*)dev->platform_dev;
+    const at24cxx_mbed *const pd = (at24cxx_mbed*)dev->platform_dev;
     // uint8_t address[2];
     // address[0] = addr >> 8;
     // address[1] = addr;
@@ -67,10 +67,10 @@ at24cxx_status at24cxx_write_buffer(const at24cxx* const dev, uint32_t addr,
 }
 
 //-----------------------------------------------------------------------------
-at24cxx_status at24cxx_read_buffer(const at24cxx* const dev, uint32_t addr,
-                                   uint8_t* buf, size_t buf_size)
+at24cxx_status at24cxx_read_buffer(const at24cxx *const dev, uint32_t addr,
+                                   uint8_t *buf, size_t buf_size)
 {
-    const at24cxx_mbed* const pd = (at24cxx_mbed*)dev->platform_dev;
+    const at24cxx_mbed *const pd = (at24cxx_mbed*)dev->platform_dev;
     const uint8_t addr_len = 2; //at24cxx_devices[dev->type].word_addr_len;
     uint8_t address[addr_len];
     address[0] = addr >> 8;
@@ -92,7 +92,7 @@ at24cxx_status at24cxx_read_buffer(const at24cxx* const dev, uint32_t addr,
 }
 
 //-----------------------------------------------------------------------------
-void at24cxx_enable_wp(at24cxx* const dev, bool enable)
+void at24cxx_enable_wp(at24cxx *const dev, bool enable)
 {
     at24cxx_mbed* pd = (at24cxx_mbed*)dev->platform_dev;
     if (enable)

@@ -7,8 +7,6 @@
  */
 
 
-#define dbg(msg) App::dbgPrint(msg)
-
 class App
 {
 
@@ -18,12 +16,6 @@ public:
     static App& instance();
 
     void setup();
-
-    /**
-     * @brief Send a line of info to serial output.  Works like vsprintf(), but checks the DEBUG flag.
-     *        Print only if DEBUG flag is true.  Always returns the formatted string.
-     */
-    static char* dbgPrint(const char* format, ... );
 
 private:
 

@@ -36,8 +36,8 @@ typedef struct
  * @param  dev       SX1278 Device object pointer
  * @param  mbed_dev  Mbed device object pointer
  */
-void sx1278_mbed_init(sx1278* const dev, sx1278_mbed* const mbed_dev);
+void sx1278_mbed_init(sx1278 *const dev, sx1278_mbed *const mbed_dev);
 
-void sx1278_mbed_deinit(sx1278* const dev);
+void sx1278_mbed_deinit(sx1278 *const dev);
 
 #endif // __SX1278_MBED_H__

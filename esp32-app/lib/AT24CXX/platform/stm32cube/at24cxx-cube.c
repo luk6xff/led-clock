@@ -41,7 +41,7 @@ at24cxx_status at24cxx_io_deinit()
 }
 
 //-----------------------------------------------------------------------------
-at24cxx_status at24cxx_write_buffer(uint16_t addr, uint8_t* buf, size_t buf_size)
+at24cxx_status at24cxx_write_buffer(uint16_t addr, uint8_t *buf, size_t buf_size)
 {
     // Check space
 	if (!at24cxx_check_space(addr, buf_size))
@@ -58,7 +58,7 @@ at24cxx_status at24cxx_write_buffer(uint16_t addr, uint8_t* buf, size_t buf_size
 }
 
 //-----------------------------------------------------------------------------
-at24cxx_status at24cxx_read_buffer(uint16_t addr, uint8_t* buf, size_t buf_size)
+at24cxx_status at24cxx_read_buffer(uint16_t addr, uint8_t *buf, size_t buf_size)
 {
     int retVal = HAL_I2C_Master_Receive(_i2c, addr, buf, buf_size, 1000);
     if (retVal != 0)

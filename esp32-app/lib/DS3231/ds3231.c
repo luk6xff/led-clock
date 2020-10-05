@@ -30,14 +30,14 @@ static uint8_t bcd_2_uchar(uint8_t bcd);
 // @brief FUNCTIONS DEFINITIONS
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void ds3231_init(ds3231* const dev)
+void ds3231_init(ds3231 *const dev)
 {
     dev->w_addr = ((dev->i2c_addr << 1) | I2C_WRITE);
     dev->r_addr = ((dev->i2c_addr << 1) | I2C_READ);
 }
 
 //------------------------------------------------------------------------------
-uint16_t ds3231_set_time(ds3231* const dev, ds3231_time_t time)
+uint16_t ds3231_set_time(ds3231 *const dev, ds3231_time_t time)
 {
     uint8_t data[] = {0,0,0,0};
     uint8_t data_length = 0;
@@ -78,7 +78,7 @@ uint16_t ds3231_set_time(ds3231* const dev, ds3231_time_t time)
 }
 
 //------------------------------------------------------------------------------
-uint16_t ds3231_set_calendar(ds3231* const dev, ds3231_calendar_t calendar)
+uint16_t ds3231_set_calendar(ds3231 *const dev, ds3231_calendar_t calendar)
 {
     uint8_t data[] = {0,0,0,0,0};
     uint8_t data_length = 0;
@@ -105,7 +105,7 @@ uint16_t ds3231_set_calendar(ds3231* const dev, ds3231_calendar_t calendar)
 }
 
 //------------------------------------------------------------------------------
-uint16_t ds3231_set_alarm(ds3231* const dev, ds3231_alrm_t alarm, bool one_r_two)
+uint16_t ds3231_set_alarm(ds3231 *const dev, ds3231_alrm_t alarm, bool one_r_two)
 {
     uint8_t data[] = {0,0,0,0,0};
     uint8_t data_length = 0;
@@ -234,7 +234,7 @@ uint16_t ds3231_set_alarm(ds3231* const dev, ds3231_alrm_t alarm, bool one_r_two
 }
 
 //------------------------------------------------------------------------------
-uint16_t ds3231_set_cntl_stat_reg(ds3231* const dev, ds3231_cntl_stat_t data)
+uint16_t ds3231_set_cntl_stat_reg(ds3231 *const dev, ds3231_cntl_stat_t data)
 {
     uint8_t local_data[] = {0,0,0};
     uint8_t data_length = 0;
@@ -248,7 +248,7 @@ uint16_t ds3231_set_cntl_stat_reg(ds3231* const dev, ds3231_cntl_stat_t data)
 }
 
 //------------------------------------------------------------------------------
-uint16_t ds3231_get_time(ds3231* const dev, ds3231_time_t* time)
+uint16_t ds3231_get_time(ds3231 *const dev, ds3231_time_t* time)
 {
     uint16_t rtn_val = 1;
     uint8_t data[3];
@@ -279,7 +279,7 @@ uint16_t ds3231_get_time(ds3231* const dev, ds3231_time_t* time)
 }
 
 //------------------------------------------------------------------------------
-uint16_t ds3231_get_calendar(ds3231* const dev, ds3231_calendar_t* calendar)
+uint16_t ds3231_get_calendar(ds3231 *const dev, ds3231_calendar_t* calendar)
 {
     uint16_t rtn_val = 1;
     uint8_t data[4];
@@ -318,7 +318,7 @@ uint16_t ds3231_get_calendar(ds3231* const dev, ds3231_calendar_t* calendar)
 }
 
 //------------------------------------------------------------------------------
-uint16_t ds3231_get_alarm(ds3231* const dev, ds3231_alrm_t* alarm, bool one_r_two)
+uint16_t ds3231_get_alarm(ds3231 *const dev, ds3231_alrm_t* alarm, bool one_r_two)
 {
     uint16_t rtn_val = 1;
     uint8_t data[4];
@@ -402,7 +402,7 @@ uint16_t ds3231_get_alarm(ds3231* const dev, ds3231_alrm_t* alarm, bool one_r_tw
 }
 
 //------------------------------------------------------------------------------
-uint16_t ds3231_get_cntl_stat_reg(ds3231* const dev, ds3231_cntl_stat_t* data)
+uint16_t ds3231_get_cntl_stat_reg(ds3231 *const dev, ds3231_cntl_stat_t* data)
 {
     uint16_t rtn_val = 1;
     uint8_t local_data[2];
@@ -422,7 +422,7 @@ uint16_t ds3231_get_cntl_stat_reg(ds3231* const dev, ds3231_cntl_stat_t* data)
 }
 
 //------------------------------------------------------------------------------
-uint16_t ds3231_get_temperature(ds3231* const dev)
+uint16_t ds3231_get_temperature(ds3231 *const dev)
 {
     uint16_t rtn_val = 1;
     uint8_t data[2];
@@ -442,7 +442,7 @@ uint16_t ds3231_get_temperature(ds3231* const dev)
 }
 
 //------------------------------------------------------------------------------
-time_t ds3231_get_epoch(ds3231* const dev)
+time_t ds3231_get_epoch(ds3231 *const dev)
 {
     //system vars
     struct tm sys_time;

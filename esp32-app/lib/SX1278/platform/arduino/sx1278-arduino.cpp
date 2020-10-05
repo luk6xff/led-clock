@@ -18,7 +18,7 @@ TimeOut rx_timeout_syncword;
 
 
 //-----------------------------------------------------------------------------
-void sx1278_arduino_init(sx1278* const dev, sx1278_arduino* const arduino_dev)
+void sx1278_arduino_init(sx1278 *const dev, sx1278_arduino *const arduino_dev)
 
 {
     dev->platform_dev = arduino_dev;
@@ -26,7 +26,7 @@ void sx1278_arduino_init(sx1278* const dev, sx1278_arduino* const arduino_dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_arduino_deinit(sx1278* const dev)
+void sx1278_arduino_deinit(sx1278 *const dev)
 {
     // IO
     sx1278_io_deinit(dev);
@@ -37,10 +37,10 @@ void sx1278_arduino_deinit(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_io_init(sx1278* const dev)
+void sx1278_io_init(sx1278 *const dev)
 {
     // Get arduino platform data
-    sx1278_arduino* const pd = (sx1278_arduino*)dev->platform_dev;
+    sx1278_arduino *const pd = (sx1278_arduino*)dev->platform_dev;
     // Init SPI
     pd->spi_settings = SPISettings(8000000, MSBFIRST, SPI_MODE0);
     // Setup pins
@@ -53,17 +53,17 @@ void sx1278_io_init(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_io_deinit(sx1278* const dev)
+void sx1278_io_deinit(sx1278 *const dev)
 {
     // Empty
 }
 
 
 //-----------------------------------------------------------------------------
-void sx1278_ioirq_init(sx1278* const dev)
+void sx1278_ioirq_init(sx1278 *const dev)
 {
 
-    sx1278_arduino* const pd = (sx1278_arduino*)dev->platform_dev;
+    sx1278_arduino *const pd = (sx1278_arduino*)dev->platform_dev;
     if (dev->dio_irq == NULL)
     {
         // TODO print error here
@@ -84,9 +84,9 @@ void sx1278_ioirq_init(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_reset(sx1278* const dev)
+void sx1278_reset(sx1278 *const dev)
 {
-    sx1278_arduino* const pd = (sx1278_arduino*)dev->platform_dev;
+    sx1278_arduino *const pd = (sx1278_arduino*)dev->platform_dev;
 
     pinMode(pd->reset, OUTPUT);
     digitalWrite(pd->reset, LOW);
@@ -95,9 +95,9 @@ void sx1278_reset(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_write_buffer(sx1278* const dev, uint8_t addr, const uint8_t *buffer, const uint8_t size)
+void sx1278_write_buffer(sx1278 *const dev, uint8_t addr, const uint8_t *buffer, const uint8_t size)
 {
-    sx1278_arduino* const pd = (sx1278_arduino*)dev->platform_dev;
+    sx1278_arduino *const pd = (sx1278_arduino*)dev->platform_dev;
 
     digitalWrite(pd->nss, LOW);
     pd->spi->beginTransaction(pd->spi_settings);
@@ -108,9 +108,9 @@ void sx1278_write_buffer(sx1278* const dev, uint8_t addr, const uint8_t *buffer,
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_read_buffer(sx1278* const dev, uint8_t addr, uint8_t *buffer, uint8_t size)
+void sx1278_read_buffer(sx1278 *const dev, uint8_t addr, uint8_t *buffer, uint8_t size)
 {
-    sx1278_arduino* const pd = (sx1278_arduino*)dev->platform_dev;
+    sx1278_arduino *const pd = (sx1278_arduino*)dev->platform_dev;
 
     digitalWrite(pd->nss, LOW);
     pd->spi->beginTransaction(pd->spi_settings);
@@ -126,7 +126,7 @@ void sx1278_read_buffer(sx1278* const dev, uint8_t addr, uint8_t *buffer, uint8_
 
 
 //-----------------------------------------------------------------------------
-void sx1278_set_timeout(sx1278* const dev, TimeoutTimer_t timer, TimeoutFuncPtr func, int timeout_ms)
+void sx1278_set_timeout(sx1278 *const dev, TimeoutTimer_t timer, TimeoutFuncPtr func, int timeout_ms)
 {
     switch(timer)
     {

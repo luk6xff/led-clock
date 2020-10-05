@@ -31,7 +31,7 @@ typedef struct
  * @param  dev       SX1278 Device object pointer
  * @param  cube_dev  STM32Cube  device object pointer
  */
-void sx1278_cube_hal_init(sx1278* const dev, sx1278_cube_hal* const cube_dev);
+void sx1278_cube_hal_init(sx1278 *const dev, sx1278_cube_hal *const cube_dev);
 
 
 /**
@@ -39,6 +39,6 @@ void sx1278_cube_hal_init(sx1278* const dev, sx1278_cube_hal* const cube_dev);
  *
  * @param  dev       SX1278 Device object pointer
  */
-void sx1278_cube_hal_deinit(sx1278* const dev);
+void sx1278_cube_hal_deinit(sx1278 *const dev);
 
 #endif // __SX1278_CUBE_HAL_H__

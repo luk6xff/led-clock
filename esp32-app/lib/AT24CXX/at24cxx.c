@@ -19,7 +19,7 @@ static const at24cxx_mem at24cxx_devices[] =
 
 
 //------------------------------------------------------------------------------
-at24cxx_status at24cxx_init(at24cxx* const dev)
+at24cxx_status at24cxx_init(at24cxx *const dev)
 {
     if (!dev)
     {
@@ -94,7 +94,7 @@ at24cxx_status at24cxx_init(at24cxx* const dev)
 
 
 //------------------------------------------------------------------------------
-at24cxx_status at24cxx_write(const at24cxx* const dev, uint32_t addr,
+at24cxx_status at24cxx_write(const at24cxx *const dev, uint32_t addr,
                              const uint8_t* data, uint32_t data_size)
 {
     at24cxx_status ret = AT24CXX_NOERR;
@@ -164,7 +164,7 @@ at24cxx_status at24cxx_write(const at24cxx* const dev, uint32_t addr,
 }
 
 //-----------------------------------------------------------------------------
-at24cxx_status at24cxx_read(const at24cxx* const dev, uint32_t addr,
+at24cxx_status at24cxx_read(const at24cxx *const dev, uint32_t addr,
                             uint8_t* data, uint32_t data_size)
 {
     at24cxx_status ret = AT24CXX_NOERR;
@@ -185,7 +185,7 @@ at24cxx_status at24cxx_read(const at24cxx* const dev, uint32_t addr,
 }
 
 //-----------------------------------------------------------------------------
-bool at24cxx_check_space(const at24cxx* const dev, uint32_t addr, size_t size)
+bool at24cxx_check_space(const at24cxx *const dev, uint32_t addr, size_t size)
 {
     if (dev->type < AT24CINVALID)
     {
@@ -204,7 +204,7 @@ bool at24cxx_check_space(const at24cxx* const dev, uint32_t addr, size_t size)
 }
 
 //-----------------------------------------------------------------------------
-void at24cxx_wait_for_ready(const at24cxx* const dev)
+void at24cxx_wait_for_ready(const at24cxx *const dev)
 {
     at24cxx_status ret;
     uint16_t addr = 0;

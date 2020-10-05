@@ -100,7 +100,7 @@ static const RadioRegisters_t SX1278RadioRegsInit[] =
  * @note Must be called just after the reset so all registers are at their
  *         default values
  */
-static void sx1278_rx_chain_calibration(sx1278* const dev);
+static void sx1278_rx_chain_calibration(sx1278 *const dev);
 
 /**
  * Returns the known FSK bandwidth registers value
@@ -161,7 +161,7 @@ static void on_timeout_irq();
  * ============================================================================
  */
 //-----------------------------------------------------------------------------
-bool sx1278_init(sx1278* const dev)
+bool sx1278_init(sx1278 *const dev)
 {
     // Register Hardware DIO IRQ callback for dio0 - dio5
     dev->dio_irq[0] = on_dio0_irq;
@@ -185,7 +185,7 @@ bool sx1278_init(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_radio_registers_init(sx1278* const dev)
+void sx1278_radio_registers_init(sx1278 *const dev)
 {
     uint8_t i = 0;
     for(i = 0; i < sizeof(SX1278RadioRegsInit) / sizeof(RadioRegisters_t); i++)
@@ -196,13 +196,13 @@ void sx1278_radio_registers_init(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-RadioState_t sx1278_get_status(sx1278* const dev)
+RadioState_t sx1278_get_status(sx1278 *const dev)
 {
     return dev->settings.State;
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_channel(sx1278* const dev, uint32_t freq)
+void sx1278_set_channel(sx1278 *const dev, uint32_t freq)
 {
     dev->settings.Channel = freq;
     freq = (uint32_t)((double)freq / (double)FREQ_STEP);
@@ -212,7 +212,7 @@ void sx1278_set_channel(sx1278* const dev, uint32_t freq)
 }
 
 //-----------------------------------------------------------------------------
-bool sx1278_is_channel_free(sx1278* const dev, RadioModems_t modem, uint32_t freq, int16_t rssiThresh, uint32_t maxCarrierSenseTime)
+bool sx1278_is_channel_free(sx1278 *const dev, RadioModems_t modem, uint32_t freq, int16_t rssiThresh, uint32_t maxCarrierSenseTime)
 {
     // TODO handle carrierSenseTime
     int16_t rssi = 0;
@@ -236,7 +236,7 @@ bool sx1278_is_channel_free(sx1278* const dev, RadioModems_t modem, uint32_t fre
 }
 
 //-----------------------------------------------------------------------------
-uint32_t sx1278_random(sx1278* const dev)
+uint32_t sx1278_random(sx1278 *const dev)
 {
     uint8_t i;
     uint32_t rnd = 0;
@@ -273,7 +273,7 @@ uint32_t sx1278_random(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_rx_config(sx1278* const dev, RadioModems_t modem, uint32_t bandwidth,
+void sx1278_set_rx_config(sx1278 *const dev, RadioModems_t modem, uint32_t bandwidth,
                          uint32_t datarate, uint8_t coderate,
                          uint32_t bandwidthAfc, uint16_t preambleLen,
                          uint16_t symbTimeout, bool fixLen,
@@ -447,7 +447,7 @@ void sx1278_set_rx_config(sx1278* const dev, RadioModems_t modem, uint32_t bandw
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_tx_config(sx1278* const dev, RadioModems_t modem, int8_t power, uint32_t fdev,
+void sx1278_set_tx_config(sx1278 *const dev, RadioModems_t modem, int8_t power, uint32_t fdev,
                         uint32_t bandwidth, uint32_t datarate,
                         uint8_t coderate, uint16_t preambleLen,
                         bool fixLen, bool crcOn, bool freqHopOn,
@@ -580,7 +580,7 @@ void sx1278_set_tx_config(sx1278* const dev, RadioModems_t modem, int8_t power, 
 }
 
 //-----------------------------------------------------------------------------
-uint32_t sx1278_time_on_air(sx1278* const dev, RadioModems_t modem, uint8_t pktLen)
+uint32_t sx1278_time_on_air(sx1278 *const dev, RadioModems_t modem, uint8_t pktLen)
 {
     uint32_t airTime = 0;
 
@@ -660,7 +660,7 @@ uint32_t sx1278_time_on_air(sx1278* const dev, RadioModems_t modem, uint8_t pktL
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_send(sx1278* const dev, uint8_t* buffer, uint8_t size)
+void sx1278_send(sx1278 *const dev, uint8_t *buffer, uint8_t size)
 {
     uint32_t txTimeout = 0;
 
@@ -735,7 +735,7 @@ void sx1278_send(sx1278* const dev, uint8_t* buffer, uint8_t size)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_sleep(sx1278* const dev)
+void sx1278_set_sleep(sx1278 *const dev)
 {
     sx1278_set_timeout(dev, TXTimeoutTimer, NULL, 0);
     sx1278_set_timeout(dev, RXTimeoutTimer, NULL, 0);
@@ -746,7 +746,7 @@ void sx1278_set_sleep(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_standby(sx1278* const dev)
+void sx1278_set_standby(sx1278 *const dev)
 {
     sx1278_set_timeout(dev, TXTimeoutTimer, NULL, 0);
     sx1278_set_timeout(dev, RXTimeoutTimer, NULL, 0);
@@ -757,7 +757,7 @@ void sx1278_set_standby(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_rx(sx1278* const dev, uint32_t timeout)
+void sx1278_set_rx(sx1278 *const dev, uint32_t timeout)
 {
     bool rxContinuous = false;
 
@@ -922,7 +922,7 @@ void sx1278_set_rx(sx1278* const dev, uint32_t timeout)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_tx(sx1278* const dev, uint32_t timeout)
+void sx1278_set_tx(sx1278 *const dev, uint32_t timeout)
 {
 
     switch (dev->settings.modem)
@@ -985,7 +985,7 @@ void sx1278_set_tx(sx1278* const dev, uint32_t timeout)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_start_cad(sx1278* const dev)
+void sx1278_start_cad(sx1278 *const dev)
 {
     switch (dev->settings.modem)
     {
@@ -1027,7 +1027,7 @@ void sx1278_start_cad(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_tx_continuous_wave(sx1278* const dev, uint32_t freq, int8_t power, uint16_t time)
+void sx1278_set_tx_continuous_wave(sx1278 *const dev, uint32_t freq, int8_t power, uint16_t time)
 {
     uint32_t timeout = (uint32_t)(time);
 
@@ -1046,7 +1046,7 @@ void sx1278_set_tx_continuous_wave(sx1278* const dev, uint32_t freq, int8_t powe
 }
 
 //-----------------------------------------------------------------------------
-int16_t sx1278_get_rssi(sx1278* const dev, RadioModems_t modem)
+int16_t sx1278_get_rssi(sx1278 *const dev, RadioModems_t modem)
 {
     int16_t rssi = 0;
 
@@ -1073,7 +1073,7 @@ int16_t sx1278_get_rssi(sx1278* const dev, RadioModems_t modem)
 }
 
 //-----------------------------------------------------------------------------
-int32_t sx1278_get_frequency_error(sx1278* const dev, RadioModems_t modem )
+int32_t sx1278_get_frequency_error(sx1278 *const dev, RadioModems_t modem )
 {
     int32_t val = 0;
 
@@ -1103,7 +1103,7 @@ int32_t sx1278_get_frequency_error(sx1278* const dev, RadioModems_t modem )
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_op_mode(sx1278* const dev, uint8_t opMode)
+void sx1278_set_op_mode(sx1278 *const dev, uint8_t opMode)
 {
     // if(opMode == RF_OPMODE_SLEEP ) // TODO NOT USED on RA-01
     // {
@@ -1120,7 +1120,7 @@ void sx1278_set_op_mode(sx1278* const dev, uint8_t opMode)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_modem(sx1278* const dev, RadioModems_t modem)
+void sx1278_set_modem(sx1278 *const dev, RadioModems_t modem)
 {
     if ((sx1278_read(dev, REG_OPMODE) & RFLR_OPMODE_LONGRANGEMODE_ON) != 0)
     {
@@ -1158,7 +1158,7 @@ void sx1278_set_modem(sx1278* const dev, RadioModems_t modem)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_max_payload_length(sx1278* const dev, RadioModems_t modem, uint8_t max)
+void sx1278_set_max_payload_length(sx1278 *const dev, RadioModems_t modem, uint8_t max)
 {
     sx1278_set_modem(dev, modem);
 
@@ -1177,7 +1177,7 @@ void sx1278_set_max_payload_length(sx1278* const dev, RadioModems_t modem, uint8
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_public_network(sx1278* const dev, bool enable)
+void sx1278_set_public_network(sx1278 *const dev, bool enable)
 {
     sx1278_set_modem(dev, MODEM_LORA);
     dev->settings.LoRa.PublicNetwork = enable;
@@ -1194,7 +1194,7 @@ void sx1278_set_public_network(sx1278* const dev, bool enable)
 }
 
 //-----------------------------------------------------------------------------
-void on_timeout_irq(sx1278* const dev)
+void on_timeout_irq(sx1278 *const dev)
 {
     switch (dev->settings.State)
     {
@@ -1266,7 +1266,7 @@ void on_timeout_irq(sx1278* const dev)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_set_rf_tx_power(sx1278* const dev, int8_t power)
+void sx1278_set_rf_tx_power(sx1278 *const dev, int8_t power)
 {
     uint8_t paConfig = 0;
     uint8_t paDac = 0;
@@ -1329,7 +1329,7 @@ void sx1278_set_rf_tx_power(sx1278* const dev, int8_t power)
 }
 
 //-----------------------------------------------------------------------------
-uint8_t sx1278_get_pa_select(sx1278* const dev, uint32_t channel)
+uint8_t sx1278_get_pa_select(sx1278 *const dev, uint32_t channel)
 {
     if(channel > RF_MID_BAND_THRESH)
     {
@@ -1342,20 +1342,20 @@ uint8_t sx1278_get_pa_select(sx1278* const dev, uint32_t channel)
 }
 
 //-----------------------------------------------------------------------------
-bool sx1278_check_rf_frequency(sx1278* const dev, uint32_t frequency)
+bool sx1278_check_rf_frequency(sx1278 *const dev, uint32_t frequency)
 {
     // Implement check. Currently all frequencies are supported
     return true;
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_write(sx1278* const dev, uint8_t addr, uint8_t data)
+void sx1278_write(sx1278 *const dev, uint8_t addr, uint8_t data)
 {
     sx1278_write_buffer(dev, addr, &data, 1);
 }
 
 //-----------------------------------------------------------------------------
-uint8_t sx1278_read(sx1278* const dev, uint8_t addr)
+uint8_t sx1278_read(sx1278 *const dev, uint8_t addr)
 {
     uint8_t data;
     sx1278_read_buffer(dev, addr, &data, 1);
@@ -1363,13 +1363,13 @@ uint8_t sx1278_read(sx1278* const dev, uint8_t addr)
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_write_fifo(sx1278* const dev, uint8_t* buffer, uint8_t size)
+void sx1278_write_fifo(sx1278 *const dev, uint8_t *buffer, uint8_t size)
 {
     sx1278_write_buffer(dev, 0, buffer, size);
 }
 
 //-----------------------------------------------------------------------------
-void sx1278_read_fifo(sx1278* const dev, uint8_t* buffer, uint8_t size)
+void sx1278_read_fifo(sx1278 *const dev, uint8_t *buffer, uint8_t size)
 {
     sx1278_read_buffer(dev, 0, buffer, size);
 }
@@ -1385,7 +1385,7 @@ void sx1278_read_fifo(sx1278* const dev, uint8_t* buffer, uint8_t size)
  * ============================================================================
  */
 //-----------------------------------------------------------------------------
-void sx1278_rx_chain_calibration(sx1278* const dev)
+void sx1278_rx_chain_calibration(sx1278 *const dev)
 {
     uint8_t regPaConfigInitVal;
     uint32_t initialFreq;
@@ -1454,7 +1454,7 @@ uint8_t sx1278_get_lora_bandwidth_reg_value(uint32_t bandwidth)
 //-----------------------------------------------------------------------------
 ISR_PREFIX void on_dio0_irq(void* ctx)
 {
-    sx1278* const dev = (sx1278*)ctx;
+    sx1278 *const dev = (sx1278*)ctx;
     volatile uint8_t irqFlags = 0;
 
     switch (dev->settings.State)
@@ -1644,7 +1644,7 @@ ISR_PREFIX void on_dio0_irq(void* ctx)
 //-----------------------------------------------------------------------------
 ISR_PREFIX void on_dio1_irq(void* ctx)
 {
-    sx1278* const dev = (sx1278*)ctx;
+    sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.State)
     {
         case RF_RX_RUNNING:
@@ -1732,7 +1732,7 @@ ISR_PREFIX void on_dio1_irq(void* ctx)
 //-----------------------------------------------------------------------------
 ISR_PREFIX void on_dio2_irq(void* ctx)
 {
-    sx1278* const dev = (sx1278*)ctx;
+    sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.State)
     {
         case RF_RX_RUNNING:
@@ -1804,7 +1804,7 @@ ISR_PREFIX void on_dio2_irq(void* ctx)
 //-----------------------------------------------------------------------------
 ISR_PREFIX void on_dio3_irq(void* ctx)
 {
-    sx1278* const dev = (sx1278*)ctx;
+    sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.modem)
     {
         case MODEM_FSK:
@@ -1837,7 +1837,7 @@ ISR_PREFIX void on_dio3_irq(void* ctx)
 //-----------------------------------------------------------------------------
 ISR_PREFIX void on_dio4_irq(void* ctx)
 {
-    sx1278* const dev = (sx1278*)ctx;
+    sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.modem)
     {
         case MODEM_FSK:
@@ -1858,7 +1858,7 @@ ISR_PREFIX void on_dio4_irq(void* ctx)
 //-----------------------------------------------------------------------------
 ISR_PREFIX void on_dio5_irq(void* ctx)
 {
-    sx1278* const dev = (sx1278*)ctx;
+    sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.modem)
     {
     case MODEM_FSK:

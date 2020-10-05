@@ -40,8 +40,8 @@ typedef struct
  * @param  dev       SX1278 Device object pointer
  * @param  arduino_dev  Arduino device object pointer
  */
-void sx1278_arduino_init(sx1278* const dev, sx1278_arduino* const arduino_dev);
+void sx1278_arduino_init(sx1278 *const dev, sx1278_arduino *const arduino_dev);
 
-void sx1278_arduino_deinit(sx1278* const dev);
+void sx1278_arduino_deinit(sx1278 *const dev);
 
 #endif // __SX1278_ARDUINO_H__

@@ -579,12 +579,12 @@ typedef struct
  *
  * @param[in] events Structure containing the driver callback functions
  */
-bool sx1278_init(sx1278* const dev);
+bool sx1278_init(sx1278 *const dev);
 
 /**
  * @brief Initializes the radio registers
  */
-void sx1278_radio_registers_init(sx1278* const dev);
+void sx1278_radio_registers_init(sx1278 *const dev);
 
 
 /**
@@ -592,21 +592,21 @@ void sx1278_radio_registers_init(sx1278* const dev);
  *
  * @param status Radio status. [RF_IDLE, RX_RUNNING, TX_RUNNING]
  */
-RadioState_t sx1278_get_status(sx1278* const dev);
+RadioState_t sx1278_get_status(sx1278 *const dev);
 
 /**
  * @brief Configures the SX1278 with the given modem
  *
  * @param[in] modem Modem to be used [0: FSK, 1: LoRa]
  */
-void sx1278_set_modem(sx1278* const dev, RadioModems_t modem);
+void sx1278_set_modem(sx1278 *const dev, RadioModems_t modem);
 
 /**
  * @brief Sets the channel frequency
  *
  * @param[in] freq         Channel RF frequency
  */
-void sx1278_set_channel(sx1278* const dev, uint32_t freq);
+void sx1278_set_channel(sx1278 *const dev, uint32_t freq);
 
 /**
  * @brief Sets the channels configuration
@@ -618,7 +618,7 @@ void sx1278_set_channel(sx1278* const dev, uint32_t freq);
  *
  * @retval isFree         [true: Channel is free, false: Channel is not free]
  */
-bool sx1278_is_channel_free(sx1278* const dev, RadioModems_t modem, uint32_t freq, int16_t rssiThresh, uint32_t maxCarrierSenseTime);
+bool sx1278_is_channel_free(sx1278 *const dev, RadioModems_t modem, uint32_t freq, int16_t rssiThresh, uint32_t maxCarrierSenseTime);
 
 /**
  * @brief Generates a 32 bits random value based on the RSSI readings
@@ -630,7 +630,7 @@ bool sx1278_is_channel_free(sx1278* const dev, RadioModems_t modem, uint32_t fre
  *
  * @retval randomValue    32 bits random value
  */
-uint32_t sx1278_random(sx1278* const dev);
+uint32_t sx1278_random(sx1278 *const dev);
 
 /**
  * @brief Sets the reception parameters
@@ -673,7 +673,7 @@ uint32_t sx1278_random(sx1278* const dev);
  * @param[in] rxContinuous Sets the reception in continuous mode
  *                          [false: single mode, true: continuous mode]
  */
-void sx1278_set_rx_config (sx1278* const dev, RadioModems_t modem, uint32_t bandwidth,
+void sx1278_set_rx_config (sx1278 *const dev, RadioModems_t modem, uint32_t bandwidth,
                             uint32_t datarate, uint8_t coderate,
                             uint32_t bandwidthAfc, uint16_t preambleLen,
                             uint16_t symbTimeout, bool fixLen,
@@ -709,7 +709,7 @@ void sx1278_set_rx_config (sx1278* const dev, RadioModems_t modem, uint32_t band
  *                          LoRa: [0: not inverted, 1: inverted]
  * @param[in] timeout      Transmission timeout [ms]
  */
-void sx1278_set_tx_config(sx1278* const dev, RadioModems_t modem, int8_t power, uint32_t fdev,
+void sx1278_set_tx_config(sx1278 *const dev, RadioModems_t modem, int8_t power, uint32_t fdev,
                             uint32_t bandwidth, uint32_t datarate,
                             uint8_t coderate, uint16_t preambleLen,
                             bool fixLen, bool crcOn, bool freqHopOn,
@@ -725,7 +725,7 @@ void sx1278_set_tx_config(sx1278* const dev, RadioModems_t modem, int8_t power, 
  *
  * @retval airTime        Computed airTime (ms) for the given packet payload length
  */
-uint32_t sx1278_get_time_on_air(sx1278* const dev, RadioModems_t modem, uint8_t pktLen);
+uint32_t sx1278_get_time_on_air(sx1278 *const dev, RadioModems_t modem, uint8_t pktLen);
 
 /**
  * @brief Sends the buffer of size. Prepares the packet to be sent and sets
@@ -734,36 +734,36 @@ uint32_t sx1278_get_time_on_air(sx1278* const dev, RadioModems_t modem, uint8_t 
  * @param[in]: buffer     Buffer pointer
  * @param[in]: size       Buffer size
  */
-void sx1278_send(sx1278* const dev, uint8_t *buffer, uint8_t size);
+void sx1278_send(sx1278 *const dev, uint8_t *buffer, uint8_t size);
 
 /**
  * @brief Sets the radio in sleep mode
  */
-void sx1278_set_sleep(sx1278* const dev);
+void sx1278_set_sleep(sx1278 *const dev);
 
 /**
  * @brief Sets the radio in standby mode
  */
-void sx1278_set_standby(sx1278* const dev);
+void sx1278_set_standby(sx1278 *const dev);
 
 /**
  * @brief Sets the radio in CAD mode (starts a Channel Activity Detection)
  */
-void sx1278_start_cad(sx1278* const dev);
+void sx1278_start_cad(sx1278 *const dev);
 
 /**
  * @brief Sets the radio in reception mode for the given time
  * @param[in] timeout Reception timeout [ms]
  *                     [0: continuous, others timeout]
  */
-void sx1278_set_rx(sx1278* const dev, uint32_t timeout);
+void sx1278_set_rx(sx1278 *const dev, uint32_t timeout);
 
 /**
  * @brief Sets the radio in transmission mode for the given time
  * @param[in] timeout Transmission timeout [ms]
  *                     [0: continuous, others timeout]
  */
-void sx1278_set_tx(sx1278* const dev, uint32_t timeout);
+void sx1278_set_tx(sx1278 *const dev, uint32_t timeout);
 
 /**
  * @brief Sets the radio in continuous wave transmission mode
@@ -772,21 +772,21 @@ void sx1278_set_tx(sx1278* const dev, uint32_t timeout);
  * @param[in]: power      Sets the output power [dBm]
  * @param[in]: time       Transmission mode timeout [s]
  */
-void sx1278_set_tx_continuous_wave(sx1278* const dev, uint32_t freq, int8_t power, uint16_t time);
+void sx1278_set_tx_continuous_wave(sx1278 *const dev, uint32_t freq, int8_t power, uint16_t time);
 
 /**
  * @brief Reads the current RSSI value
  *
  * @retval rssiValue Current RSSI value in [dBm]
  */
-int16_t sx1278_get_rssi(sx1278* const dev, RadioModems_t modem);
+int16_t sx1278_get_rssi(sx1278 *const dev, RadioModems_t modem);
 
 /**
  * @brief Reads the current frequency error
  *
  * @retval frequency error value in [Hz]
  */
-int32_t sx1278_get_frequency_error(sx1278* const dev, RadioModems_t modem);
+int32_t sx1278_get_frequency_error(sx1278 *const dev, RadioModems_t modem);
 
 /**
  * @brief Sets the maximum payload length.
@@ -794,7 +794,7 @@ int32_t sx1278_get_frequency_error(sx1278* const dev, RadioModems_t modem);
  * @param[in] modem      Radio modem to be used [0: FSK, 1: LoRa]
  * @param[in] max        Maximum payload length in bytes
  */
-void sx1278_set_max_payload_length(sx1278* const dev, RadioModems_t modem, uint8_t max);
+void sx1278_set_max_payload_length(sx1278 *const dev, RadioModems_t modem, uint8_t max);
 
 /**
  * @brief Sets the network to public or private. Updates the sync byte.
@@ -803,28 +803,28 @@ void sx1278_set_max_payload_length(sx1278* const dev, RadioModems_t modem, uint8
  *
  * @param[in] enable if true, it enables a public network
  */
-void sx1278_set_public_network(sx1278* const dev, bool enable);
+void sx1278_set_public_network(sx1278 *const dev, bool enable);
 
 /**
  * @brief Gets the time required for the board plus radio to get out of sleep.[ms]
  *
  * @retval Time Radio plus board wakeup time in ms.
  */
-uint32_t sx1278_get_wakeup_time(sx1278* const dev);
+uint32_t sx1278_get_wakeup_time(sx1278 *const dev);
 
 /**
  * @brief Sets the SX1278 operating mode
  *
  * @param[in] opMode New operating mode
  */
-void sx1278_set_op_mode(sx1278* const dev, uint8_t opMode);
+void sx1278_set_op_mode(sx1278 *const dev, uint8_t opMode);
 
 /**
  * @brief Sets the radio output power.
  *
  * @param[in] power Sets the RF output power
  */
-void sx1278_set_rf_tx_power(sx1278* const dev, int8_t power);
+void sx1278_set_rf_tx_power(sx1278 *const dev, int8_t power);
 
 /**
  * @brief Gets the PA selection configuration
@@ -832,7 +832,7 @@ void sx1278_set_rf_tx_power(sx1278* const dev, int8_t power);
  * @param[in] channel Channel frequency in Hz
  * @retval PaSelect RegPaConfig PaSelect value
  */
-uint8_t sx1278_get_pa_select(sx1278* const dev, uint32_t channel);
+uint8_t sx1278_get_pa_select(sx1278 *const dev, uint32_t channel);
 
 /**
  * @brief Checks if the given RF frequency is supported by the hardware
@@ -840,7 +840,7 @@ uint8_t sx1278_get_pa_select(sx1278* const dev, uint32_t channel);
  * @param[in] frequency RF frequency to be checked
  * @retval isSupported [true: supported, false: unsupported]
  */
-bool sx1278_check_rf_frequency(sx1278* const dev, uint32_t frequency);
+bool sx1278_check_rf_frequency(sx1278 *const dev, uint32_t frequency);
 
 /**
  * @brief Writes the radio register at the specified address
@@ -848,7 +848,7 @@ bool sx1278_check_rf_frequency(sx1278* const dev, uint32_t frequency);
  * @param[in]: addr Register address
  * @param[in]: data New register value
  */
-void sx1278_write(sx1278* const dev, uint8_t addr, uint8_t data);
+void sx1278_write(sx1278 *const dev, uint8_t addr, uint8_t data);
 
 /**
  * @brief Reads the radio register at the specified address
@@ -856,7 +856,7 @@ void sx1278_write(sx1278* const dev, uint8_t addr, uint8_t data);
  * @param[in]: addr Register address
  * @retval data Register value
  */
-uint8_t sx1278_read(sx1278* const dev, uint8_t addr);
+uint8_t sx1278_read(sx1278 *const dev, uint8_t addr);
 
 /**
  * @brief Writes the buffer contents to the SX1278 FIFO
@@ -864,7 +864,7 @@ uint8_t sx1278_read(sx1278* const dev, uint8_t addr);
  * @param[in] buffer Buffer containing data to be put on the FIFO.
  * @param[in] size Number of bytes to be written to the FIFO
  */
-void sx1278_write_fifo(sx1278* const dev, uint8_t *buffer, uint8_t size);
+void sx1278_write_fifo(sx1278 *const dev, uint8_t *buffer, uint8_t size);
 
 /**
  * @brief Reads the contents of the SX1278 FIFO
@@ -872,7 +872,7 @@ void sx1278_write_fifo(sx1278* const dev, uint8_t *buffer, uint8_t size);
  * @param[out] buffer Buffer where to copy the FIFO read data.
  * @param[in] size Number of bytes to be read from the FIFO
  */
-void sx1278_read_fifo(sx1278* const dev, uint8_t *buffer, uint8_t size);
+void sx1278_read_fifo(sx1278 *const dev, uint8_t *buffer, uint8_t size);
 
 
 
@@ -884,26 +884,26 @@ void sx1278_read_fifo(sx1278* const dev, uint8_t *buffer, uint8_t size);
 /**
  * @brief Initializes the radio I/Os pins interface
  */
-extern void sx1278_io_init(sx1278* const dev);
+extern void sx1278_io_init(sx1278 *const dev);
 
 /**
  * @brief De-initializes the radio I/Os pins interface.
  *
  * @note Useful when going in MCU lowpower modes
  */
-extern void sx1278_io_deinit(sx1278* const dev);
+extern void sx1278_io_deinit(sx1278 *const dev);
 
 /**
  * @brief Initializes DIO IRQ handlers
  *
  * @param[in] irq_handlers Array containing the IRQ callback functions
  */
-extern void sx1278_ioirq_init(sx1278* const dev);
+extern void sx1278_ioirq_init(sx1278 *const dev);
 
 /**
  * @brief Resets the SX1278
  */
-extern void sx1278_reset(sx1278* const dev);
+extern void sx1278_reset(sx1278 *const dev);
 
 /**
  * @brief Writes multiple radio registers starting at address
@@ -912,7 +912,7 @@ extern void sx1278_reset(sx1278* const dev);
  * @param[in] buffer Buffer containing the new register's values
  * @param[in] size   Number of registers to be written
  */
-extern void sx1278_write_buffer(sx1278* const dev, uint8_t addr, const uint8_t *buffer, const uint8_t size);
+extern void sx1278_write_buffer(sx1278 *const dev, uint8_t addr, const uint8_t *buffer, const uint8_t size);
 
 /**
  * @brief Reads multiple radio registers starting at address
@@ -921,12 +921,12 @@ extern void sx1278_write_buffer(sx1278* const dev, uint8_t addr, const uint8_t *
  * @param[out] buffer Buffer where to copy the registers data
  * @param[in] size Number of registers to be read
  */
-extern void sx1278_read_buffer(sx1278* const dev, uint8_t addr, uint8_t *buffer, uint8_t size);
+extern void sx1278_read_buffer(sx1278 *const dev, uint8_t addr, uint8_t *buffer, uint8_t size);
 
 /**
  * @brief The the Timeout for a given Timer.
  */
-extern void sx1278_set_timeout(sx1278* const dev, TimeoutTimer_t timer, TimeoutFuncPtr, int timeout_ms);
+extern void sx1278_set_timeout(sx1278 *const dev, TimeoutTimer_t timer, TimeoutFuncPtr, int timeout_ms);
 
 /**
  * @brief A simple ms sleep
