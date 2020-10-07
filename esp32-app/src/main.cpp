@@ -12,14 +12,12 @@
 #include "Display/light_sensor.h"
 #include "Radio/radio.h"
 
-    #include <RTClib.h>
 
 //------------------------------------------------------------------------------
 /**
  * @brief Test function for each device module - used during development
  */
 static void test_modules();
-static void get_time(char *psz, bool f = true);
 
 
 //------------------------------------------------------------------------------
@@ -88,19 +86,7 @@ static void test_modules()
 #endif
 
 #ifdef TEST_RTC
-    char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-    RTC_DS3231 rtc;
-    if (!rtc.begin())
-    {
-        Serial.println("Couldn't find RTC");
-        while (1);
-    }
-
-    if (rtc.lostPower())
-    {
-        Serial.println("RTC lost power, lets set the time!");
-        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-    }
+    SystemRtc rtc;
 #endif
 
 #ifdef TEST_RADIO
@@ -113,19 +99,10 @@ static void test_modules()
     {
 
 #ifdef TEST_DISPLAY
-        static uint32_t	last_time = 0; // millis() memory
-        static bool	flasher = false;   // seconds passing flasher
+        static bool	flasher = false;
         disp.update();
-        if (disp.getDispObject()->getZoneStatus(DISPLAY_ZONE_0))
-        {
-            if (millis() - last_time >= 1000)
-            {
-                last_time = millis();
-                get_time((char*)disp.getDispTxtBuffer(), flasher);
-                flasher = !flasher;
-                disp.reset();
-            }
-        }
+        disp.printTime(rtc.getTime(), Display::MHS, flasher);
+        flasher ^= 1;
 #endif // TEST_DISPLAY
 
 
@@ -135,62 +112,13 @@ static void test_modules()
 
 
 #ifdef TEST_RTC
-        Serial.printf("SystemRTC temperature: %3.2f\r\n", SystemRtc::instance().get_temperature());
-        // DateTime now = rtc.now();
-        // Serial.println("Current Date & Time: ");
-        // Serial.print(now.year(), DEC);
-        // Serial.print('/');
-        // Serial.print(now.month(), DEC);
-        // Serial.print('/');
-        // Serial.print(now.day(), DEC);
-        // Serial.print(" (");
-        // Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-        // Serial.print(") ");
-        // Serial.print(now.hour(), DEC);
-        // Serial.print(':');
-        // Serial.print(now.minute(), DEC);
-        // Serial.print(':');
-        // Serial.print(now.second(), DEC);
-        // Serial.println();
-
-        // Serial.println("Unix Time: ");
-        // Serial.print("elapsed ");
-        // Serial.print(now.unixtime());
-        // Serial.print(" seconds/");
-        // Serial.print(now.unixtime() / 86400L);
-        // Serial.println(" days since 1/1/1970");
-
-        // // calculate a date which is 7 days & 30 seconds into the future
-        // DateTime future (now + TimeSpan(7,0,0,30));
-
-        // Serial.println("Future Date & Time (Now + 7days & 30s): ");
-        // Serial.print(future.year(), DEC);
-        // Serial.print('/');
-        // Serial.print(future.month(), DEC);
-        // Serial.print('/');
-        // Serial.print(future.day(), DEC);
-        // Serial.print(' ');
-        // Serial.print(future.hour(), DEC);
-        // Serial.print(':');
-        // Serial.print(future.minute(), DEC);
-        // Serial.print(':');
-        // Serial.print(future.second(), DEC);
-        // Serial.println();
-        // Serial.println();
+        Serial.printf("SystemRTC temperature: %3.2f\r\n", rtc.getTemperature());
+        Serial.printf("SystemRTC time: %s\r\n", SystemRtc::timeToStr(rtc.getTime()));
+        Serial.printf("SystemRTC date: %s\r\n", SystemRtc::dateToStr(rtc.getTime()));
 #endif // TEST_RTC
 
         delay(1000);
     }
-}
-
-//------------------------------------------------------------------------------
-static void get_time(char *psz, bool f)
-{
-    uint16_t  h, m;
-    m = millis()/1000;
-    h = (m / 60) % 24;
-    m %= 60;
-    sprintf(psz, "%02d%c%02d", h, (f ? ':' : ' '), m);
 }
 
 //------------------------------------------------------------------------------

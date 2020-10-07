@@ -11,13 +11,12 @@
 #include <MD_Parola.h>
 #include <SPI.h>
 #include "light_sensor.h"
+#include "../Clock/system_rtc.h"
 
 
 #define DISPLAY_MAX72XX_HW_TYPE     MD_MAX72XX::DR1CR0RR0_HW//FC16_HW
 #define DISPLAY_MAX72XX_MODULES_NUM 4
 #define DISPLAY_MSG_MAX_LEN         1024
-#define DISPLAY_ZONE_0  0
-#define DISPLAY_ZONE_1  1
 
 class Display
 {
@@ -31,6 +30,12 @@ public:
         gpio_num_t max72xxCLKpin;
         gpio_num_t max72xxCSpin;
     };
+
+    typedef enum
+    {
+        MH, // HH:MM
+        MHS,// HH:MMss
+    } TimePrintMode;
 
 
 public:
@@ -49,6 +54,8 @@ public:
     void processAutoIntensityLevelControl();
 
     void setIntensityLevel(uint8_t level);
+
+    void printTime(const DateTime& dt, TimePrintMode tpm, bool flasher);
 
 private:
 
