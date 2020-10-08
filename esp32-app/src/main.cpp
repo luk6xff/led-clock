@@ -99,10 +99,11 @@ static void test_modules()
     {
 
 #ifdef TEST_DISPLAY
-        static bool	flasher = false;
+        static bool	flasher = true;
         disp.update();
         disp.printTime(rtc.getTime(), Display::MHS, flasher);
-        flasher ^= 1;
+        //flasher = !flasher;
+
 #endif // TEST_DISPLAY
 
 
