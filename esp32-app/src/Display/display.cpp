@@ -29,6 +29,8 @@ Display::Display(const MAX72xxConfig& cfg)
     m_mx.setFont(DISPLAY_ZONE_0, dig_3x5_fonts);
     m_mx.setFont(DISPLAY_ZONE_1, dig_4x8_fonts);
     m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
+                m_mx.displayZoneText(DISPLAY_ZONE_0, m_dispZone0Buf, PA_LEFT, 0, 0, PA_PRINT, PA_NO_EFFECT);
+                m_mx.displayZoneText(DISPLAY_ZONE_1, m_dispZone1Buf, PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
 }
 
 //------------------------------------------------------------------------------
@@ -133,16 +135,11 @@ void Display::printTime(const DateTime& dt, TimePrintMode tpm, bool flasher)
         case MHS:
         {
 
-            if (getDispObject()->getZoneStatus(DISPLAY_ZONE_0))
+            if (getDispObject()->getZoneStatus(DISPLAY_ZONE_0) && getDispObject()->getZoneStatus(DISPLAY_ZONE_1))
             {
                 snprintf(m_dispZone0Buf, sizeof(m_dispZone0Buf), "%02d", dt.second());
-                m_mx.displayZoneText(DISPLAY_ZONE_0, m_dispZone0Buf, PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
-                m_mx.displayReset(DISPLAY_ZONE_0);
-            }
-            if (getDispObject()->getZoneStatus(DISPLAY_ZONE_1))
-            {
                 snprintf(m_dispZone1Buf, sizeof(m_dispZone1Buf), "%02d%c%02d", dt.hour(), (flasher ? ':' : ' '), dt.minute());
-                m_mx.displayZoneText(DISPLAY_ZONE_1, m_dispZone1Buf, PA_LEFT, 0, 0, PA_PRINT, PA_NO_EFFECT);
+                m_mx.displayReset(DISPLAY_ZONE_0);
                 m_mx.displayReset(DISPLAY_ZONE_1);
             }
             break;
