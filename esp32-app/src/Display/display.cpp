@@ -29,8 +29,8 @@ Display::Display(const MAX72xxConfig& cfg)
     m_mx.setFont(DISPLAY_ZONE_0, dig_3x5_fonts);
     m_mx.setFont(DISPLAY_ZONE_1, dig_4x8_fonts);
     m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
-                m_mx.displayZoneText(DISPLAY_ZONE_0, m_dispZone0Buf, PA_LEFT, 0, 0, PA_PRINT, PA_NO_EFFECT);
-                m_mx.displayZoneText(DISPLAY_ZONE_1, m_dispZone1Buf, PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
+    m_mx.displayZoneText(DISPLAY_ZONE_0, m_dispZone0Buf, PA_LEFT, 0, 0, PA_PRINT, PA_NO_EFFECT);
+    m_mx.displayZoneText(DISPLAY_ZONE_1, m_dispZone1Buf, PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
 }
 
 //------------------------------------------------------------------------------
@@ -116,31 +116,42 @@ void Display::setIntensityLevel(uint8_t level)
 }
 
 //------------------------------------------------------------------------------
-void Display::printTime(const DateTime& dt, TimePrintMode tpm, bool flasher)
+void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool flasher)
 {
     switch(tpm)
     {
-        case MH:
+        case TMH:
         {
-            m_mx.setFont(dig_6x8_fonts);
+
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
             {
-                sprintf((char *)getDispTxtBuffer(), "%02d%c%02d", dt.hour(), (flasher ? ':' : ' '), dt.minute());
-                //reset();
+                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%02d%c%02d", dt.hour(), (flasher ? ':' : ' '), dt.minute());
+                m_mx.setFont(dig_6x8_fonts);
                 m_mx.displayReset(DISPLAY_ZONE_FULL);
             }
             break;
         }
 
-        case MHS:
+        case TMHS:
         {
-
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_0) && getDispObject()->getZoneStatus(DISPLAY_ZONE_1))
             {
                 snprintf(m_dispZone0Buf, sizeof(m_dispZone0Buf), "%02d", dt.second());
                 snprintf(m_dispZone1Buf, sizeof(m_dispZone1Buf), "%02d%c%02d", dt.hour(), (flasher ? ':' : ' '), dt.minute());
                 m_mx.displayReset(DISPLAY_ZONE_0);
                 m_mx.displayReset(DISPLAY_ZONE_1);
+            }
+            break;
+        }
+
+        case DYMD:
+        {
+            if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
+            {
+                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s, %s", SystemRtc::weekdayToStr(dt), SystemRtc::dateToStr(dt));
+                m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
+                m_mx.setFont(NULL);
+                m_mx.displayReset(DISPLAY_ZONE_FULL);
             }
             break;
         }

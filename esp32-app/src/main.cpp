@@ -98,7 +98,7 @@ static void test_modules()
 
 #ifdef TEST_DISPLAY
         disp.update();
-        disp.printTime(rtc.getTime(), Display::MHS, !flasher);
+        disp.printTime(rtc.getTime(), Display::DYMD, !flasher);
         flasher = flasher ^ 1;
 
 #endif // TEST_DISPLAY

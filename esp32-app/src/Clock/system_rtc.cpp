@@ -136,8 +136,10 @@ char *SystemRtc::timeDateToStr(const DateTime& dt)
 //------------------------------------------------------------------------------
 const char* SystemRtc::weekdayToStr(const DateTime& dt)
 {
+    // TODO - i18n
     static char weekday[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-	return weekday[dt.dayOfTheWeek()];
+    static char weekdayPL[7][14] = {"Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"};
+	return weekdayPL[dt.dayOfTheWeek()];
 }
 
 //------------------------------------------------------------------------------

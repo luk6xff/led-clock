@@ -33,9 +33,10 @@ public:
 
     typedef enum
     {
-        MH, // HH:MM
-        MHS,// HH:MMss
-    } TimePrintMode;
+        TMH, // HH:MM
+        TMHS,// HH:MMss
+        DYMD,
+    } DateTimePrintMode;
 
 
 public:
@@ -55,7 +56,7 @@ public:
 
     void setIntensityLevel(uint8_t level);
 
-    void printTime(const DateTime& dt, TimePrintMode tpm, bool flasher);
+    void printTime(const DateTime& dt, DateTimePrintMode tpm, bool flasher);
 
 private:
 
