@@ -1,5 +1,3 @@
-
-
 #include "App/app.h"
 #include "App/utils.h"
 #include <MD_MAX72xx.h>
@@ -18,7 +16,7 @@
  * @brief Test function for each device module - used during development
  */
 static void test_modules();
-
+static bool	flasher = true;
 
 //------------------------------------------------------------------------------
 #define BLINK_GPIO (gpio_num_t)CONFIG_BLINK_GPIO
@@ -99,10 +97,9 @@ static void test_modules()
     {
 
 #ifdef TEST_DISPLAY
-        static bool	flasher = true;
         disp.update();
-        disp.printTime(rtc.getTime(), Display::MHS, flasher);
-        //flasher = !flasher;
+        disp.printTime(rtc.getTime(), Display::MHS, !flasher);
+        flasher = flasher ^ 1;
 
 #endif // TEST_DISPLAY
 
@@ -118,7 +115,6 @@ static void test_modules()
         Serial.printf("SystemRTC date: %s\r\n", SystemRtc::dateToStr(rtc.getTime()));
 #endif // TEST_RTC
 
-        delay(1000);
     }
 }
 

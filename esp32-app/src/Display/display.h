@@ -45,9 +45,9 @@ public:
 
     void reset();
 
-    uint8_t* getDispTxtBuffer();
+    char *getDispTxtBuffer();
 
-    MD_Parola* getDispObject();
+    MD_Parola *getDispObject();
 
     void enableAutoIntensityLevelControl(bool enable);
 
@@ -70,9 +70,19 @@ private:
     LightSensor m_lightSensor;
 
     /**
-     * @brief Display data buffer
+     * @brief Display data buffer, ZONE_FULL
      */
-    uint8_t m_dispTxtBuf[DISPLAY_MSG_MAX_LEN];
+    char m_dispFullBuf[DISPLAY_MSG_MAX_LEN];
+
+    /**
+     * @brief Display data buffer - ZONE_0
+     */
+    char m_dispZone0Buf[8];
+
+    /**
+     * @brief Display data buffer - ZONE_1
+     */
+    char m_dispZone1Buf[8];
 
     /**
      * @brief Sensor controlled display intensity level

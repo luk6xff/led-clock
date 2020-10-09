@@ -3,22 +3,16 @@
 #include "fonts.h"
 #include "../App/utils.h"
 
+
+#define MAX_DISPLAY_ZONES 3
 #define DISPLAY_ZONE_0    0
 #define DISPLAY_ZONE_1    1
 #define DISPLAY_ZONE_FULL 2
 
-#define MAX_DISPLAY_ZONES 3
 #define ZONE_SIZE   1
-#define SPEED_TIME  1
+#define SPEED_TIME  50
 #define PAUSE_TIME  0
 
-
-
-static char hm[6];
-static char sec[6];
-
-//------------------------------------------------------------------------------
-// Global variables
 
 //------------------------------------------------------------------------------
 Display::Display(const MAX72xxConfig& cfg)
@@ -31,11 +25,10 @@ Display::Display(const MAX72xxConfig& cfg)
     m_mx.setZone(DISPLAY_ZONE_1, 1, 3);
     m_mx.setZone(DISPLAY_ZONE_FULL, 0, 3);
     m_mx.setIntensity(0);
-    m_mx.setFont(dig_6x8_fonts);
-    //m_mx.displayZoneText(DISPLAY_ZONE_0, (char*)m_dispTxtBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
-    m_mx.displayZoneText(DISPLAY_ZONE_FULL, (char*)m_dispTxtBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
-    m_mx.displayZoneText(DISPLAY_ZONE_0, sec, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_PRINT);
-    m_mx.displayZoneText(DISPLAY_ZONE_1, hm, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_PRINT);
+    m_mx.setFont(DISPLAY_ZONE_FULL, dig_6x8_fonts);
+    m_mx.setFont(DISPLAY_ZONE_0, dig_3x5_fonts);
+    m_mx.setFont(DISPLAY_ZONE_1, dig_4x8_fonts);
+    m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
 }
 
 //------------------------------------------------------------------------------
@@ -54,9 +47,9 @@ void Display::reset()
 }
 
 //------------------------------------------------------------------------------
-uint8_t* Display::getDispTxtBuffer()
+char *Display::getDispTxtBuffer()
 {
-    return m_dispTxtBuf;
+    return m_dispFullBuf;
 }
 
 //------------------------------------------------------------------------------
@@ -141,26 +134,16 @@ void Display::printTime(const DateTime& dt, TimePrintMode tpm, bool flasher)
         {
 
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_0))
-            {Serial.println("HELLLLO333");
-                m_mx.setFont(DISPLAY_ZONE_0, dig_3x5_fonts);
-                //static char sec[3];
-                sprintf(sec, "%02d", dt.second());
-                //m_mx.displayZoneText(DISPLAY_ZONE_1, sec, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_PRINT);
-                //reset();
-                 m_mx.displayReset(DISPLAY_ZONE_0);
+            {
+                snprintf(m_dispZone0Buf, sizeof(m_dispZone0Buf), "%02d", dt.second());
+                m_mx.displayZoneText(DISPLAY_ZONE_0, m_dispZone0Buf, PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
+                m_mx.displayReset(DISPLAY_ZONE_0);
             }
-
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_1))
-            {Serial.println("HELLLLO");
-                //sprintf((char *)getDispTxtBuffer(), "%02d%c%02d%02d", dt.hour(), (flasher ? ':' : ' '), dt.minute(), dt.second());
-
-                m_mx.setFont(DISPLAY_ZONE_1, dig_4x8_fonts);
-                //static char hm[6];
-                sprintf(hm, "%02d%c%02d", dt.hour(), (flasher ? ':' : ' '), dt.minute());
-                //m_mx.displayZoneText(DISPLAY_ZONE_1, hm, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_PRINT);
+            {
+                snprintf(m_dispZone1Buf, sizeof(m_dispZone1Buf), "%02d%c%02d", dt.hour(), (flasher ? ':' : ' '), dt.minute());
+                m_mx.displayZoneText(DISPLAY_ZONE_1, m_dispZone1Buf, PA_LEFT, 0, 0, PA_PRINT, PA_NO_EFFECT);
                 m_mx.displayReset(DISPLAY_ZONE_1);
-                //reset();
-
             }
             break;
         }
