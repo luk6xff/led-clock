@@ -134,7 +134,7 @@ char *SystemRtc::timeDateToStr(const DateTime& dt)
 }
 
 //------------------------------------------------------------------------------
-const char* SystemRtc::weekdayToStr(const DateTime& dt)
+char* SystemRtc::weekdayToStr(const DateTime& dt)
 {
     // TODO - i18n
     static char weekday[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
@@ -143,9 +143,9 @@ const char* SystemRtc::weekdayToStr(const DateTime& dt)
 }
 
 //------------------------------------------------------------------------------
-const char *SystemRtc::monthToStr(const DateTime& dt)
+char *SystemRtc::monthToStr(const DateTime& dt)
 {
-	static const char *months[]  = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+	static char months[12][15]  = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 	return months[dt.month() - 1];
 }
 

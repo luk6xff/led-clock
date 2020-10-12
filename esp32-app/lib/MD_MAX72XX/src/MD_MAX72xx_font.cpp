@@ -356,10 +356,10 @@ MD_MAX72XX::fontType_t PROGMEM _sysfont[] =
   5, 56, 68, 68, 56, 68,		// 129 - 'Alpha'
   5, 124, 42, 42, 62, 20,		// 130 - 'Beta'
   5, 126, 2, 2, 6, 6,		// 131 - 'Gamma'
-  5, 2, 126, 2, 126, 2,		// 132 - 'Pi'
-  5, 99, 85, 73, 65, 99,		// 133 - 'Sigma'
-  5, 56, 68, 68, 60, 4,		// 134 - 'Theta'
-  5, 64, 126, 32, 30, 32,		// 135 - 'mu'
+  5, 126, 9, 9, 137, 126,		// 132 - 'Ą Polish small diacritic letter'
+  4, 56, 68, 196, 124,	    // 133 - 'ą Polish small diacritic letter'
+  5, 60, 66, 66, 67, 36,		// 134 - 'Ć Polish small diacritic letter'
+  4, 56, 68, 68, 69,		    // 135 - 'ć Polish small diacritic letter'
   5, 6, 2, 126, 2, 2,		// 136 - 'Tau'
   8, 99, 19, 8, 100, 99, 0, 96, 96,		// 137 - 'Percent 00'
   5, 42, 42, 42, 42, 42,		// 138 - '3 Bar Equals'
@@ -376,8 +376,8 @@ MD_MAX72XX::fontType_t PROGMEM _sysfont[] =
   0,		// 149
   0,		// 150
   0,		// 151
-  0,		// 152
-  9, 1, 1, 127, 1, 127, 2, 12, 2, 127,		// 153 - 'Trademark'
+  5, 127, 73, 73, 201, 65,	// 152 - 'Ę Polish small diacritic letter'
+  4, 56, 84, 84, 216,		    // 153 - 'ę Polish small diacritic letter'
   0,		// 154
   0,		// 155
   0,		// 156
@@ -406,7 +406,7 @@ MD_MAX72XX::fontType_t PROGMEM _sysfont[] =
   3, 21, 21, 10,		// 179 - '³ Superscript three'
   2, 2, 1,		// 180 - '´ Acute accent'
   4, 248, 32, 64, 120,		// 181 - 'µ Micro sign'
-  5, 6, 9, 127, 1, 127,		// 182 - 'Pilcrow sign'
+  5, 6, 9, 127, 1, 127,		// 182 - 'Pilcrow sign'
   2, 24, 24,		// 183 - '· Middle dot'
   4, 0, 128, 160, 192,		// 184 - '¸ Cedilla'
   3, 18, 31, 16,		// 185 - '¹ Superscript one'
@@ -433,17 +433,17 @@ MD_MAX72XX::fontType_t PROGMEM _sysfont[] =
   3, 70, 125, 70,		// 206 - 'Î Latin Capital letter I with circumflex'
   3, 69, 124, 69,		// 207 - 'Ï Latin Capital letter I with diaeresis'
   5, 8, 127, 73, 65, 62,		// 208 - 'Ð Latin Capital letter Eth'
-  5, 124, 10, 17, 34, 125,		// 209 - 'Ñ Latin Capital letter N with tilde'
-  5, 56, 68, 69, 70, 56,		// 210 - 'Ò Latin Capital letter O with grave'
-  5, 56, 68, 70, 69, 56,		// 211 - 'Ó Latin Capital letter O with acute'
-  5, 58, 69, 68, 69, 58,		// 212 - 'Ô Latin Capital letter O with circumflex'
+  5, 127, 72, 68, 64, 64,		// 209 - 'Ł Polish small diacritic letter'
+  3, 8, 127, 4 ,				// 210 - 'ł Polish small diacritic letter'
+  5, 124, 8, 18, 33, 124,		// 211 - 'Ń Polish small diacritic letter'
+  4, 124, 4, 5, 120,			// 212 - 'ń Polish small diacritic letter'
   5, 56, 70, 69, 70, 57,		// 213 - 'Õ Latin Capital letter O with tilde'
   5, 56, 69, 68, 69, 56,		// 214 - 'Ö Latin Capital letter O with diaeresis'
   5, 34, 20, 8, 20, 34,		// 215 - '× Multiplication sign'
   5, 124, 98, 90, 70, 62,		// 216 - 'Ø Latin Capital letter O with stroke'
   5, 60, 64, 65, 66, 60,		// 217 - 'Ù Latin Capital letter U with grave'
-  5, 60, 64, 66, 65, 60,		// 218 - 'Ú Latin Capital letter U with acute'
-  5, 60, 66, 65, 66, 60,		// 219 - 'Û Latin Capital Letter U with circumflex'
+  5, 36, 74, 82, 83, 36,		// 218 - 'Ś Polish small diacritic letter'
+  4, 88, 84, 85, 52,			// 219 - 'ś Polish small diacritic letter'
   5, 60, 65, 64, 65, 60,		// 220 - 'Ü Latin Capital Letter U with diaeresis'
   5, 2, 4, 122, 5, 2,		// 221 - 'Ý Latin Capital Letter Y with acute'
   4, 63, 18, 18, 12,		// 222 - 'Þ Latin Capital Letter Thorn'
@@ -473,10 +473,10 @@ MD_MAX72XX::fontType_t PROGMEM _sysfont[] =
   4, 57, 68, 68, 57,		// 246 - 'ö Latin Small Letter O with diaeresis'
   5, 8, 8, 42, 8, 8,		// 247 - '÷ Division sign'
   4, 56, 84, 76, 56,		// 248 - 'ø Latin Small Letter O with stroke'
-  4, 56, 65, 66, 120,		// 249 - 'ù Latin Small Letter U with grave'
-  4, 56, 64, 66, 121,		// 250 - 'ú Latin Small Letter U with acute'
-  4, 56, 66, 65, 122,		// 251 - 'û Latin Small Letter U with circumflex'
-  4, 58, 64, 64, 122,		// 252 - 'ü Latin Small Letter U with diaeresis'
+  5, 98, 82, 75, 75, 70,	// 249 - 'Ź Polish small diacritic letter'
+  4, 100, 84, 86, 77,		// 250 - 'ź Polish small diacritic letter'
+  5, 98, 82, 75, 74, 70,	// 251 - 'Ż Polish small diacritic letter'
+  4, 100, 84, 85, 76,		// 252 - 'ż Polish small diacritic letter'
   4, 24, 160, 162, 121,		// 253 - 'ý Latin Small Letter Y with acute'
   4, 252, 40, 40, 16,		// 254 - 'þ Latin Small Letter Thorn'
   4, 26, 160, 160, 122,		// 255 - 'ÿ Latin Small Letter Y with diaeresis'
@@ -742,4 +742,3 @@ MD_MAX72XX::fontType_t PROGMEM _sysfont[] =
 };
 
 #endif //USE_LOCAL_FONT
-

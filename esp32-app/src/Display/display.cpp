@@ -144,11 +144,14 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool flasher)
             break;
         }
 
-        case DYMD:
+        case DWYMD:
         {
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
             {
-                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s, %s", SystemRtc::weekdayToStr(dt), SystemRtc::dateToStr(dt));
+                // Convert weekday to extended - ascii;
+                char *wd = SystemRtc::weekdayToStr(dt);
+                utf8Ascii(wd);
+                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s, %s", wd, SystemRtc::dateToStr(dt));
                 m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
                 m_mx.setFont(NULL);
                 m_mx.displayReset(DISPLAY_ZONE_FULL);
@@ -163,3 +166,45 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool flasher)
         }
     }
 }
+
+//------------------------------------------------------------------------------
+void Display::utf8Ascii(char *s)
+{
+
+    uint8_t prev_c = '\0';
+    char *cp = s;
+    dbg("Converting: %s from UTF-8 to Extended ASCII...", s);
+
+    while (*s != '\0')
+    {
+        const uint8_t tmp_c = *s++;
+        uint8_t c = '\0';
+
+        if (tmp_c < 0x7f)   // Standard ASCII-set 0..0x7F, no conversion
+        {
+            prev_c = '\0';
+            c = tmp_c;
+        }
+        else
+        {
+            switch (prev_c)  // Conversion depending on preceding UTF8-character
+            {
+                case 0xC2: c = tmp_c;  break;
+                case 0xC3: c = tmp_c | 0xC0;  break;
+                case 0xC4: c = tmp_c; break;
+                case 0xC5: c = tmp_c | 0xD0;  break;
+                case 0x82: if (tmp_c == 0xAC) c = 0x80; // Euro symbol special case
+            }
+            prev_c = tmp_c;   // save last char
+            dbg("Converted:0x%x[%d] to:0x%x[%d]", tmp_c, tmp_c, c, c);
+        }
+
+        if (c != '\0')
+        {
+            *cp++ = c;
+        }
+    }
+    *cp = '\0';   // terminate the new string
+}
+
+//------------------------------------------------------------------------------

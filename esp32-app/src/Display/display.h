@@ -35,7 +35,7 @@ public:
     {
         TMH, // HH:MM
         TMHS,// HH:MMss
-        DYMD,
+        DWYMD, // Weekday, year-month-day
     } DateTimePrintMode;
 
 
@@ -57,6 +57,12 @@ public:
     void setIntensityLevel(uint8_t level);
 
     void printTime(const DateTime& dt, DateTimePrintMode tpm, bool flasher);
+
+    /**
+     * @brief In place conversion UTF-8 string to Extended ASCII (+ some polish chars from Latin Extended-A)
+     *        The extended ASCII string is always shorter.
+     */
+    static void utf8Ascii(char *s);
 
 private:
 
