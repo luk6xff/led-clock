@@ -54,7 +54,7 @@ void tests_setup()
 void tests_run()
 {
 
-    static bool	timeFlasher = true;
+    static bool	timeDots = true;
     static uint32_t timeLast = 0;
     static uint32_t timeSecCnt = 0;
 
@@ -117,12 +117,12 @@ void tests_run()
             }
             else
             {
-                disp.printTime(dt, timeDispMode, timeFlasher);
+                disp.printTime(dt, timeDispMode, timeDots);
             }
 
             if (millis() - timeSecCnt >= 1000) // 1[s]
             {
-                timeFlasher = timeFlasher ^ 1;
+                timeDots = timeDots ^ 1;
                 timeSecCnt = millis();
             }
             

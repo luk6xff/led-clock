@@ -5,7 +5,7 @@
 
 //------------------------------------------------------------------------------
 DisplayTask::DisplayTask()
-    : Task("DisplayTask", 8192, 10)
+    : Task("DisplayTask", (8192*2), 10)
     , m_timeDispMode(Display::TMH)
     , m_timeQ(nullptr)
 {
@@ -29,9 +29,7 @@ bool DisplayTask::addTimeMsg(const DateTime& dt)
 //------------------------------------------------------------------------------
 void DisplayTask::run()
 {
-    bool timeFlasher = true;
-    uint32_t timeLast = 0;
-    uint32_t timeSecCnt = 0;
+    bool timeDots;
     BaseType_t status;
     DateTime dt;
     Display::MAX72xxConfig cfg =
@@ -47,7 +45,7 @@ void DisplayTask::run()
     const TickType_t timeMeasDelay = (50 / portTICK_PERIOD_MS);
     for(;;)
     {
-        addTimeMsg(dt);
+        //addTimeMsg(dt);
         dbg("BeforePeek");
         status = xQueueReceive(m_timeQ, &dt, portMAX_DELAY);
 
@@ -56,32 +54,17 @@ void DisplayTask::run()
             rtos::LockGuard<rtos::Mutex> lock(i2cMutex);
             disp.update();
         }
-
         if (status == pdPASS) 
         {
-            if (millis() - timeLast >= 10000) // 10[s]
+            if (dt.second() % 2)
             {
-                disp.printTime(dt, Display::DWYMD);
-                timeLast = millis();
-                if (m_timeDispMode == Display::TMH)
-                {
-                    m_timeDispMode = Display::TMHS;
-                }
-                else
-                {
-                    m_timeDispMode = Display::TMH;
-                }
+                timeDots = true; 
             }
             else
             {
-                disp.printTime(dt, m_timeDispMode, timeFlasher);
+                timeDots = false;
             }
-
-            if (millis() - timeSecCnt >= 1000) // 1[s]
-            {
-                timeFlasher = timeFlasher ^ 1;
-                timeSecCnt = millis();
-            }
+            disp.printTime(dt, m_timeDispMode, timeDots);
         }
         vTaskDelay(timeMeasDelay);
     }

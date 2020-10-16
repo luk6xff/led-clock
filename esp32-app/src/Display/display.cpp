@@ -116,7 +116,7 @@ void Display::setIntensityLevel(uint8_t level)
 }
 
 //------------------------------------------------------------------------------
-void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeFlasher)
+void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots)
 {
     switch(tpm)
     {
@@ -124,7 +124,7 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeFlas
         {
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
             {
-                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%02d%c%02d", dt.hour(), (timeFlasher ? ':' : ' '), dt.minute());
+                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%02d%c%02d", dt.hour(), (timeDots ? ':' : ' '), dt.minute());
                 m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
                 m_mx.setFont(dig_6x8_fonts);
                 m_mx.displayReset(DISPLAY_ZONE_FULL);
@@ -137,7 +137,7 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeFlas
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_0) && getDispObject()->getZoneStatus(DISPLAY_ZONE_1))
             {
                 snprintf(m_dispZone0Buf, sizeof(m_dispZone0Buf), "%02d", dt.second());
-                snprintf(m_dispZone1Buf, sizeof(m_dispZone1Buf), "%02d%c%02d", dt.hour(), (timeFlasher ? ':' : ' '), dt.minute());
+                snprintf(m_dispZone1Buf, sizeof(m_dispZone1Buf), "%02d%c%02d", dt.hour(), (timeDots ? ':' : ' '), dt.minute());
                 m_mx.displayZoneText(DISPLAY_ZONE_0, m_dispZone0Buf, PA_LEFT, 0, 0, PA_PRINT, PA_NO_EFFECT);
                 m_mx.displayZoneText(DISPLAY_ZONE_1, m_dispZone1Buf, PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
                 m_mx.setFont(DISPLAY_ZONE_0, dig_3x5_fonts);

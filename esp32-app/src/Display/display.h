@@ -57,7 +57,7 @@ public:
 
     void setIntensityLevel(uint8_t level);
 
-    void printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeFlasher=false);
+    void printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots=false);
 
     /**
      * @brief In place conversion UTF-8 string to Extended ASCII (+ some polish chars from Latin Extended-A)
