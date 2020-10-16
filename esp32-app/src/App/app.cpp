@@ -20,7 +20,8 @@
 
 //------------------------------------------------------------------------------
 App::App()
-//    : m_clockTask(m_dispTask)
+    : m_dispTask(nullptr)
+    , m_clockTask(nullptr)
 {
 
 }
@@ -36,17 +37,22 @@ App& App::instance()
 void App::setup()
 {
     utils::init();
-    inf("\r\nStarting <LUK6XFF LED_CLOCK 2020> running on CPU %d at %d MHz. Version %s.  Free memory %d\r\n",
+    inf("\r\nStarting <LUK6XFF LED_CLOCK 2020>\r\nSystem running on CPU %d at %d MHz.\r\nApp Version %s.\r\nFree heap memory %d\r\n",
         xPortGetCoreID(),
         ESP.getCpuFreqMHz(),
         VERSION,
         ESP.getFreeHeap()); // Normally about 170 kB
+
+    // Create all the tasks and run them
+    //m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask);
+    m_dispTask = new DisplayTask;
+    m_clockTask = new ClockTask(*m_dispTask);
 }
 
 //------------------------------------------------------------------------------
 void App::run()
 {
-    //delay(100);
+
 }
 
 //------------------------------------------------------------------------------

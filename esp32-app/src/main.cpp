@@ -33,6 +33,7 @@ void loop(void)
     tests_run();
 #else
     App::instance().run();
+    vTaskDelete(nullptr);
 #endif
 }
 

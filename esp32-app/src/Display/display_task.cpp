@@ -1,15 +1,18 @@
 #include "display_task.h"
-#include "../hw_config.h"
+#include "hw_config.h"
+#include "App/rtos_common.h"
+#include "App/utils.h"
 
 //------------------------------------------------------------------------------
 DisplayTask::DisplayTask()
-    : Task("DisplayTask", 4096, 10)
+    : Task("DisplayTask", 8192, 10)
     , m_timeDispMode(Display::TMH)
     , m_timeQ(nullptr)
 {
-    m_timeQ = xQueueCreate(256, sizeof(DateTime));
+    m_timeQ = xQueueCreate(32, sizeof(DateTime));
     if (!m_timeQ)
     {
+        err("m_timeQ has not been created! DisplayTask will be killed...");
         kill();
     }
 }
@@ -17,7 +20,9 @@ DisplayTask::DisplayTask()
 //------------------------------------------------------------------------------
 bool DisplayTask::addTimeMsg(const DateTime& dt)
 {
-    const BaseType_t status = xQueueOverwrite(m_timeQ, &dt);
+    dbg("BeforeAdd");
+    const BaseType_t status = /*xQueueOverwrite*/xQueueSendToBack(m_timeQ, &dt, 0);
+    dbg("AfterAdd");
     return (status == pdPASS) ? true : false;
 }
 
@@ -27,8 +32,8 @@ void DisplayTask::run()
     bool timeFlasher = true;
     uint32_t timeLast = 0;
     uint32_t timeSecCnt = 0;
+    BaseType_t status;
     DateTime dt;
-    SystemRtc rtc;
     Display::MAX72xxConfig cfg =
     {
         DISPLAY_MAX72XX_HW_TYPE,
@@ -38,13 +43,22 @@ void DisplayTask::run()
         DISPLAY_CS_PIN,
     };
     Display disp(cfg);
+
+    const TickType_t timeMeasDelay = (50 / portTICK_PERIOD_MS);
     for(;;)
     {
-        //const BaseType_t status = xQueuePeek(m_timeQ, &dt, 0);
-        disp.update();
-        //if (status == pdPASS) 
+        addTimeMsg(dt);
+        dbg("BeforePeek");
+        status = xQueueReceive(m_timeQ, &dt, portMAX_DELAY);
+
+        dbg("AfterPeek");
         {
-            dt = rtc.getTime(); // LU_TODO
+            rtos::LockGuard<rtos::Mutex> lock(i2cMutex);
+            disp.update();
+        }
+
+        if (status == pdPASS) 
+        {
             if (millis() - timeLast >= 10000) // 10[s]
             {
                 disp.printTime(dt, Display::DWYMD);
@@ -69,6 +83,7 @@ void DisplayTask::run()
                 timeSecCnt = millis();
             }
         }
+        vTaskDelay(timeMeasDelay);
     }
 }
 

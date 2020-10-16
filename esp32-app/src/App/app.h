@@ -3,11 +3,13 @@
  * @brief Class describing a complete application
  *
  * @author Lukasz Uszko - luk6xff
- * @date   2020-09-01
+ * @date   2020-10-15
  */
 
 #include "Display/display_task.h"
 #include "Clock/clock_task.h"
+
+#include <memory>
 
 class App
 {
@@ -22,6 +24,7 @@ public:
 private:
     App();
 
-    DisplayTask m_dispTask;
-    //ClockTask   m_clockTask;
+    //std::unique_ptr<DisplayTask> m_dispTask;
+    DisplayTask *m_dispTask;
+    ClockTask   *m_clockTask;
 };
