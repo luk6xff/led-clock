@@ -46,6 +46,6 @@ void Mutex::reset()
 /**
  * @brief Globally used rtos objects
  */
-rtos::Mutex i2cMutex;
+rtos::Mutex g_i2cMutex;
 
 //------------------------------------------------------------------------------

@@ -4,8 +4,18 @@
 #include "App/utils.h"
 
 //------------------------------------------------------------------------------
+#define DISPLAY_TASK_STACK_SIZE (8192*2)
+#define DISPLAY_TASK_PRIORITY       (10)
+
+//------------------------------------------------------------------------------
 DisplayTask::DisplayTask()
-    : Task("DisplayTask", (8192*2), 10)
+    : Task("DisplayTask", DISPLAY_TASK_STACK_SIZE, DISPLAY_TASK_PRIORITY)
+    , m_dispCfg {   DISPLAY_MAX72XX_HW_TYPE,
+                    DISPLAY_MAX72XX_MODULES_NUM,
+                    DISPLAY_DIN_PIN,
+                    DISPLAY_CLK_PIN,
+                    DISPLAY_CS_PIN }
+    , m_disp(m_dispCfg)
     , m_timeDispMode(Display::TMH)
     , m_timeQ(nullptr)
 {
@@ -21,8 +31,12 @@ DisplayTask::DisplayTask()
 bool DisplayTask::addTimeMsg(const DateTime& dt)
 {
     dbg("BeforeAdd");
-    const BaseType_t status = /*xQueueOverwrite*/xQueueSendToBack(m_timeQ, &dt, 0);
-    dbg("AfterAdd");
+    BaseType_t status = pdFAIL;
+    if (m_timeQ)
+    {
+        status = xQueueSendToBack(m_timeQ, &dt, 0);
+        dbg("AfterAdd");
+    }
     return (status == pdPASS) ? true : false;
 }
 
@@ -32,27 +46,16 @@ void DisplayTask::run()
     bool timeDots;
     BaseType_t status;
     DateTime dt;
-    Display::MAX72xxConfig cfg =
-    {
-        DISPLAY_MAX72XX_HW_TYPE,
-        DISPLAY_MAX72XX_MODULES_NUM,
-        DISPLAY_DIN_PIN,
-        DISPLAY_CLK_PIN,
-        DISPLAY_CS_PIN,
-    };
-    Display disp(cfg);
-
     const TickType_t timeMeasDelay = (50 / portTICK_PERIOD_MS);
     for(;;)
     {
-        //addTimeMsg(dt);
         dbg("BeforePeek");
         status = xQueueReceive(m_timeQ, &dt, portMAX_DELAY);
 
         dbg("AfterPeek");
         {
-            rtos::LockGuard<rtos::Mutex> lock(i2cMutex);
-            disp.update();
+            rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
+            //m_disp.update();
         }
         if (status == pdPASS) 
         {
@@ -64,7 +67,7 @@ void DisplayTask::run()
             {
                 timeDots = false;
             }
-            disp.printTime(dt, m_timeDispMode, timeDots);
+            m_disp.printTime(dt, m_timeDispMode, timeDots);
         }
         vTaskDelay(timeMeasDelay);
     }

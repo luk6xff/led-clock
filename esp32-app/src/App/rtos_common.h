@@ -55,7 +55,14 @@ private:
 
 } // rtos
 
+
+// Globally used rtos objects
 /**
- * @brief Globally used rtos objects
+ * @brief Mutex to prevent mutual access to I2C peripheral
  */
-extern rtos::Mutex i2cMutex;
+extern rtos::Mutex g_i2cMutex;
+
+/**
+ * @brief Mutex to prevent mutual access to I2C peripheral
+ */
+//extern rtos::Mutex g_dispQueue;

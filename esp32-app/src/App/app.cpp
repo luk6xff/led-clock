@@ -46,7 +46,7 @@ void App::setup()
     // Create all the tasks and run them
     //m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask);
     m_dispTask = new DisplayTask;
-    m_clockTask = new ClockTask(*m_dispTask);
+    //m_clockTask = new ClockTask(*m_dispTask);
 }
 
 //------------------------------------------------------------------------------
