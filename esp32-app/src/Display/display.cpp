@@ -116,16 +116,16 @@ void Display::setIntensityLevel(uint8_t level)
 }
 
 //------------------------------------------------------------------------------
-void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool flasher)
+void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeFlasher)
 {
     switch(tpm)
     {
         case TMH:
         {
-
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
             {
-                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%02d%c%02d", dt.hour(), (flasher ? ':' : ' '), dt.minute());
+                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%02d%c%02d", dt.hour(), (timeFlasher ? ':' : ' '), dt.minute());
+                m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
                 m_mx.setFont(dig_6x8_fonts);
                 m_mx.displayReset(DISPLAY_ZONE_FULL);
             }
@@ -137,7 +137,11 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool flasher)
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_0) && getDispObject()->getZoneStatus(DISPLAY_ZONE_1))
             {
                 snprintf(m_dispZone0Buf, sizeof(m_dispZone0Buf), "%02d", dt.second());
-                snprintf(m_dispZone1Buf, sizeof(m_dispZone1Buf), "%02d%c%02d", dt.hour(), (flasher ? ':' : ' '), dt.minute());
+                snprintf(m_dispZone1Buf, sizeof(m_dispZone1Buf), "%02d%c%02d", dt.hour(), (timeFlasher ? ':' : ' '), dt.minute());
+                m_mx.displayZoneText(DISPLAY_ZONE_0, m_dispZone0Buf, PA_LEFT, 0, 0, PA_PRINT, PA_NO_EFFECT);
+                m_mx.displayZoneText(DISPLAY_ZONE_1, m_dispZone1Buf, PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
+                m_mx.setFont(DISPLAY_ZONE_0, dig_3x5_fonts);
+                m_mx.setFont(DISPLAY_ZONE_1, dig_4x8_fonts);
                 m_mx.displayReset(DISPLAY_ZONE_0);
                 m_mx.displayReset(DISPLAY_ZONE_1);
             }
@@ -149,9 +153,8 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool flasher)
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
             {
                 // Convert weekday to extended - ascii;
-                char *wd = SystemRtc::weekdayToStr(dt);
-                utf8Ascii(wd);
-                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s, %s", wd, SystemRtc::dateToStr(dt));
+                String wd = utf8Ascii(SystemRtc::weekdayToStr(dt));
+                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s %s", wd.c_str(), SystemRtc::dateToStr(dt));
                 m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
                 m_mx.setFont(NULL);
                 m_mx.displayReset(DISPLAY_ZONE_FULL);
@@ -168,11 +171,11 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool flasher)
 }
 
 //------------------------------------------------------------------------------
-void Display::utf8Ascii(char *s)
+String Display::utf8Ascii(const char *s)
 {
 
     uint8_t prev_c = '\0';
-    char *cp = s;
+    String cp;
     dbg("Converting: %s from UTF-8 to Extended ASCII...", s);
 
     while (*s != '\0')
@@ -201,10 +204,12 @@ void Display::utf8Ascii(char *s)
 
         if (c != '\0')
         {
-            *cp++ = c;
+            cp += (char)c;
         }
     }
-    *cp = '\0';   // terminate the new string
+    cp += '\0';   // terminate the new string
+    dbg(">>>> CP: %s", cp.c_str());
+    return cp;
 }
 
 //------------------------------------------------------------------------------

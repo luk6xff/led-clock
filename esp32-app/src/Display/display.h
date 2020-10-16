@@ -1,4 +1,5 @@
 
+#pragma once
 /**
  * @brief Class describing a MAX72xx driven LED matrix
  *
@@ -56,13 +57,13 @@ public:
 
     void setIntensityLevel(uint8_t level);
 
-    void printTime(const DateTime& dt, DateTimePrintMode tpm, bool flasher);
+    void printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeFlasher=false);
 
     /**
      * @brief In place conversion UTF-8 string to Extended ASCII (+ some polish chars from Latin Extended-A)
      *        The extended ASCII string is always shorter.
      */
-    static void utf8Ascii(char *s);
+    static String utf8Ascii(const char *s);
 
 private:
 

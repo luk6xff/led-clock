@@ -3,12 +3,9 @@
 #include <driver/i2c.h>
 #include "sdkconfig.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
-#include <esp_log.h>
-
 
 #define DBG_BAUDRATE 9600
-#define DBG_VERBOSITY_LEVEL DBG_INFO
+#define DBG_VERBOSITY_LEVEL DBG_VERBOSE
 
 //------------------------------------------------------------------------------
 void utils::init()
@@ -17,7 +14,7 @@ void utils::init()
     Debug.setDebugOutputStream(&Serial);
     Debug.setDebugLevel(DBG_VERBOSITY_LEVEL);
     Debug.timestampOff();
-    inf(">>> USBMUX by luk6xff 2020 <<<\r\n");
+    inf(">>> LED-CLOCK by luk6xff 2020 <<<\r\n");
 }
 
 //------------------------------------------------------------------------------

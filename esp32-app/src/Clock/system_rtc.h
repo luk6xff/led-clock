@@ -17,8 +17,8 @@ public:
     static char* timeToStr(const DateTime& dt);
     static char* dateToStr(const DateTime& dt);
     static char* timeDateToStr(const DateTime& dt);
-    static char* weekdayToStr(const DateTime& dt);
-    static char* monthToStr(const DateTime& dt);
+    static const char* weekdayToStr(const DateTime& dt);
+    static const char* monthToStr(const DateTime& dt);
     static uint8_t calculateWeekday(const DateTime& dt);
     static uint8_t validateDate(const DateTime& dt);
 
