@@ -24,7 +24,6 @@ public:
 private:
     App();
 
-    //std::unique_ptr<DisplayTask> m_dispTask;
-    DisplayTask *m_dispTask;
-    ClockTask   *m_clockTask;
+    std::unique_ptr<DisplayTask> m_dispTask;
+    std::unique_ptr<ClockTask> m_clockTask;
 };

@@ -17,6 +17,7 @@ public:
     Task(const String& name, size_t stackSize = 4096, UBaseType_t priority = 12);
     virtual ~Task();
 
+    void start();
     void suspend();
     void resume();
 
@@ -26,9 +27,8 @@ public:
 
     const char* getTaskName() const;
 
-protected: 
+protected:
     void kill();
-    void start();
     virtual void run() = 0;
 
 private:

@@ -12,7 +12,7 @@ public:
 
     bool addTimeMsg(const DateTime& dt);
 
-private:
+protected:
     virtual void run() override;
 
 private:
@@ -20,5 +20,4 @@ private:
     Display m_disp;
     Display::DateTimePrintMode m_timeDispMode;
     QueueHandle_t m_timeQ;
-
 };

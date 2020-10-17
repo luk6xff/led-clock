@@ -34,8 +34,8 @@ public:
 
     typedef enum
     {
-        TMH, // HH:MM
-        TMHS,// HH:MMss
+        THM, // HH:MM
+        THMS,// HH:MMss
         DWYMD, // Weekday, year-month-day
     } DateTimePrintMode;
 

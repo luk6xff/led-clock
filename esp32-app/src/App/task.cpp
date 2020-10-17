@@ -10,7 +10,7 @@ Task::Task(const String& name, size_t stackSize, UBaseType_t priority)
     , m_stackSize(stackSize)
     , m_priority(priority)
 {
-    start();
+    //start();
 }
 
 //------------------------------------------------------------------------------
@@ -58,14 +58,17 @@ const char* Task::getTaskName() const
 //------------------------------------------------------------------------------
 void Task::kill()
 {
-    vTaskDelete(m_handle);
+    if (m_handle)
+    {
+        vTaskDelete(m_handle);
+    }
     m_handle = nullptr;
 }
 
 //------------------------------------------------------------------------------
 void Task::start()
 {
-    xTaskCreate(taskFuncAdapter, m_name.c_str(), m_stackSize, this, m_priority, &m_handle);
+    xTaskCreate(&Task::taskFuncAdapter, m_name.c_str(), m_stackSize, this, m_priority, &m_handle);
 }
 
 //------------------------------------------------------------------------------

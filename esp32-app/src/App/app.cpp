@@ -41,12 +41,13 @@ void App::setup()
         xPortGetCoreID(),
         ESP.getCpuFreqMHz(),
         VERSION,
-        ESP.getFreeHeap()); // Normally about 170 kB
+        ESP.getFreeHeap());
 
     // Create all the tasks and run them
-    //m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask);
-    m_dispTask = new DisplayTask;
-    //m_clockTask = new ClockTask(*m_dispTask);
+    m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask);
+    m_dispTask->start();
+    m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(*m_dispTask.get()));
+    m_clockTask->start();
 }
 
 //------------------------------------------------------------------------------

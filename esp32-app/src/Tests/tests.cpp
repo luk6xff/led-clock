@@ -42,11 +42,12 @@ void blink_task(void *pvParameter)
 //------------------------------------------------------------------------------
 void tests_setup()
 {
+    // Utils init
+    utils::init();
+    //utils::util_i2c_scanner();
+
     // Create blink task
     xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
-
-    App::instance().setup();
-    //utils::util_i2c_scanner();
 }
 
 
@@ -93,7 +94,7 @@ void tests_run()
         timeLast = millis();
         timeSecCnt =  millis();
 
-        Display::DateTimePrintMode timeDispMode = Display::TMH;
+        Display::DateTimePrintMode timeDispMode = Display::THM;
         while(1)
         {
 
@@ -105,15 +106,15 @@ void tests_run()
             {
                 disp.printTime(dt, Display::DWYMD);
                 timeLast = millis();
-                if (timeDispMode == Display::TMH)
+                if (timeDispMode == Display::THM)
                 {
-                    timeDispMode = Display::TMHS;
+                    timeDispMode = Display::THMS;
                 }
                 else
                 {
-                    timeDispMode = Display::TMH;
+                    timeDispMode = Display::THM;
                 }
-                
+
             }
             else
             {
@@ -125,7 +126,7 @@ void tests_run()
                 timeDots = timeDots ^ 1;
                 timeSecCnt = millis();
             }
-            
+
 
     #endif // TEST_DISPLAY
 

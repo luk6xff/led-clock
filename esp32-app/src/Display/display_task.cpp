@@ -16,7 +16,7 @@ DisplayTask::DisplayTask()
                     DISPLAY_CLK_PIN,
                     DISPLAY_CS_PIN }
     , m_disp(m_dispCfg)
-    , m_timeDispMode(Display::TMH)
+    , m_timeDispMode(Display::THM)
     , m_timeQ(nullptr)
 {
     m_timeQ = xQueueCreate(32, sizeof(DateTime));
@@ -30,12 +30,10 @@ DisplayTask::DisplayTask()
 //------------------------------------------------------------------------------
 bool DisplayTask::addTimeMsg(const DateTime& dt)
 {
-    dbg("BeforeAdd");
     BaseType_t status = pdFAIL;
     if (m_timeQ)
     {
         status = xQueueSendToBack(m_timeQ, &dt, 0);
-        dbg("AfterAdd");
     }
     return (status == pdPASS) ? true : false;
 }
@@ -49,19 +47,17 @@ void DisplayTask::run()
     const TickType_t timeMeasDelay = (50 / portTICK_PERIOD_MS);
     for(;;)
     {
-        dbg("BeforePeek");
         status = xQueueReceive(m_timeQ, &dt, portMAX_DELAY);
-
-        dbg("AfterPeek");
         {
             rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
-            //m_disp.update();
+            m_disp.update();
+            dbg("DT-r: %s", dt.timestamp().c_str());
         }
-        if (status == pdPASS) 
+        if (status == pdPASS)
         {
             if (dt.second() % 2)
             {
-                timeDots = true; 
+                timeDots = true;
             }
             else
             {

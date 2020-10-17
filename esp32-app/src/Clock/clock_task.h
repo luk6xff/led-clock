@@ -12,7 +12,6 @@ private:
     virtual void run() override;
 
 private:
-    SystemRtc m_rtc;
-    DisplayTask& m_disp;
 
+    DisplayTask& m_disp;
 };

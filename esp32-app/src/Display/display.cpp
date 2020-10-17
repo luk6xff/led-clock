@@ -120,7 +120,7 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
 {
     switch(tpm)
     {
-        case TMH:
+        case THM:
         {
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
             {
@@ -132,7 +132,7 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
             break;
         }
 
-        case TMHS:
+        case THMS:
         {
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_0) && getDispObject()->getZoneStatus(DISPLAY_ZONE_1))
             {

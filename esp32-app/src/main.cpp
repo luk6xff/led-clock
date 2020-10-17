@@ -7,7 +7,7 @@
  */
 
 
-//#define TESTS_ON
+#define TESTS_OFF
 
 #ifdef TESTS_ON
     #include "Tests/tests.h"
