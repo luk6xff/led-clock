@@ -4,7 +4,7 @@
 
 //------------------------------------------------------------------------------
 #define WIFI_TASK_STACK_SIZE (8192)
-#define WIFI_TASK_PRIORITY      (5)
+#define WIFI_TASK_PRIORITY      (4)
 
 #define WIFI_TIMEOUT_MS      20000 // 20 second WiFi connection timeout
 #define WIFI_RECOVER_TIME_MS 30000 // Wait 30 seconds after a failed connection attempt

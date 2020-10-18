@@ -1,12 +1,14 @@
 #include "system_time.h"
 #include "hw_config.h"
-#include "../App/utils.h"
+#include "App/rtos_common.h"
+#include "App/utils.h"
 
 //------------------------------------------------------------------------------
 SystemTime::SystemTime(SystemTimeSettings& timeSettings)
     : m_timeSettings(timeSettings)
     , m_timezone(m_timeSettings.dstStart, m_timeSettings.stdStart)
 {
+    rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
     if (!m_rtc.begin())
     {
         err("Couldn't find RTC");
@@ -22,6 +24,7 @@ SystemTime::SystemTime(SystemTimeSettings& timeSettings)
 //------------------------------------------------------------------------------
 void SystemTime::setTime(const DateTime& dt)
 {
+    rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
     m_rtc.adjust(dt);
 }
 
@@ -31,18 +34,21 @@ void SystemTime::setUtcTime(const DateTime& dt)
     time_t utc = dt.unixtime();
     time_t local = m_timezone.toLocal(utc);
     DateTime localDt(local);
+    rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
     m_rtc.adjust(localDt);
 }
 
 //------------------------------------------------------------------------------
 const DateTime SystemTime::getTime()
 {
+    rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
     return m_rtc.now();
 }
 
 //------------------------------------------------------------------------------
 float SystemTime::getTemperature()
 {
+    rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
     return m_rtc.getTemperature();
 }
 

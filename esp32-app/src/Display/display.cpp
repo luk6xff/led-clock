@@ -1,7 +1,7 @@
 
 #include "display.h"
 #include "fonts.h"
-#include "../App/utils.h"
+#include "App/utils.h"
 
 
 #define MAX_DISPLAY_ZONES 3
@@ -43,7 +43,7 @@ void Display::setup()
 void Display::update()
 {
     m_mx.displayAnimate();
-    processAutoIntensityLevelControl();
+    // processAutoIntensityLevelControl(); // Used externally
 }
 
 //------------------------------------------------------------------------------

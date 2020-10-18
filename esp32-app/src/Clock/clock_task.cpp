@@ -1,10 +1,9 @@
 #include "clock_task.h"
-#include "App/rtos_common.h"
 #include "App/utils.h"
 
 //------------------------------------------------------------------------------
 #define CLOCK_TASK_STACK_SIZE (8192)
-#define CLOCK_TASK_PRIORITY      (9)
+#define CLOCK_TASK_PRIORITY     (6)
 
 //------------------------------------------------------------------------------
 ClockTask::ClockTask(DisplayTask& disp,
@@ -36,11 +35,7 @@ void ClockTask::run()
     DateTime dt;
     for(;;)
     {
-        {
-            rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
-            dt = time.getTime();
-        }
-
+        dt = time.getTime();
         if (dt.isValid())
         {
             m_disp.addTimeMsg(dt);
@@ -56,7 +51,6 @@ void ClockTask::run()
         if (rc == pdPASS)
         {
             dbg("[SYSTIME] UTC:%s", dt.timestamp().c_str());
-            rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
             time.setUtcTime(dt);
         }
 

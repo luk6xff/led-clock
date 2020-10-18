@@ -5,7 +5,7 @@
 
 //------------------------------------------------------------------------------
 #define DISPLAY_TASK_STACK_SIZE (8192)
-#define DISPLAY_TASK_PRIORITY     (10)
+#define DISPLAY_TASK_PRIORITY     (6)
 
 //------------------------------------------------------------------------------
 DisplayTask::DisplayTask()
@@ -45,18 +45,12 @@ void DisplayTask::run()
     DateTime dt;
     const TickType_t dispRefreshTime = (50 / portTICK_PERIOD_MS);
     Display m_disp(m_dispCfg);
-    {
-        rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
-        m_disp.setup();
-    }
+    m_disp.setup();
     for(;;)
     {
-        status = xQueueReceive(m_timeQ, &dt, portMAX_DELAY);
-        {
-            rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
-            m_disp.update();
-        }
-        dbg("DT-r: %s", dt.timestamp().c_str());
+        status = xQueueReceive(m_timeQ, &dt, 0);
+        m_disp.update();
+        //m_disp.processAutoIntensityLevelControl();
         if (status == pdPASS)
         {
             if (dt.second() % 2)
@@ -68,6 +62,7 @@ void DisplayTask::run()
                 timeDots = false;
             }
             m_disp.printTime(dt, m_timeDispMode, timeDots);
+            dbg("DT-r: %s", dt.timestamp().c_str());
         }
         vTaskDelay(dispRefreshTime);
     }
