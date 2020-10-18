@@ -19,6 +19,12 @@ Display::Display(const MAX72xxConfig& cfg)
     : m_mx(cfg.moduleType, cfg.max72xxCSpin, cfg.modulesNumber)
     , m_autoIntensityLevelStatus(true)
 {
+    //setup();
+}
+
+//------------------------------------------------------------------------------
+void Display::setup()
+{
     m_mx.begin(MAX_DISPLAY_ZONES);
 
     m_mx.setZone(DISPLAY_ZONE_0, 0, 0);
@@ -153,8 +159,8 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
             {
                 // Convert weekday to extended - ascii;
-                String wd = utf8Ascii(SystemRtc::weekdayToStr(dt));
-                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s %s", wd.c_str(), SystemRtc::dateToStr(dt));
+                String wd = utf8Ascii(SystemTime::weekdayToStr(dt));
+                snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s %s", wd.c_str(), SystemTime::dateToStr(dt));
                 m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
                 m_mx.setFont(NULL);
                 m_mx.displayReset(DISPLAY_ZONE_FULL);

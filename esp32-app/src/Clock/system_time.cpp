@@ -1,43 +1,65 @@
-#include "system_rtc.h"
+#include "system_time.h"
 #include "hw_config.h"
 #include "../App/utils.h"
 
 //------------------------------------------------------------------------------
-SystemRtc::SystemRtc()
+SystemTime::SystemTime(SystemTimeSettings& timeSettings)
+    : m_timeSettings(timeSettings)
+    , m_timezone(m_timeSettings.dstStart, m_timeSettings.stdStart)
 {
-    if (!rtc.begin())
+    if (!m_rtc.begin())
     {
         err("Couldn't find RTC");
-        while (1);
     }
 
-    if (rtc.lostPower())
+    if (m_rtc.lostPower())
     {
         err("RTC lost power, lets set the time!");
-        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+        m_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     }
 }
 
 //------------------------------------------------------------------------------
-void SystemRtc::setTime(const DateTime& dt)
+void SystemTime::setTime(const DateTime& dt)
 {
-    rtc.adjust(dt);
+    m_rtc.adjust(dt);
 }
 
 //------------------------------------------------------------------------------
-const DateTime SystemRtc::getTime()
+void SystemTime::setUtcTime(const DateTime& dt)
 {
-    return rtc.now();
+    time_t utc = dt.unixtime();
+    time_t local = m_timezone.toLocal(utc);
+    DateTime localDt(local);
+    m_rtc.adjust(localDt);
 }
 
 //------------------------------------------------------------------------------
-float SystemRtc::getTemperature()
+const DateTime SystemTime::getTime()
 {
-    return rtc.getTemperature();
+    return m_rtc.now();
 }
 
 //------------------------------------------------------------------------------
-char* SystemRtc::timeToStr(const DateTime& dt)
+float SystemTime::getTemperature()
+{
+    return m_rtc.getTemperature();
+}
+
+// //------------------------------------------------------------------------------
+// bool SystemTime::checkTimezoneChange(const DateTime& dt)
+// {
+//     const time_t time = dt.unixtime();
+//     if (m_timezone.locIsDST(time) && !m_timeSettings.wasDstSet)
+//     {
+//         m_timeSettings.wasStdSet = false;
+//         m_timeSettings.wasDstSet = true;
+
+//     }
+// }
+
+//------------------------------------------------------------------------------
+char* SystemTime::timeToStr(const DateTime& dt)
 {
     static char str[] = "xxxxxxxx";
     if (dt.hour() < 10)
@@ -79,7 +101,7 @@ char* SystemRtc::timeToStr(const DateTime& dt)
 }
 
 //------------------------------------------------------------------------------
-char *SystemRtc::dateToStr(const DateTime& dt)
+char *SystemTime::dateToStr(const DateTime& dt)
 {
     static char str[11];
     const char divider = '-';
@@ -118,7 +140,7 @@ char *SystemRtc::dateToStr(const DateTime& dt)
 }
 
 //------------------------------------------------------------------------------
-char *SystemRtc::timeDateToStr(const DateTime& dt)
+char *SystemTime::timeDateToStr(const DateTime& dt)
 {
     static char strTimeDate[30] = {' '};
     const int timeStrLen = 8;
@@ -137,7 +159,7 @@ char *SystemRtc::timeDateToStr(const DateTime& dt)
 }
 
 //------------------------------------------------------------------------------
-const char* SystemRtc::weekdayToStr(const DateTime& dt)
+const char* SystemTime::weekdayToStr(const DateTime& dt)
 {
     // TODO - i18n
     static const char weekday[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
@@ -146,14 +168,14 @@ const char* SystemRtc::weekdayToStr(const DateTime& dt)
 }
 
 //------------------------------------------------------------------------------
-const char *SystemRtc::monthToStr(const DateTime& dt)
+const char *SystemTime::monthToStr(const DateTime& dt)
 {
 	static const char months[12][15]  = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 	return months[dt.month() - 1];
 }
 
 //------------------------------------------------------------------------------
-uint8_t SystemRtc::calculateWeekday(const DateTime& dt)
+uint8_t SystemTime::calculateWeekday(const DateTime& dt)
 {
     int dow;
     uint8_t array[12] = {6, 2, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
@@ -174,7 +196,7 @@ uint8_t SystemRtc::calculateWeekday(const DateTime& dt)
 }
 
 //------------------------------------------------------------------------------
-uint8_t SystemRtc::validateDate(const DateTime& dt)
+uint8_t SystemTime::validateDate(const DateTime& dt)
 {
     uint8_t array[12] = {31,0,31,30,31,30,31,31,30,31,30,31};
     uint8_t od;

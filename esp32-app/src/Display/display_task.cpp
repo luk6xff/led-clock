@@ -25,6 +25,7 @@ DisplayTask::DisplayTask()
         err("m_timeQ has not been created! DisplayTask will be killed...");
         kill();
     }
+    m_disp.setup();
 }
 
 //------------------------------------------------------------------------------

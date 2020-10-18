@@ -12,7 +12,7 @@
 #include <MD_Parola.h>
 #include <SPI.h>
 #include "light_sensor.h"
-#include "../Clock/system_rtc.h"
+#include "../Clock/system_time.h"
 
 
 #define DISPLAY_MAX72XX_HW_TYPE     MD_MAX72XX::DR1CR0RR0_HW//FC16_HW
@@ -42,6 +42,8 @@ public:
 
 public:
     explicit Display(const MAX72xxConfig& cfg);
+
+    void setup();
 
     void update();
 
