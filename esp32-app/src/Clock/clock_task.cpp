@@ -3,7 +3,7 @@
 
 //------------------------------------------------------------------------------
 #define CLOCK_TASK_STACK_SIZE (8192)
-#define CLOCK_TASK_PRIORITY     (6)
+#define CLOCK_TASK_PRIORITY     (16)
 
 //------------------------------------------------------------------------------
 ClockTask::ClockTask(DisplayTask& disp,

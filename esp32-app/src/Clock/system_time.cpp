@@ -34,8 +34,7 @@ void SystemTime::setUtcTime(const DateTime& dt)
     time_t utc = dt.unixtime();
     time_t local = m_timezone.toLocal(utc);
     DateTime localDt(local);
-    rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
-    m_rtc.adjust(localDt);
+    setTime(localDt);
 }
 
 //------------------------------------------------------------------------------

@@ -50,7 +50,7 @@ void DisplayTask::run()
     {
         status = xQueueReceive(m_timeQ, &dt, 0);
         m_disp.update();
-        //m_disp.processAutoIntensityLevelControl();
+        m_disp.processAutoIntensityLevelControl();
         if (status == pdPASS)
         {
             if (dt.second() % 2)
