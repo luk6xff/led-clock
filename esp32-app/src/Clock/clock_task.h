@@ -9,10 +9,13 @@ public:
     explicit ClockTask(DisplayTask& disp,
                        SystemTimeSettings& timeCfg);
 
+    const QueueHandle_t& extSrcTimeQueue();
+
 private:
     virtual void run() override;
 
 private:
     DisplayTask& m_disp;
     SystemTimeSettings& m_timeCfg;
+    QueueHandle_t m_extSrcTime;
 };

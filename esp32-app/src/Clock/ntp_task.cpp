@@ -9,10 +9,12 @@
 #define NTP_TASK_PRIORITY      (3)
 
 //------------------------------------------------------------------------------
-NtpTask::NtpTask(NtpSettings& ntpCfg, const EventGroupHandle_t& wifiEvtHandle)
+NtpTask::NtpTask(NtpSettings& ntpCfg, const EventGroupHandle_t& wifiEvtHandle,
+                 const QueueHandle_t& clockExtSrcTime)
     : Task("NtpTask", NTP_TASK_STACK_SIZE, NTP_TASK_PRIORITY, CONFIG_ARDUINO_RUNNING_CORE)
     , m_ntpCfg(m_ntpCfg)
     , m_wifiEvtHandle(wifiEvtHandle)
+    , m_clockExtSrcTime(clockExtSrcTime)
 {
 
 }
@@ -57,7 +59,8 @@ void NtpTask::run()
             {
                 DateTime dt(ntp.getCurrentTime());
                 dbg("[NTP] UTC:%s", dt.timestamp().c_str());
-                //time.setUtcTime(dt);
+                // Update in Systime clock task
+                xQueueOverwrite(m_clockExtSrcTime, &dt);
             }
         }
 

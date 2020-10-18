@@ -45,7 +45,10 @@ void DisplayTask::run()
     DateTime dt;
     const TickType_t dispRefreshTime = (50 / portTICK_PERIOD_MS);
     Display m_disp(m_dispCfg);
-    m_disp.setup();
+    {
+        rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
+        m_disp.setup();
+    }
     for(;;)
     {
         status = xQueueReceive(m_timeQ, &dt, portMAX_DELAY);
