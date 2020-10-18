@@ -3,7 +3,16 @@
 
 
 //------------------------------------------------------------------------------
-Ntp::Ntp(NtpSettings& config)
+Ntp::Ntp()
+    : m_config(NtpSettings())
+    , m_ntpClient(m_ntpUDP, m_config.poolServerNames[0],
+                    m_config.timeOffset, m_config.updateInterval)
+{
+
+}
+
+//------------------------------------------------------------------------------
+Ntp::Ntp(const NtpSettings& config)
     : m_config(config)
     , m_ntpClient(m_ntpUDP, m_config.poolServerNames[0],
                     m_config.timeOffset, m_config.updateInterval)

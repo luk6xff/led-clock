@@ -25,6 +25,7 @@
 #include <Arduino.h>
 
 #include <stdarg.h>
+#include <freertos/semphr.h>
 
 /******************************************************************************
    CONSTANTS
@@ -69,6 +70,8 @@ class Arduino_DebugUtils {
     void vPrint(char const * fmt, va_list args);
     void printTimestamp();
     bool shouldPrint(int const debug_level) const;
+
+    SemaphoreHandle_t debgSem;
 
 };
 

@@ -12,8 +12,8 @@ AppConfig::AppConfig()
 //------------------------------------------------------------------------------
 AppConfig& AppConfig::instance()
 {
-    static AppConfig settings;
-    return settings;
+    static AppConfig appCfg;
+    return appCfg;
 }
 
 //------------------------------------------------------------------------------
@@ -49,22 +49,31 @@ void AppConfig::init()
 }
 
 //------------------------------------------------------------------------------
+void AppConfig::close()
+{
+    prefs.end();
+}
+
+//------------------------------------------------------------------------------
 const AppConfig::Settings& AppConfig::getDefaults()
 {
+    rtos::LockGuard<rtos::Mutex> lk(settingsMtx);
     return defaultSettings;
 }
 
 //------------------------------------------------------------------------------
 AppConfig::Settings& AppConfig::getCurrent()
 {
+    rtos::LockGuard<rtos::Mutex> lk(settingsMtx);
     return currentSettings;
 }
 
 //------------------------------------------------------------------------------
-bool AppConfig::storeWifiData(AppConfig::WifiSettings& ws)
+bool AppConfig::storeWifiData(const WifiSettings& ws)
 {
     bool ret = true;
     Settings newSettings = getCurrent();
+    newSettings.wifi = ws;
     ret = saveSettings(newSettings);
     return ret;
 }
@@ -72,6 +81,7 @@ bool AppConfig::storeWifiData(AppConfig::WifiSettings& ws)
 //------------------------------------------------------------------------------
 bool AppConfig::saveSettings(const Settings& settings)
 {
+    rtos::LockGuard<rtos::Mutex> lk(settingsMtx);
     // Set the NVS data ready for writing
     size_t ret = prefs.putBytes("settings", (const void*)&settings, sizeof(settings));
 
@@ -86,6 +96,7 @@ bool AppConfig::saveSettings(const Settings& settings)
 //------------------------------------------------------------------------------
 bool AppConfig::readSettings()
 {
+    rtos::LockGuard<rtos::Mutex> lk(settingsMtx);
     size_t ret = prefs.getBytes("settings", &currentSettings, sizeof(currentSettings));
     if (ret == sizeof(currentSettings))
     {
@@ -97,12 +108,13 @@ bool AppConfig::readSettings()
 //------------------------------------------------------------------------------
 void AppConfig::setDefaults()
 {
+    rtos::LockGuard<rtos::Mutex> lk(settingsMtx);
     // Modify according to your application
     // MAGIC
     defaultSettings =
     {
-        .magic = 0x4C554B36,  // LUK6
-        .version = 0x0000002,
+        .magic   = 0x4C554B36,  // LUK6
+        .version = 0x00000002,
     };
 
     // WIFI
@@ -124,6 +136,7 @@ void AppConfig::setDefaults()
 void AppConfig::printCurrentSettings()
 {
     inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
+    inf("AppCfg size: %d bytes", sizeof(getCurrent()));
     inf("magic: 0x%08x", getCurrent().magic);
     inf("version: 0x%08x", getCurrent().version);
     inf("wifi.0: %s %s", getCurrent().wifi.ssid0, getCurrent().wifi.pass0);

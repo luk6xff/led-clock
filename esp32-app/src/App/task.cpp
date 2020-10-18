@@ -4,11 +4,12 @@
 
 
 //------------------------------------------------------------------------------
-Task::Task(const String& name, size_t stackSize, UBaseType_t priority)
+Task::Task(const String& name, size_t stackSize, UBaseType_t priority, BaseType_t coreId)
     : m_handle(nullptr)
     , m_name(name)
     , m_stackSize(stackSize)
     , m_priority(priority)
+    , m_coreId(coreId)
 {
     //start();
 }
@@ -68,7 +69,9 @@ void Task::kill()
 //------------------------------------------------------------------------------
 void Task::start()
 {
-    xTaskCreate(&Task::taskFuncAdapter, m_name.c_str(), m_stackSize, this, m_priority, &m_handle);
+    //xTaskCreate(&Task::taskFuncAdapter, m_name.c_str(), m_stackSize, this, m_priority, &m_handle);
+    xTaskCreatePinnedToCore(&Task::taskFuncAdapter, m_name.c_str(),
+                            m_stackSize, this, m_priority, &m_handle, m_coreId);
 }
 
 //------------------------------------------------------------------------------

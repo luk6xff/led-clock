@@ -18,10 +18,18 @@
 
 //------------------------------------------------------------------------------
 App::App()
-    : m_dispTask(nullptr)
+    : m_wifiTask(nullptr)
+    , m_dispTask(nullptr)
     , m_clockTask(nullptr)
+    , m_ntpTask(nullptr)
 {
 
+}
+
+//------------------------------------------------------------------------------
+App::~App()
+{
+    AppCfg.close();
 }
 
 //------------------------------------------------------------------------------
@@ -37,15 +45,8 @@ void App::setup()
     utils::init();
     printMotd();
     AppCfg.init();
-    connectToAp();
     createTasks();
-
-    // m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask);
-    // m_dispTask->start();
-    m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(*m_dispTask.get(),
-                                                        AppCfg.getCurrent().time,
-                                                        AppCfg.getCurrent().ntp));
-    m_clockTask->start();
+    runTasks();
 }
 
 //------------------------------------------------------------------------------
@@ -55,53 +56,37 @@ void App::run()
 }
 
 //------------------------------------------------------------------------------
-bool App::connectToAp()
+void App::createTasks()
 {
-    WiFi.setAutoConnect(0);
-    int tries = 0;
-    bool connected = true;
-    // m_wifiMulti.addAP(AppCfg.getCurrent().wifi.ssid0,
-    //                 AppCfg.getCurrent().wifi.pass0);
-    // m_wifiMulti.addAP(AppCfg.getCurrent().wifi.ssid1,
-    //                 AppCfg.getCurrent().wifi.pass1);
-    // m_wifiMulti.addAP(AppCfg.getCurrent().wifi.ssid2,
-    //                 AppCfg.getCurrent().wifi.pass2);
-
-    inf("Connecting ...");
-    WiFi.begin(AppCfg.getCurrent().wifi.ssid0, AppCfg.getCurrent().wifi.pass0);
-    while (WiFi.status() != WL_CONNECTED)
-    // while (m_wifiMulti.run() != WL_CONNECTED)
-    {
-        // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest network
-        delay(100);
-        tries++;
-        inf(".");
-        if (tries > 5)
-        {
-            err("Connecting to AP failed!!!");
-            connected = false;
-            break;
-        }
-    }
-
-    if (connected)
-    {
-        inf("\nConnected to: %s\nIP address:\t %s", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
-    }
-
-    return connected;
+    // Create all the tasks
+    m_wifiTask = std::unique_ptr<WifiTask>(new WifiTask(AppCfg.getCurrent().wifi));
+    m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask);
+    m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(*m_dispTask.get(),
+                                                AppCfg.getCurrent().time));
+    m_ntpTask = std::unique_ptr<NtpTask>(new NtpTask(AppCfg.getCurrent().ntp,
+                                                m_wifiTask->getWifiEvtHandle()));
 }
 
 //------------------------------------------------------------------------------
-void App::createTasks()
+void App::runTasks()
 {
-    // Create all the tasks and run them
-    // m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask);
-    // m_dispTask->start();
-    // m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(*m_dispTask.get(),
-    //                                                     AppCfg.getCurrent().time,
-    //                                                     AppCfg.getCurrent().ntp));
-    // m_clockTask->start();
+    //Run all the tasks if created
+    if (m_wifiTask)
+    {
+        m_wifiTask->start();
+    }
+    if (m_dispTask)
+    {
+        m_dispTask->start();
+    }
+    if (m_clockTask)
+    {
+        m_clockTask->start();
+    }
+    if (m_ntpTask)
+    {
+        m_ntpTask->start();
+    }
 }
 
 //------------------------------------------------------------------------------

@@ -9,6 +9,7 @@
 #include "../Display/light_sensor.h"
 #include "../Radio/radio.h"
 #include "../Clock/ntp.h"
+#include "WiFi.h"
 
 //------------------------------------------------------------------------------
 /**

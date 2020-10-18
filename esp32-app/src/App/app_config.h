@@ -9,6 +9,8 @@
 #include <Preferences.h>
 #include "Clock/system_time.h"
 #include "Clock/ntp.h"
+#include "wifi_task.h"
+#include "rtos_common.h"
 
 
 // Define the version number, also used for webserver as Last-Modified header and to check version for update.
@@ -26,30 +28,6 @@ class AppConfig
 
 public:
 
-    struct WifiSettings
-    {
-        WifiSettings()
-        {
-            const char *admin = "admin";
-            memset(this, 0, sizeof(*this));
-            memcpy(ssid0, admin, strlen(admin));
-            memcpy(pass0, admin, strlen(admin));
-            memcpy(ssid1, admin, strlen(admin));
-            memcpy(pass1, admin, strlen(admin));
-            memcpy(ssid2, admin, strlen(admin));
-            memcpy(pass2, admin, strlen(admin));
-        }
-
-        #define WIFI_SETTINGS_LEN 20
-        #define WIFI_SETTINGS_CH_NUM 3
-        char ssid0[WIFI_SETTINGS_LEN];
-        char pass0[WIFI_SETTINGS_LEN];
-        char ssid1[WIFI_SETTINGS_LEN];
-        char pass1[WIFI_SETTINGS_LEN];
-        char ssid2[WIFI_SETTINGS_LEN];
-        char pass2[WIFI_SETTINGS_LEN];
-    };
-
     typedef struct
     {
         uint32_t magic;
@@ -63,12 +41,13 @@ public:
     AppConfig();
     static AppConfig& instance();
     void init();
+    void close();
 
     const Settings& getDefaults();
     Settings& getCurrent();
 
     // Settings options
-    bool storeWifiData(AppConfig::WifiSettings& ws);
+    bool storeWifiData(const WifiSettings& ws);
 
 private:
     bool saveSettings(const Settings &settings);
@@ -80,6 +59,9 @@ private:
     Settings defaultSettings;
     Settings currentSettings;
 
+    rtos::Mutex settingsMtx;
+
     // NVS preferences
     Preferences prefs;
+
 };

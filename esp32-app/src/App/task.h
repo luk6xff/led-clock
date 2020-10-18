@@ -14,7 +14,8 @@ class Task
 {
 
 public:
-    Task(const String& name, size_t stackSize = 4096, UBaseType_t priority = 12);
+    Task(const String& name, size_t stackSize = 4096,
+        UBaseType_t priority = 1, BaseType_t coreId = tskNO_AFFINITY);
     virtual ~Task();
 
     void start();
@@ -36,6 +37,8 @@ private:
     String m_name;
     size_t m_stackSize;
     UBaseType_t m_priority;
+    BaseType_t m_coreId;
+
 
     /**
      * @brief Adapter function that allows you to write a class

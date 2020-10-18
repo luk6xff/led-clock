@@ -12,17 +12,18 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
-#define NTP_SERVER_NAME_MAXLEN 30
 
 struct NtpSettings
 {
+    #define NTP_SERVER_NAME_MAXLEN 32
+
     NtpSettings()
         : timeOffset(0)
         , updateInterval(3600)
     {
-        memset(poolServerNames[0], 0, NTP_SERVER_NAME_MAXLEN);
-        memset(poolServerNames[1], 0, NTP_SERVER_NAME_MAXLEN);
-        memset(poolServerNames[2], 0, NTP_SERVER_NAME_MAXLEN);
+        memcpy(poolServerNames[0], "time.google.com", strlen("time.google.com"));
+        memcpy(poolServerNames[0], "pl.pool.ntp.org", strlen("pl.pool.ntp.org"));
+        memcpy(poolServerNames[0], "pool.ntp.org", strlen("pool.ntp.org"));
     }
 
     NtpSettings(int32_t tO, uint32_t uI, const char *server0Name,
@@ -35,7 +36,7 @@ struct NtpSettings
         memset(poolServerNames[2], 0, NTP_SERVER_NAME_MAXLEN);
         if (server0Name)
         {
-            memcpy(poolServerNames[0], server0Name, NTP_SERVER_NAME_MAXLEN);
+            memcpy(poolServerNames[0], server0Name, strlen(server0Name));
         }
         if (server1Name)
         {
@@ -74,7 +75,7 @@ struct NtpSettings
 
     int32_t timeOffset;
     uint32_t updateInterval;
-    char poolServerNames[3][30];
+    char poolServerNames[3][NTP_SERVER_NAME_MAXLEN];
 };
 
 
@@ -82,14 +83,14 @@ class Ntp final
 {
 
 public:
-    explicit Ntp(NtpSettings& config);
+    Ntp();
+    explicit Ntp(const NtpSettings& config);
     bool updateTime();
     uint64_t getCurrentTime();
     String getCurrentTimeString() const;
 
 private:
+    const NtpSettings& m_config;
     WiFiUDP m_ntpUDP;
-    NtpSettings& m_config;
     NTPClient m_ntpClient;
-
 };

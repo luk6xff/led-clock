@@ -14,7 +14,7 @@ SystemTime::SystemTime(SystemTimeSettings& timeSettings)
 
     if (m_rtc.lostPower())
     {
-        err("RTC lost power, lets set the time!");
+        err("RTC lost power, let set the default time!");
         m_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     }
 }

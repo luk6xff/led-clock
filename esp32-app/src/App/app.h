@@ -8,9 +8,8 @@
 
 #include "Display/display_task.h"
 #include "Clock/clock_task.h"
-
-#include <WiFiMulti.h>
-#include <WiFi.h>
+#include "Clock/ntp_task.h"
+#include "App/wifi_task.h"
 
 
 #include <memory>
@@ -25,12 +24,15 @@ public:
 
 private:
     App();
+    ~App();
     bool connectToAp();
     void createTasks();
+    void runTasks();
     void printMotd();
 
 private:
-    WiFiMulti m_wifiMulti;
+    std::unique_ptr<WifiTask> m_wifiTask;
     std::unique_ptr<DisplayTask> m_dispTask;
     std::unique_ptr<ClockTask> m_clockTask;
+    std::unique_ptr<NtpTask> m_ntpTask;
 };

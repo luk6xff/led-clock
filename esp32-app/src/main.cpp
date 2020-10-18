@@ -32,8 +32,9 @@ void loop(void)
 #ifdef TESTS_ON
     tests_run();
 #else
-    App::instance().run();
+    //App::instance().run();
     vTaskDelete(nullptr);
+    //delay(10);
 #endif
 }
 

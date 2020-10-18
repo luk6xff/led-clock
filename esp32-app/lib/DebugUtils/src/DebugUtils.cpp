@@ -36,6 +36,7 @@ Arduino_DebugUtils::Arduino_DebugUtils() {
   timestampOff();
   setDebugLevel(DEFAULT_DEBUG_LEVEL);
   setDebugOutputStream(DEFAULT_OUTPUT_STREAM);
+  debgSem = xSemaphoreCreateMutex();
 }
 
 /******************************************************************************
@@ -95,10 +96,10 @@ void Arduino_DebugUtils::print(int const debug_level, const __FlashStringHelper 
 void Arduino_DebugUtils::vPrint(char const * fmt, va_list args) {
   static size_t const MSG_BUF_SIZE = 512;
   char msg_buf[MSG_BUF_SIZE] = {0};
-
+  xSemaphoreTake(debgSem, portMAX_DELAY);
   vsnprintf(msg_buf, MSG_BUF_SIZE, fmt, args);
-
   _debug_output_stream->println(msg_buf);
+  xSemaphoreGive(debgSem);
 }
 
 void Arduino_DebugUtils::printTimestamp()

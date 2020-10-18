@@ -17,7 +17,6 @@ protected:
 
 private:
     Display::MAX72xxConfig m_dispCfg;
-    Display m_disp;
     Display::DateTimePrintMode m_timeDispMode;
     QueueHandle_t m_timeQ;
 };
