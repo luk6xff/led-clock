@@ -7,7 +7,7 @@
  */
 
 
-#define TESTS_OFF
+#define TESTS_ON
 
 #ifdef TESTS_ON
     #include "Tests/tests.h"
@@ -34,7 +34,6 @@ void loop(void)
 #else
     //App::instance().run();
     vTaskDelete(nullptr);
-    //delay(10);
 #endif
 }
 

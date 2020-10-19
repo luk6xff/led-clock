@@ -77,7 +77,7 @@ private:
     /**
      * @brief Light sensor object
      */
-    LightSensor m_lightSensor;
+    //LightSensor m_lightSensor;
 
     /**
      * @brief Display data buffer, ZONE_FULL

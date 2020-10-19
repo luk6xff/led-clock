@@ -82,7 +82,7 @@ void Display::processAutoIntensityLevelControl()
     }
 
     // Measure light
-    const float lightVal = m_lightSensor.getIlluminance();
+    const float lightVal = -1;//m_lightSensor.getIlluminance();
     if (lightVal == -1)
     {
         err("LightSensor - Illuminance value error!");
