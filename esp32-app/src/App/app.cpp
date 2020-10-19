@@ -12,8 +12,8 @@
 
 
 
-// Define the version number
-#define VERSION     "0.0.1"
+// Define the app version number
+#define APP_VERSION "0.0.1"
 
 
 //------------------------------------------------------------------------------
@@ -60,12 +60,11 @@ void App::createTasks()
 {
     // Create all the tasks
     m_wifiTask = std::unique_ptr<WifiTask>(new WifiTask(AppCfg.getCurrent().wifi));
-    m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask);
-    m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(*m_dispTask.get(),
-                                                AppCfg.getCurrent().time));
     m_ntpTask = std::unique_ptr<NtpTask>(new NtpTask(AppCfg.getCurrent().ntp,
-                                                m_wifiTask->getWifiEvtHandle(),
-                                                m_clockTask->extSrcTimeQueue()));
+                                            m_wifiTask->getWifiEvtHandle()));
+    m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(AppCfg.getCurrent().time,
+                                                m_ntpTask->getNtpTimeQ()));
+    m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask(m_clockTask->getTimeQ()));
 }
 
 //------------------------------------------------------------------------------
@@ -96,7 +95,7 @@ void App::printMotd()
     inf("\r\nStarting <LUK6XFF LED_CLOCK 2020>\r\nSystem running on CPU %d at %d MHz.\r\nApp Version %s.\r\nFree heap memory %d\r\n",
         xPortGetCoreID(),
         ESP.getCpuFreqMHz(),
-        VERSION,
+        APP_VERSION,
         ESP.getFreeHeap());
 }
 

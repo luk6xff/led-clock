@@ -8,15 +8,25 @@
 #define NTP_TASK_STACK_SIZE (4096)
 #define NTP_TASK_PRIORITY      (3)
 
+#define MODULE_NAME "[NTP]"
+
 //------------------------------------------------------------------------------
-NtpTask::NtpTask(NtpSettings& ntpCfg, const EventGroupHandle_t& wifiEvtHandle,
-                 const QueueHandle_t& clockExtSrcTime)
+NtpTask::NtpTask(NtpSettings& ntpCfg, const EventGroupHandle_t& wifiEvtHandle)
     : Task("NtpTask", NTP_TASK_STACK_SIZE, NTP_TASK_PRIORITY, CONFIG_ARDUINO_RUNNING_CORE)
     , m_ntpCfg(m_ntpCfg)
     , m_wifiEvtHandle(wifiEvtHandle)
-    , m_clockExtSrcTime(clockExtSrcTime)
 {
+    m_ntpTimeQ = xQueueCreate(1, sizeof(DateTime));
+    if (!m_ntpTimeQ)
+    {
+        err("%s m_ntpTimeQ has not been created!.", MODULE_NAME);
+    }
+}
 
+//------------------------------------------------------------------------------
+const QueueHandle_t& NtpTask::getNtpTimeQ()
+{
+    return m_ntpTimeQ;
 }
 
 //------------------------------------------------------------------------------
@@ -27,8 +37,14 @@ void NtpTask::run()
     //Ntp ntp(m_ntpCfg); // LU_TODO
     Ntp ntp(NtpSettings(0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org"));
     DateTime dt;
-    for(;;)
+
+    if (!m_wifiEvtHandle)
     {
+        kill();
+    }
+
+    for(;;)
+    {   
         const EventBits_t wifiEv = xEventGroupWaitBits(
                                     m_wifiEvtHandle,// WIFI Event group
                                     WifiTask::WIFI_CONNECTED |
@@ -58,9 +74,12 @@ void NtpTask::run()
             if (ntp.updateTime())
             {
                 DateTime dt(ntp.getCurrentTime());
-                dbg("[NTP] UTC:%s", dt.timestamp().c_str());
+                dbg("%s UTC:%s", MODULE_NAME, dt.timestamp().c_str());
                 // Update in Systime clock task
-                xQueueOverwrite(m_clockExtSrcTime, &dt);
+                if (m_ntpTimeQ)
+                {
+                    xQueueOverwrite(m_ntpTimeQ, &dt);
+                }
             }
         }
 

@@ -129,6 +129,7 @@ void tests_run()
 
     #ifdef TEST_DISPLAY
         disp.update();
+        disp.processAutoIntensityLevelControl();
         DateTime dt = time.getTime();
 
         if (millis() - timeLast >= 10000) // 10[s]

@@ -5,32 +5,32 @@
 #define CLOCK_TASK_STACK_SIZE (8192)
 #define CLOCK_TASK_PRIORITY     (6)
 
+#define MODULE_NAME "[CLCK]"
+
 //------------------------------------------------------------------------------
-ClockTask::ClockTask(DisplayTask& disp,
-                     SystemTimeSettings& timeCfg)
+ClockTask::ClockTask(SystemTimeSettings& timeCfg, const QueueHandle_t& ntpTimeQ)
     : Task("ClockTask", CLOCK_TASK_STACK_SIZE, CLOCK_TASK_PRIORITY, 1)
-    , m_disp(disp)
     , m_timeCfg(timeCfg)
-    , m_extSrcTime(nullptr)
+    , m_ntpTimeQ(ntpTimeQ)
+    , m_timeQ(nullptr)
 {
-    m_extSrcTime = xQueueCreate(1, sizeof(DateTime));
-    if (!m_extSrcTime)
+    m_timeQ = xQueueCreate(16, sizeof(DateTime));
+    if (!m_timeQ)
     {
-        err("m_extSrcTime has not been created!");
+        err("%s m_timeQ has not been created!.", MODULE_NAME);
     }
 }
 
 //------------------------------------------------------------------------------
-const QueueHandle_t& ClockTask::extSrcTimeQueue()
+const QueueHandle_t& ClockTask::getTimeQ()
 {
-    return m_extSrcTime;
+    return m_timeQ;
 }
 
 //------------------------------------------------------------------------------
 void ClockTask::run()
 {
     const TickType_t timeMeasDelay = (200 / portTICK_PERIOD_MS);
-
     SystemTime time(m_timeCfg);
     DateTime dt;
     for(;;)
@@ -38,24 +38,39 @@ void ClockTask::run()
         dt = time.getTime();
         if (dt.isValid())
         {
-            m_disp.addTimeMsg(dt);
-            dbg("DT-s: %s", dt.timestamp().c_str());
+            if (pushTimeMsg(dt))
+            {
+                dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
+            }
         }
         else
         {
-            err("Invalid DateTime read from RTC: %s", dt.timestamp().c_str());
+            err("%s Invalid DateTime read from RTC: %s", MODULE_NAME, dt.timestamp().c_str());
         }
 
-        // Check external clock source, shall be dt in UTC format
-        const BaseType_t rc = xQueueReceive(m_extSrcTime, &dt, 0);
-        if (rc == pdPASS)
+        if (m_ntpTimeQ)
         {
-            dbg("[SYSTIME] UTC:%s", dt.timestamp().c_str());
-            time.setUtcTime(dt);
+            // Check ntp clock source, shall be dt in UTC format
+            const BaseType_t rc = xQueueReceive(m_ntpTimeQ, &dt, 0);
+            if (rc == pdPASS)
+            {
+                dbg("%s UTC:%s", MODULE_NAME, dt.timestamp().c_str());
+                time.setUtcTime(dt);
+            }
         }
-
         vTaskDelay(timeMeasDelay);
     }
+}
+
+//------------------------------------------------------------------------------
+bool ClockTask::pushTimeMsg(const DateTime& dt)
+{
+    BaseType_t status = pdFAIL;
+    if (m_timeQ)
+    {
+        status = xQueueSendToBack(m_timeQ, &dt, 0);
+    }
+    return (status == pdPASS) ? true : false;
 }
 
 

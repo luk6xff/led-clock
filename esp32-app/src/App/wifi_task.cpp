@@ -9,6 +9,7 @@
 #define WIFI_TIMEOUT_MS      20000 // 20 second WiFi connection timeout
 #define WIFI_RECOVER_TIME_MS 30000 // Wait 30 seconds after a failed connection attempt
 
+#define MODULE_NAME "[WIFI]"
 
 //------------------------------------------------------------------------------
 WifiTask::WifiTask(const WifiSettings& wifiCfg)
@@ -19,7 +20,7 @@ WifiTask::WifiTask(const WifiSettings& wifiCfg)
     m_wifiEvt = xEventGroupCreate();
     if (!m_wifiEvt)
     {
-        err("WIFI event group create failed!");
+        err("%s event group create failed!", MODULE_NAME);
     }
 }
 
@@ -50,7 +51,7 @@ void WifiTask::run()
         WiFi.begin(m_wifiCfg.ssid0, m_wifiCfg.pass0);
 
         // Wait until connected or timeou exceeded
-        inf("[WIFI] Connecting...");
+        inf("%s Connecting...", MODULE_NAME);
         const uint32_t startAttemptTime = millis();
         while (WiFi.status() != WL_CONNECTED &&
                 millis() - startAttemptTime < WIFI_TIMEOUT_MS)
@@ -60,14 +61,16 @@ void WifiTask::run()
 
         if (WiFi.status() != WL_CONNECTED)
         {
-            err("[WIFI] Connection failed, waiting for %d seconds...", WIFI_RECOVER_TIME_MS/1000);
+            err("%s Connection failed, waiting for %d seconds...",
+                MODULE_NAME, WIFI_RECOVER_TIME_MS/1000);
             vTaskDelay(WIFI_RECOVER_TIME_MS / portTICK_PERIOD_MS);
             continue;
         }
 
         if (WiFi.status() == WL_CONNECTED)
         {
-            inf("[WIFI] Connected to:%s, IPaddress:%s", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
+            inf("%s Connected to:%s, IPaddress:%s", MODULE_NAME,
+                WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
             xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
         }
         vTaskDelay(sleepTime);

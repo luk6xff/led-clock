@@ -19,6 +19,8 @@
 #define DISPLAY_MAX72XX_MODULES_NUM 4
 #define DISPLAY_MSG_MAX_LEN         1024
 
+#define LIGHT_SENSOR_ENABLED false
+
 class Display
 {
 
@@ -77,8 +79,9 @@ private:
     /**
      * @brief Light sensor object
      */
-    //LightSensor m_lightSensor;
-
+#if LIGHT_SENSOR_ENABLED
+    LightSensor m_lightSensor;
+#endif
     /**
      * @brief Display data buffer, ZONE_FULL
      */

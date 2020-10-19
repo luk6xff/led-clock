@@ -6,11 +6,9 @@ class DisplayTask : public Task
 {
 
 public:
-    DisplayTask();
+    explicit DisplayTask(const QueueHandle_t& timeQ);
     DisplayTask(const DisplayTask& disp) = delete;
     DisplayTask& operator=(const DisplayTask& disp) = delete;
-
-    bool addTimeMsg(const DateTime& dt);
 
 protected:
     virtual void run() override;
@@ -18,5 +16,5 @@ protected:
 private:
     Display::MAX72xxConfig m_dispCfg;
     Display::DateTimePrintMode m_timeDispMode;
-    QueueHandle_t m_timeQ;
+    const QueueHandle_t& m_timeQ;
 };

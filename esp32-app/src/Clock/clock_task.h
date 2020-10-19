@@ -1,21 +1,20 @@
 #pragma once
 #include "App/task.h"
-#include "Display/display_task.h"
 #include "system_time.h"
 
 class ClockTask : public Task
 {
 public:
-    explicit ClockTask(DisplayTask& disp,
-                       SystemTimeSettings& timeCfg);
+    explicit ClockTask(SystemTimeSettings& timeCfg, const QueueHandle_t& ntpTimeQ);
 
-    const QueueHandle_t& extSrcTimeQueue();
+    const QueueHandle_t& getTimeQ();
 
 private:
     virtual void run() override;
+    bool pushTimeMsg(const DateTime& dt);
 
 private:
-    DisplayTask& m_disp;
     SystemTimeSettings& m_timeCfg;
-    QueueHandle_t m_extSrcTime;
+    const QueueHandle_t& m_ntpTimeQ;
+    QueueHandle_t m_timeQ;
 };

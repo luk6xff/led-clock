@@ -19,14 +19,13 @@ Display::Display(const MAX72xxConfig& cfg)
     : m_mx(cfg.moduleType, cfg.max72xxCSpin, cfg.modulesNumber)
     , m_autoIntensityLevelStatus(true)
 {
-    //setup();
+    setup();
 }
 
 //------------------------------------------------------------------------------
 void Display::setup()
 {
     m_mx.begin(MAX_DISPLAY_ZONES);
-
     m_mx.setZone(DISPLAY_ZONE_0, 0, 0);
     m_mx.setZone(DISPLAY_ZONE_1, 1, 3);
     m_mx.setZone(DISPLAY_ZONE_FULL, 0, 3);
@@ -43,7 +42,7 @@ void Display::setup()
 void Display::update()
 {
     m_mx.displayAnimate();
-    // processAutoIntensityLevelControl(); // Used externally
+    //processAutoIntensityLevelControl(); // Used externally
 }
 
 //------------------------------------------------------------------------------
@@ -82,7 +81,11 @@ void Display::processAutoIntensityLevelControl()
     }
 
     // Measure light
-    const float lightVal = -1;//m_lightSensor.getIlluminance();
+#if LIGHT_SENSOR_ENABLED
+    const float lightVal = m_lightSensor.getIlluminance();
+#else
+    const float lightVal = 0;
+#endif
     if (lightVal == -1)
     {
         err("LightSensor - Illuminance value error!");

@@ -25,7 +25,6 @@ public:
 private:
     App();
     ~App();
-    bool connectToAp();
     void createTasks();
     void runTasks();
     void printMotd();
