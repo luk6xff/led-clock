@@ -6,8 +6,7 @@
 #define WIFI_TASK_STACK_SIZE (8192)
 #define WIFI_TASK_PRIORITY      (4)
 
-#define WIFI_TIMEOUT_MS      20000 // 20 second WiFi connection timeout
-#define WIFI_RECOVER_TIME_MS 30000 // Wait 30 seconds after a failed connection attempt
+#define WIFI_TIMEOUT_MS      10000 // 10 second WiFi connection timeout
 
 #define MODULE_NAME "[WIFI]"
 
@@ -62,8 +61,8 @@ void WifiTask::run()
         if (WiFi.status() != WL_CONNECTED)
         {
             err("%s Connection failed, waiting for %d seconds...",
-                MODULE_NAME, WIFI_RECOVER_TIME_MS/1000);
-            vTaskDelay(WIFI_RECOVER_TIME_MS / portTICK_PERIOD_MS);
+                MODULE_NAME, WIFI_TIMEOUT_MS/1000);
+            vTaskDelay(WIFI_TIMEOUT_MS / portTICK_PERIOD_MS);
             continue;
         }
 

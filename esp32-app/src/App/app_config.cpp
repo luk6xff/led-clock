@@ -1,11 +1,18 @@
 #include "app_config.h"
 #include "utils.h"
 
+#define DEV_CFG // FOR DEV TESTS ONLY
+
+#ifdef DEV_CFG
+    #include "app_dev_cfg.h"
+#endif
+
 
 
 //------------------------------------------------------------------------------
 AppConfig::AppConfig()
 {
+    // Set defaults into App
     setDefaults();
 }
 
@@ -114,22 +121,34 @@ void AppConfig::setDefaults()
     defaultSettings =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000002,
+        .version = 0x00000001,
     };
 
     // WIFI
-    WifiSettings wifiDefault;
-    defaultSettings.wifi = wifiDefault;
+    WifiSettings wifiCfg;
+#ifdef DEV_CFG
+    memcpy(wifiCfg.ssid0, DEV_CFG_WIFI_SSID, WIFI_SETTINGS_LEN);
+    memcpy(wifiCfg.pass0, DEV_CFG_WIFI_PASS, WIFI_SETTINGS_LEN);
+#endif
+    defaultSettings.wifi = wifiCfg;
 
     // SYSTEM TIME
-    SystemTimeSettings timeConfig = {
+    SystemTimeSettings timeCfg = {
         {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
         {"CET ", Last, Sun, Oct, 3, 60},  // Central European Standard Time
     };
-    defaultSettings.time = timeConfig;
+    defaultSettings.time = timeCfg;
 
     // NTP
-    defaultSettings.ntp = NtpSettings(0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org");
+    NtpSettings ntpCfg(0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org");
+    defaultSettings.ntp = ntpCfg;
+
+    // WEATHER
+    WeatherSettings weatherCfg;
+#ifdef DEV_CFG
+    memcpy(weatherCfg.owmAppid, DEV_CFG_WEATHER_OWM_APPID, OWM_APPID_MAXLEN);
+#endif
+    defaultSettings.weather = weatherCfg;
 }
 
 //------------------------------------------------------------------------------
@@ -144,6 +163,7 @@ void AppConfig::printCurrentSettings()
     inf("wifi.2: %s %s", getCurrent().wifi.ssid2, getCurrent().wifi.pass2);
     inf("systime: %s", getCurrent().time.toStr().c_str());
     inf("ntp: %s", getCurrent().ntp.toStr().c_str());
+    inf("weather: %s", getCurrent().weather.toStr().c_str());
     inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
 }
 

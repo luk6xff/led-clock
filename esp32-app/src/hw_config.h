@@ -1,6 +1,8 @@
 /**
- * @brief Hardware Pin configuration config FILE
- *
+ * @brief ESP-32 (ESP-WROOM-32D) Hardware Pin configuration config FILE
+ * 
+ * @author Lukasz Uszko - luk6xff
+ * @date   2020-10-20
  */
 
 // DISPLAY - MAX7219

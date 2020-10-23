@@ -10,6 +10,7 @@
 #include "Clock/clock_task.h"
 #include "Clock/ntp_task.h"
 #include "App/wifi_task.h"
+#include "Weather/weather_task.h"
 
 
 #include <memory>
@@ -34,4 +35,5 @@ private:
     std::unique_ptr<DisplayTask> m_dispTask;
     std::unique_ptr<ClockTask> m_clockTask;
     std::unique_ptr<NtpTask> m_ntpTask;
+    std::unique_ptr<WeatherTask> m_weatherTask;
 };

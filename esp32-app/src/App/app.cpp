@@ -65,6 +65,7 @@ void App::createTasks()
     m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(AppCfg.getCurrent().time,
                                                 m_ntpTask->getNtpTimeQ()));
     m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask(m_clockTask->getTimeQ()));
+    m_weatherTask = std::unique_ptr<WeatherTask>(new WeatherTask(AppCfg.getCurrent().weather));
 }
 
 //------------------------------------------------------------------------------
@@ -86,6 +87,10 @@ void App::runTasks()
     if (m_ntpTask)
     {
         m_ntpTask->start();
+    }
+    if (m_weatherTask)
+    {
+        m_weatherTask->start();
     }
 }
 

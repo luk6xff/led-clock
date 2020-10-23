@@ -19,11 +19,11 @@ struct NtpSettings
 
     NtpSettings()
         : timeOffset(0)
-        , updateInterval(3600)
+        , updateInterval(1000*3600) // 1h (in miliseconds)
     {
-        memcpy(poolServerNames[0], "time.google.com", strlen("time.google.com"));
-        memcpy(poolServerNames[0], "pl.pool.ntp.org", strlen("pl.pool.ntp.org"));
-        memcpy(poolServerNames[0], "pool.ntp.org", strlen("pool.ntp.org"));
+        memcpy(poolServerNames[0], "time.google.com", NTP_SERVER_NAME_MAXLEN);
+        memcpy(poolServerNames[1], "pl.pool.ntp.org", NTP_SERVER_NAME_MAXLEN);
+        memcpy(poolServerNames[2], "pool.ntp.org",    NTP_SERVER_NAME_MAXLEN);
     }
 
     NtpSettings(int32_t tO, uint32_t uI, const char *server0Name,

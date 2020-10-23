@@ -12,12 +12,12 @@ struct WifiSettings
     {
         const char *admin = "admin";
         memset(this, 0, sizeof(*this));
-        memcpy(ssid0, admin, strlen(admin));
-        memcpy(pass0, admin, strlen(admin));
-        memcpy(ssid1, admin, strlen(admin));
-        memcpy(pass1, admin, strlen(admin));
-        memcpy(ssid2, admin, strlen(admin));
-        memcpy(pass2, admin, strlen(admin));
+        memcpy(ssid0, admin, WIFI_SETTINGS_LEN);
+        memcpy(pass0, admin, WIFI_SETTINGS_LEN);
+        memcpy(ssid1, admin, WIFI_SETTINGS_LEN);
+        memcpy(pass1, admin, WIFI_SETTINGS_LEN);
+        memcpy(ssid2, admin, WIFI_SETTINGS_LEN);
+        memcpy(pass2, admin, WIFI_SETTINGS_LEN);
     }
 
     char ssid0[WIFI_SETTINGS_LEN];
