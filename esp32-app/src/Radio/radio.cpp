@@ -51,6 +51,7 @@ typedef struct
 {
 	uint8_t hdr[3];
 	uint8_t status;
+	uint32_t crit_vbatt_level;     //[mV]
 	uint32_t update_data_interval; //[s] in seconds
 	uint32_t checksum;
 } radio_msg_clock_frame;
@@ -62,6 +63,7 @@ static radio_msg_clock_frame msgf =
 {
 	.hdr = {'L','U','6'},
     .status = MSG_NO_ERROR,
+    .crit_vbatt_level = 3000,   //[mV]
     .update_data_interval = 10, //[s]
 };
 
@@ -85,26 +87,26 @@ static void parse_incoming_msg_sensor(uint8_t *payload, uint16_t size)
     const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_sensor_frame)-sizeof(mf->checksum)));
     if (mf->checksum != checksum)
     {
-        dbg("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x\n\r", mf->checksum, checksum);
+        dbg("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x", mf->checksum, checksum);
         return;
     }
 
     if (~(mf->status & MSG_NO_ERROR))
     {
-        dbg("MSG_NO_ERROR\n\r");
-        dbg("T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]\n\r", mf->temperature, mf->pressure, mf->humidity);
+        dbg("MSG_NO_ERROR");
+        dbg("T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]", mf->temperature, mf->pressure, mf->humidity);
     }
 	else if (mf->status & MSG_READ_ERROR)
     {
-        dbg("MSG_READ_ERROR\n\r");
+        dbg("MSG_READ_ERROR");
     }
 	else if (mf->status & MSG_INIT_ERROR)
     {
-        dbg("MSG_INIT_ERROR\n\r");
+        dbg("MSG_INIT_ERROR");
     }
 	if (mf->status & MSG_BATT_LOW)
     {
-        dbg("MSG_BATT_LOW\n\r");
+        dbg("MSG_BATT_LOW");
     }
 }
 
@@ -137,13 +139,15 @@ Radio::Radio()
     dev.events->tx_timeout = &Radio::on_tx_timeout;
     dev.events->rx_timeout = &Radio::on_rx_timeout;
     dev.events->rx_error = &Radio::on_rx_error;
+    dev.settings.modem = MODEM_LORA;
+
     sx1278_arduino_init(&dev, &arduino_dev);
     sx1278_set_channel(&dev, RF_FREQUENCY);
 
     // Verify if SX1278 connected to the the board
     while (sx1278_read(&dev, REG_VERSION) == 0x00)
     {
-        dbg("SX1278 Radio could not be detected!\n\r");
+        dbg("SX1278 Radio could not be detected!");
         sx1278_delay_ms(1000);
     }
     dbg("REG_VERSION: 0x%x", sx1278_read(&dev, REG_VERSION));
@@ -168,16 +172,16 @@ Radio::Radio()
 //-----------------------------------------------------------------------------
 void Radio::on_tx_done(void *args)
 {
-    dbg("> on_tx_done\n\r");
+    dbg("> on_tx_done");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-    dbg("> on_rx_done\n\r");
-    dbg("> RssiValue: %d\n\r", rssi);
-    dbg("> SnrValue: %d\n\r", snr);
-    dbg("> PAYLOAD: %s\n\r", payload);
+    dbg("> on_rx_done");
+    dbg("> RssiValue: %d", rssi);
+    dbg("> SnrValue: %d", snr);
+    dbg("> PAYLOAD: %s", payload);
     parse_incoming_msg_sensor(payload, size);
     sx1278 *const dev = (sx1278*)args;
     msgf.checksum = radio_msg_frame_checksum((const uint8_t*)&msgf, (sizeof(msgf)-sizeof(msgf.checksum)));
@@ -188,17 +192,17 @@ void Radio::on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi
 //-----------------------------------------------------------------------------
 void Radio::on_tx_timeout(void *args)
 {
-    dbg("> on_tx_timeout\n\r");
+    dbg("> on_tx_timeout");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_timeout(void *args)
 {
-    dbg("> on_rx_timeout\n\r");
+    dbg("> on_rx_timeout");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_error(void *args)
 {
-    dbg("> on_rx_error\n\r");
+    dbg("> on_rx_error");
 }

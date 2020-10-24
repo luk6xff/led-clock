@@ -20,6 +20,12 @@ extern "C"
 #include "registers.h"
 
 /**
+ * @brief If not defined, this flag disables Radio MODEM_FSK part of the code from compilation.
+ *        It decreases final binary image size, if you plan to use only one RadioModems_t
+ *        inside the application
+ */
+#undef RADIO_MODEM_FSK
+/**
  * ============================================================================
  * @brief Public defines
  * ============================================================================

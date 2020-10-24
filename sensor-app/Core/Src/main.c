@@ -23,69 +23,21 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <sx1278-cube-hal.h>
-#include "lib/BME280/platform/cube/bme280-cube-hal.h"
+#include "settings.h"
+#include "radio.h"
+#include "sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-/**
- * @brief Msg frame status field description
- */
-typedef enum
-{
-	MSG_NO_ERROR   = 1<<0,
-	MSG_READ_ERROR = 1<<1,
-	MSG_INIT_ERROR = 1<<2,
-	MSG_BATT_LOW   = 1<<3,
-} radio_msg_sensor_frame_status;
 
-/**
- * @brief Msg frame footprint, sent to the clock
- */
-typedef struct
-{
-	uint8_t hdr[3];
-	uint8_t status;
-	uint32_t vbatt;
-	float temperature;
-	float pressure;
-	float humidity;
-	uint32_t checksum;
-} radio_msg_sensor_frame;
-
-/**
- * @brief Msg frame footprint, received from the clock
- */
-typedef struct
-{
-	uint8_t hdr[3];
-	uint8_t status;
-	uint32_t update_data_interval; //[s] in seconds
-	uint32_t checksum;
-} radio_msg_clock_frame;
 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-// Radio LORA settings
-#define RF_FREQUENCY                                RF_FREQUENCY_434_0
-#define TX_OUTPUT_POWER                             14        // dBm
-#define LORA_BANDWIDTH                              LORA_BANDWIDTH_125kHz
-#define LORA_SPREADING_FACTOR                       LORA_SF8
-#define LORA_CODINGRATE                             LORA_ERROR_CODING_RATE_4_5
-#define LORA_PREAMBLE_LENGTH                        8         // Same for Tx and Rx
-#define LORA_SYMBOL_TIMEOUT                         5         // Symbols
-#define LORA_FIX_LENGTH_PAYLOAD_ON                  false
-#define LORA_FHSS_ENABLED                           false
-#define LORA_NB_SYMB_HOP                            4
-#define LORA_IQ_INVERSION_ON                        false
-#define LORA_CRC_ENABLED                            true
-#define RX_TIMEOUT_VALUE                            5000      // in ms
-#define MAX_PAYLOAD_LENGTH                          60        // bytes
 
 /* USER CODE END PD */
 
@@ -107,7 +59,7 @@ WWDG_HandleTypeDef hwwdg;
 
 /* USER CODE BEGIN PV */
 char dbg_buf[32];
-static void dbg(const char* msg)
+void dbg(const char* msg)
 {
 	/* Place your implementation of fputc here */
 	uint16_t len = strlen(msg);
@@ -124,50 +76,21 @@ static void MX_USART2_UART_Init(void);
 static void MX_WWDG_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
-uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len);
-static void radio_init();
-static void sensors_init();
-static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size);
+
+
 static void standby_state_enter();
-void on_tx_done(void *args);
-void on_tx_timeout(void *args);
-void on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-// LORA SX1278 RADIO
-sx1278_cube_hal radio_cube_hal_dev =
-{
-	.spi = &hspi1,
-	.nss_port = SX1278_NSS_GPIO_Port,
-	.nss_pin = SX1278_NSS_Pin,
-	.reset_port = SX1278_RESET_GPIO_Port,
-	.reset_pin = SX1278_RESET_Pin,
-};
-RadioEvents_t radio_events;
-sx1278 radio_dev;
 
-// BME280 SENSOR
-bme280 bme280_dev =
-{
-	.intf = BME280_INTF_I2C,
-	.i2c_addr = 0xEC,
-	.t_fine = 0,
-	.t_fine_adjust = 0,
-};
-bme280_cube_hal bme280_cube_hal_dev =
-{
-	.i2c = &hi2c1,
-};
+
+
 
 // Last measured values
 static float temperature, pressure, humidity;
-
-// Update sensor data interval
-static uint32_t update_data_interval = 10;
 
 // Msg frame
 static radio_msg_sensor_frame msgf =
@@ -210,7 +133,7 @@ int main(void)
   //MX_WWDG_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-  dbg("LUK6\n\r");
+  dbg("LUK6");
 
   // Check and handle if the system was resumed from StandBy mode
   if(__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
@@ -220,7 +143,7 @@ int main(void)
   }
 
   radio_init();
-  sensors_init();
+  sensor_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -232,28 +155,23 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
       // Sleep a given time in seconds
-      sx1278_delay_ms(update_data_interval*1000);
+      sx1278_delay_ms(10000);
 
       // Read data from the sensor
-      if (bme280_read_data(&bme280_dev, &temperature, &pressure, &humidity))
+      if (sensor_get_data(&temperature, &pressure, &humidity))
       {
-          sprintf(dbg_buf, "T:%d, P:%d, H:%d\n\r", (int)temperature, (int)pressure, (int)humidity);
-          dbg(dbg_buf);
           msgf.status = MSG_NO_ERROR;
       }
       else
       {
-          dbg("RD_F\n");
+          dbg("RDF");
           msgf.status = MSG_READ_ERROR;
       }
       msgf.temperature = temperature;
       msgf.pressure = pressure;
       msgf.humidity = humidity;
-      msgf.checksum = radio_msg_frame_checksum((const uint8_t*)&msgf, (sizeof(msgf)-sizeof(msgf.checksum)));
       // Send result data
-      sx1278_send(&radio_dev, (uint8_t*)&msgf, sizeof(msgf));
-      dbg("DT_S\n\r");
-      sx1278_set_rx(&radio_dev, 0);
+      radio_send(&msgf);
       //standby_state_enter();
       /**
        * @note WWDG Watchdog init function done in wwdg.c (MX_WWDG_Init(void))
@@ -476,7 +394,6 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
-
 }
 
 /**
@@ -572,104 +489,10 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 //-----------------------------------------------------------------------------
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-	if (GPIO_Pin == SX1278_DIO0_Pin)
-	{
-		dbg("EXT\n");
-		(radio_dev.dio_irq[0])(&radio_dev);
-	}
-}
-
-//-----------------------------------------------------------------------------
-static void radio_init()
-{
-	// Set radio_dev
-	radio_dev.events = &radio_events;
-	radio_dev.events->tx_done = on_tx_done;
-	radio_dev.events->rx_done = on_rx_done;
-	radio_dev.events->tx_timeout = on_tx_timeout;
-	radio_dev.events->rx_timeout = NULL;
-	radio_dev.events->rx_error = NULL;
-	sx1278_cube_hal_init(&radio_dev, &radio_cube_hal_dev);
-	sx1278_set_channel(&radio_dev, RF_FREQUENCY);
-
-	// Verify if SX1278 connected to the the board
-	while (sx1278_read(&radio_dev, REG_VERSION) != 0x12)
-	{
-	    dbg("RD_N\n");
-	    sx1278_delay_ms(1000);
-	}
-
-	sx1278_set_max_payload_length(&radio_dev, MODEM_LORA, MAX_PAYLOAD_LENGTH);
-	sx1278_set_tx_config(&radio_dev, MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
-	                      LORA_SPREADING_FACTOR, LORA_CODINGRATE,
-	                      LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-	                      LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
-	                      LORA_IQ_INVERSION_ON, 4000);
-
-    sx1278_set_rx_config(&radio_dev, MODEM_LORA, LORA_BANDWIDTH, LORA_SPREADING_FACTOR,
-                          LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                          LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON, 0,
-                          LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
-                          LORA_IQ_INVERSION_ON, true);
-}
-
-//-----------------------------------------------------------------------------
-void on_tx_done(void *args)
-{
-    dbg("OT_D\n\r");
-}
-
-//-----------------------------------------------------------------------------
-void on_tx_timeout(void *args)
-{
-    dbg("OT_T\n\r");
-}
-
-//-----------------------------------------------------------------------------
-void on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
-{
-	dbg("> on_rx_done\n\r");
-	parse_incoming_msg_clock(payload, size);
-}
-
-//-----------------------------------------------------------------------------
-static void sensors_init()
-{
-	// Set sensors_dev
-	if (!bme280_cube_hal_init(&bme280_dev, &bme280_cube_hal_dev))
-	{
-		dbg("SI_F\n\r");
-		Error_Handler();
-	}
-}
-
-//------------------------------------------------------------------------------
-static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size)
-{
-    const radio_msg_clock_frame *mf = (const radio_msg_clock_frame *)payload;
-    const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_clock_frame)-sizeof(mf->checksum)));
-    if (mf->checksum != checksum)
-    {
-        dbg("INV CHKSUM!");
-        return;
-    }
-
-    if (~(mf->status & MSG_NO_ERROR))
-    {
-        dbg("MSG_NO_ERROR\n\r");
-        update_data_interval = mf->update_data_interval;
-        sprintf(dbg_buf, "UT:%d", mf->update_data_interval);
-        dbg(dbg_buf);
-    }
-}
-
-//-----------------------------------------------------------------------------
 static void standby_state_enter()
 {
 	// Put sensor and radio into sleep mode
-	sx1278_set_sleep(&radio_dev);
+	//sx1278_set_sleep(&radio_dev);
 	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_RESET);
 
 	// Enable Ultra low power mode */
@@ -692,19 +515,6 @@ static void standby_state_enter()
 
 	// Enter the Standby mode
 	HAL_PWR_EnterSTANDBYMode();
-}
-
-//-----------------------------------------------------------------------------
-uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len)
-{
-    uint8_t i;
-    uint16_t sum = 0;
-
-    for (i = 0; i < data_len; i++)
-    {
-    	sum = sum ^ data[i];
-    }
-    return sum;
 }
 
 /* USER CODE END 4 */

@@ -19,6 +19,7 @@
 /**
  * Precomputed FSK bandwidth registers values
  */
+#ifdef RADIO_MODEM_FSK
 static const BandwidthMap_t SX1278FskBandwidths[] =
 {
     { 2600  , 0x17 },
@@ -44,7 +45,7 @@ static const BandwidthMap_t SX1278FskBandwidths[] =
     { 250000, 0x01 },
     { 300000, 0x00 }, // Invalid Bandwidth
 };
-
+#endif //RADIO_MODEM_FSK
 //-----------------------------------------------------------------------------
 /**
  * @brief Precomputed LORA bandwidth registers values
@@ -179,7 +180,7 @@ bool sx1278_init(sx1278 *const dev)
 
     sx1278_ioirq_init(dev);
     sx1278_radio_registers_init(dev);
-    sx1278_set_modem(dev, MODEM_FSK);
+    sx1278_set_modem(dev, dev->settings.modem);
     dev->settings.State = RF_IDLE;
     return true;
 }
@@ -285,6 +286,7 @@ void sx1278_set_rx_config(sx1278 *const dev, RadioModems_t modem, uint32_t bandw
 
     switch (modem)
     {
+#ifdef RADIO_MODEM_FSK
         case MODEM_FSK:
         {
             dev->settings.Fsk.Bandwidth = bandwidth;
@@ -324,8 +326,10 @@ void sx1278_set_rx_config(sx1278 *const dev, RadioModems_t modem, uint32_t bandw
                            ((fixLen == 1) ? RF_PACKETCONFIG1_PACKETFORMAT_FIXED : RF_PACKETCONFIG1_PACKETFORMAT_VARIABLE) |
                            (crcOn << 4));
             sx1278_write(dev, REG_PACKETCONFIG2, (sx1278_read(dev, REG_PACKETCONFIG2) | RF_PACKETCONFIG2_DATAMODE_PACKET));
+            break;
         }
-        break;
+#endif
+
         case MODEM_LORA:
         {
             if (bandwidth > 11) // specified in Hz, needs mapping
@@ -441,8 +445,8 @@ void sx1278_set_rx_config(sx1278 *const dev, RadioModems_t modem, uint32_t bandw
                 sx1278_write(dev, REG_LR_DETECTIONTHRESHOLD,
                             RFLR_DETECTIONTHRESH_SF7_TO_SF12);
             }
+            break;
         }
-        break;
     }
 }
 
@@ -458,6 +462,7 @@ void sx1278_set_tx_config(sx1278 *const dev, RadioModems_t modem, int8_t power, 
 
     switch (modem)
     {
+#ifdef RADIO_MODEM_FSK
         case MODEM_FSK:
         {
             dev->settings.Fsk.Power = power;
@@ -488,8 +493,9 @@ void sx1278_set_tx_config(sx1278 *const dev, RadioModems_t modem, int8_t power, 
                         ((fixLen == 1) ? RF_PACKETCONFIG1_PACKETFORMAT_FIXED : RF_PACKETCONFIG1_PACKETFORMAT_VARIABLE) |
                         (crcOn << 4));
             sx1278_write(dev, REG_PACKETCONFIG2, (sx1278_read(dev, REG_PACKETCONFIG2) | RF_PACKETCONFIG2_DATAMODE_PACKET));
+            break;
         }
-        break;
+#endif
         case MODEM_LORA:
         {
             dev->settings.LoRa.Power = power;
@@ -574,8 +580,8 @@ void sx1278_set_tx_config(sx1278 *const dev, RadioModems_t modem, int8_t power, 
                 sx1278_write(dev, REG_LR_DETECTIONTHRESHOLD,
                              RFLR_DETECTIONTHRESH_SF7_TO_SF12);
             }
+            break;
         }
-        break;
     }
 }
 
@@ -586,7 +592,8 @@ uint32_t sx1278_time_on_air(sx1278 *const dev, RadioModems_t modem, uint8_t pktL
 
     switch (modem)
     {
-    case MODEM_FSK:
+#ifdef RADIO_MODEM_FSK
+        case MODEM_FSK:
         {
             airTime = rint((8 * (dev->settings.Fsk.PreambleLen +
                                 ((sx1278_read(dev, REG_SYNCCONFIG) & ~RF_SYNCCONFIG_SYNCSIZE_MASK) + 1) +
@@ -595,9 +602,10 @@ uint32_t sx1278_time_on_air(sx1278 *const dev, RadioModems_t modem, uint8_t pktL
                                 pktLen +
                                 ((dev->settings.Fsk.CrcOn == 0x01) ? 2.0 : 0)) /
                                 dev->settings.Fsk.Datarate) * 1000);
+            break;
         }
-        break;
-    case MODEM_LORA:
+#endif
+        case MODEM_LORA:
         {
             double bw = 0.0;
             // NOTE: When using LoRa modem only bandwidths 125, 250 and 500 kHz are supported
@@ -653,8 +661,8 @@ uint32_t sx1278_time_on_air(sx1278 *const dev, RadioModems_t modem, uint8_t pktL
             double tOnAir = tPreamble + tPayload;
             // return ms secs
             airTime = floor(tOnAir * 1000 + 0.999);
+            break;
         }
-        break;
     }
     return airTime;
 }
@@ -666,6 +674,7 @@ void sx1278_send(sx1278 *const dev, uint8_t *buffer, uint8_t size)
 
     switch (dev->settings.modem)
     {
+#ifdef RADIO_MODEM_FSK
         case MODEM_FSK:
         {
             dev->settings.FskPacketHandler.NbBytes = 0;
@@ -694,8 +703,9 @@ void sx1278_send(sx1278 *const dev, uint8_t *buffer, uint8_t size)
             sx1278_write_fifo(dev, buffer, dev->settings.FskPacketHandler.ChunkSize);
             dev->settings.FskPacketHandler.NbBytes += dev->settings.FskPacketHandler.ChunkSize;
             txTimeout = dev->settings.Fsk.txTimeout;
+            break;
         }
-        break;
+#endif
         case MODEM_LORA:
         {
             if (dev->settings.LoRa.IqInverted == true)
@@ -727,8 +737,8 @@ void sx1278_send(sx1278 *const dev, uint8_t *buffer, uint8_t size)
             // sx1278_write payload buffer
             sx1278_write_fifo(dev, buffer, size);
             txTimeout = dev->settings.LoRa.txTimeout;
+            break;
         }
-        break;
     }
 
     sx1278_set_tx(dev, txTimeout);
@@ -763,7 +773,8 @@ void sx1278_set_rx(sx1278 *const dev, uint32_t timeout)
 
     switch (dev->settings.modem)
     {
-    case MODEM_FSK:
+#ifdef RADIO_MODEM_FSK
+        case MODEM_FSK:
         {
             rxContinuous = dev->settings.Fsk.RxContinuous;
 
@@ -793,9 +804,10 @@ void sx1278_set_rx(sx1278 *const dev, uint32_t timeout)
             dev->settings.FskPacketHandler.SyncWordDetected = false;
             dev->settings.FskPacketHandler.NbBytes = 0;
             dev->settings.FskPacketHandler.Size = 0;
+            break;
         }
-        break;
-    case MODEM_LORA:
+#endif
+        case MODEM_LORA:
         {
             if (dev->settings.LoRa.IqInverted == true)
             {
@@ -887,8 +899,8 @@ void sx1278_set_rx(sx1278 *const dev, uint32_t timeout)
             }
             sx1278_write(dev, REG_LR_FIFORXBASEADDR, 0);
             sx1278_write(dev, REG_LR_FIFOADDRPTR, 0);
+            break;
         }
-        break;
     }
 
     memset(dev->rx_tx_buffer, 0, (size_t)RX_BUFFER_SIZE);
@@ -899,6 +911,7 @@ void sx1278_set_rx(sx1278 *const dev, uint32_t timeout)
         sx1278_set_timeout(dev, RXTimeoutTimer, on_timeout_irq, timeout);
     }
 
+#ifdef RADIO_MODEM_FSK
     if (dev->settings.modem == MODEM_FSK)
     {
         sx1278_set_op_mode(dev, RF_OPMODE_RECEIVER);
@@ -908,6 +921,7 @@ void sx1278_set_rx(sx1278 *const dev, uint32_t timeout)
             sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
         }
     }
+#endif //RADIO_MODEM_FSK
     else // MODEM_LORA
     {
         if (rxContinuous == true)
@@ -927,7 +941,9 @@ void sx1278_set_tx(sx1278 *const dev, uint32_t timeout)
 
     switch (dev->settings.modem)
     {
-    case MODEM_FSK:
+
+#ifdef RADIO_MODEM_FSK
+        case MODEM_FSK:
         {
             // DIO0=PacketSent
             // DIO1=FifoEmpty
@@ -943,9 +959,10 @@ void sx1278_set_tx(sx1278 *const dev, uint32_t timeout)
             sx1278_write(dev, REG_DIOMAPPING2, (sx1278_read(dev, REG_DIOMAPPING2) & RF_DIOMAPPING2_DIO4_MASK &
                                                                             RF_DIOMAPPING2_MAP_MASK));
             dev->settings.FskPacketHandler.FifoThresh = sx1278_read(dev, REG_FIFOTHRESH) & 0x3F;
+            break;
         }
-        break;
-    case MODEM_LORA:
+#endif //RADIO_MODEM_FSK
+        case MODEM_LORA:
         {
             if (dev->settings.LoRa.FreqHopOn == true)
             {
@@ -975,8 +992,8 @@ void sx1278_set_tx(sx1278 *const dev, uint32_t timeout)
                 // DIO0=tx_done
                 sx1278_write(dev, REG_DIOMAPPING1, (sx1278_read(dev, REG_DIOMAPPING1) & RFLR_DIOMAPPING1_DIO0_MASK) | RFLR_DIOMAPPING1_DIO0_01);
             }
+            break;
         }
-        break;
     }
 
     dev->settings.State = RF_TX_RUNNING;
@@ -989,12 +1006,13 @@ void sx1278_start_cad(sx1278 *const dev)
 {
     switch (dev->settings.modem)
     {
-    case MODEM_FSK:
+#ifdef RADIO_MODEM_FSK
+        case MODEM_FSK:
         {
-
+            break;
         }
-        break;
-    case MODEM_LORA:
+#endif
+        case MODEM_LORA:
         {
             sx1278_write(dev, REG_LR_IRQFLAGSMASK, RFLR_IRQFLAGS_RXTIMEOUT |
                                         RFLR_IRQFLAGS_RXDONE |
@@ -1019,10 +1037,11 @@ void sx1278_start_cad(sx1278 *const dev)
 
             dev->settings.State = RF_CAD;
             sx1278_set_op_mode(dev, RFLR_OPMODE_CAD);
+            break;
         }
-        break;
-    default:
-        break;
+
+        default:
+            break;
     }
 }
 
@@ -1052,10 +1071,17 @@ int16_t sx1278_get_rssi(sx1278 *const dev, RadioModems_t modem)
 
     switch (modem)
     {
+
+#ifdef RADIO_MODEM_FSK
         case MODEM_FSK:
+        {
             rssi = -(sx1278_read(dev, REG_RSSIVALUE) >> 1);
             break;
+        }
+#endif //RADIO_MODEM_FSK
+
         case MODEM_LORA:
+        {
             if (dev->settings.Channel > RF_MID_BAND_THRESH)
             {
                 rssi = RSSI_OFFSET_HF + sx1278_read(dev, REG_LR_RSSIVALUE);
@@ -1065,9 +1091,13 @@ int16_t sx1278_get_rssi(sx1278 *const dev, RadioModems_t modem)
                 rssi = RSSI_OFFSET_LF + sx1278_read(dev, REG_LR_RSSIVALUE);
             }
             break;
+        }
+
         default:
+        {
             rssi = -1;
             break;
+        }
     }
     return rssi;
 }
@@ -1078,7 +1108,9 @@ int32_t sx1278_get_frequency_error(sx1278 *const dev, RadioModems_t modem )
     int32_t val = 0;
 
     if (modem != MODEM_LORA)
+    {
         return 0;
+    }
 
     val = (sx1278_read(dev, REG_LR_FEIMSB) & 0b1111) << 16; // high word, 4 valid bits only
     val |= ((sx1278_read(dev, REG_LR_FEIMID) << 8) | sx1278_read(dev, REG_LR_FEILSB)); // high byte, low byte
@@ -1092,8 +1124,11 @@ int32_t sx1278_get_frequency_error(sx1278 *const dev, RadioModems_t modem )
             break;
         }
     }
+
     if (!bandwidth)
+    {
     	return 0;
+    }
 
     float bandWidthkHz = (float)bandwidth/1000;
 
@@ -1126,10 +1161,13 @@ void sx1278_set_modem(sx1278 *const dev, RadioModems_t modem)
     {
         dev->settings.modem = MODEM_LORA;
     }
+
+#ifdef RADIO_MODEM_FSK
     else
     {
         dev->settings.modem = MODEM_FSK;
     }
+#endif //RADIO_MODEM_FSK
 
     if (dev->settings.modem == modem)
     {
@@ -1139,21 +1177,29 @@ void sx1278_set_modem(sx1278 *const dev, RadioModems_t modem)
     dev->settings.modem = modem;
     switch (dev->settings.modem)
     {
+
+#ifdef RADIO_MODEM_FSK
         default:
         case MODEM_FSK:
+        {
             sx1278_set_sleep(dev);
             sx1278_write(dev, REG_OPMODE, (sx1278_read(dev, REG_OPMODE) & RFLR_OPMODE_LONGRANGEMODE_MASK) | RFLR_OPMODE_LONGRANGEMODE_OFF);
 
             sx1278_write(dev, REG_DIOMAPPING1, 0x00);
             sx1278_write(dev, REG_DIOMAPPING2, 0x30); // DIO5=ModeSX1278Ready
             break;
+        }
+#endif //RADIO_MODEM_FSK
+
         case MODEM_LORA:
+        {
             sx1278_set_sleep(dev);
             sx1278_write(dev, REG_OPMODE, (sx1278_read(dev, REG_OPMODE) & RFLR_OPMODE_LONGRANGEMODE_MASK) | RFLR_OPMODE_LONGRANGEMODE_ON);
 
             sx1278_write(dev, REG_DIOMAPPING1, 0x00);
             sx1278_write(dev, REG_DIOMAPPING2, 0x00);
             break;
+        }
     }
 }
 
@@ -1164,15 +1210,23 @@ void sx1278_set_max_payload_length(sx1278 *const dev, RadioModems_t modem, uint8
 
     switch (modem)
     {
-    case MODEM_FSK:
-        if (dev->settings.Fsk.FixLen == false)
+
+#ifdef RADIO_MODEM_FSK
+        case MODEM_FSK:
         {
-            sx1278_write(dev, REG_PAYLOADLENGTH, max);
+            if (dev->settings.Fsk.FixLen == false)
+            {
+                sx1278_write(dev, REG_PAYLOADLENGTH, max);
+            }
+            break;
         }
-        break;
-    case MODEM_LORA:
-        sx1278_write(dev, REG_LR_PAYLOADMAXLENGTH, max);
-        break;
+#endif //RADIO_MODEM_FSK
+
+        case MODEM_LORA:
+        {
+            sx1278_write(dev, REG_LR_PAYLOADMAXLENGTH, max);
+            break;
+        }
     }
 }
 
@@ -1199,70 +1253,80 @@ void on_timeout_irq(void *ctx)
     sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.State)
     {
-    case RF_RX_RUNNING:
-        if (dev->settings.modem == MODEM_FSK)
+        case RF_RX_RUNNING:
         {
-            dev->settings.FskPacketHandler.PreambleDetected = false;
-            dev->settings.FskPacketHandler.SyncWordDetected = false;
-            dev->settings.FskPacketHandler.NbBytes = 0;
-            dev->settings.FskPacketHandler.Size = 0;
-
-            // Clear Irqs
-            sx1278_write(dev, REG_IRQFLAGS1, RF_IRQFLAGS1_RSSI |
-                                        RF_IRQFLAGS1_PREAMBLEDETECT |
-                                        RF_IRQFLAGS1_SYNCADDRESSMATCH);
-            sx1278_write(dev, REG_IRQFLAGS2, RF_IRQFLAGS2_FIFOOVERRUN);
-
-            if (dev->settings.Fsk.RxContinuous == true)
+#ifdef RADIO_MODEM_FSK
+            if (dev->settings.modem == MODEM_FSK)
             {
-                // Continuous mode restart Rx chain
-                sx1278_write(dev, REG_RXCONFIG, sx1278_read(dev, REG_RXCONFIG) | RF_RXCONFIG_RESTARTRXWITHOUTPLLLOCK);
-                sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
+                dev->settings.FskPacketHandler.PreambleDetected = false;
+                dev->settings.FskPacketHandler.SyncWordDetected = false;
+                dev->settings.FskPacketHandler.NbBytes = 0;
+                dev->settings.FskPacketHandler.Size = 0;
+
+                // Clear Irqs
+                sx1278_write(dev, REG_IRQFLAGS1, RF_IRQFLAGS1_RSSI |
+                                            RF_IRQFLAGS1_PREAMBLEDETECT |
+                                            RF_IRQFLAGS1_SYNCADDRESSMATCH);
+                sx1278_write(dev, REG_IRQFLAGS2, RF_IRQFLAGS2_FIFOOVERRUN);
+
+                if (dev->settings.Fsk.RxContinuous == true)
+                {
+                    // Continuous mode restart Rx chain
+                    sx1278_write(dev, REG_RXCONFIG, sx1278_read(dev, REG_RXCONFIG) | RF_RXCONFIG_RESTARTRXWITHOUTPLLLOCK);
+                    sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
+                }
+                else
+                {
+                    dev->settings.State = RF_IDLE;
+                    sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, NULL, 0);
+                }
             }
-            else
+#endif //RADIO_MODEM_FSK
+
+            if ((dev->events != NULL) && (dev->events->rx_timeout != NULL))
             {
-                dev->settings.State = RF_IDLE;
-                sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, NULL, 0);
+                dev->events->rx_timeout(dev);
             }
+
+            break;
         }
-        if ((dev->events != NULL) && (dev->events->rx_timeout != NULL))
+
+        case RF_TX_RUNNING:
         {
-            dev->events->rx_timeout(dev);
+            // Tx timeout shouldn't happen.
+            // But it has been observed that when it happens it is a result of a corrupted SPI transfer
+            // it depends on the platform design.
+            //
+            // The workaround is to put the radio in a known state. Thus, we re-initialize it.
+
+            // BEGIN WORKAROUND
+
+            // Reset the radio
+            sx1278_reset(dev);
+
+            // Calibrate Rx chain
+            sx1278_rx_chain_calibration(dev);
+
+            // Initialize radio default values
+            sx1278_set_op_mode(dev, RF_OPMODE_SLEEP);
+            sx1278_radio_registers_init(dev);
+
+            sx1278_set_modem(dev, dev->settings.modem);
+
+            // Restore previous network type setting.
+            sx1278_set_public_network(dev, dev->settings.LoRa.PublicNetwork);
+            // END WORKAROUND
+
+            dev->settings.State = RF_IDLE;
+            if ((dev->events != NULL) && (dev->events->tx_timeout != NULL))
+            {
+                dev->events->tx_timeout(dev);
+            }
+            break;
         }
-        break;
-    case RF_TX_RUNNING:
-        // Tx timeout shouldn't happen.
-        // But it has been observed that when it happens it is a result of a corrupted SPI transfer
-        // it depends on the platform design.
-        //
-        // The workaround is to put the radio in a known state. Thus, we re-initialize it.
 
-        // BEGIN WORKAROUND
-
-        // Reset the radio
-        sx1278_reset(dev);
-
-        // Calibrate Rx chain
-        sx1278_rx_chain_calibration(dev);
-
-        // Initialize radio default values
-        sx1278_set_op_mode(dev, RF_OPMODE_SLEEP);
-        sx1278_radio_registers_init(dev);
-
-        sx1278_set_modem(dev, MODEM_FSK);
-
-        // Restore previous network type setting.
-        sx1278_set_public_network(dev, dev->settings.LoRa.PublicNetwork);
-        // END WORKAROUND
-
-        dev->settings.State = RF_IDLE;
-        if ((dev->events != NULL) && (dev->events->tx_timeout != NULL))
-        {
-            dev->events->tx_timeout(dev);
-        }
-        break;
-    default:
-        break;
+        default:
+            break;
     }
 }
 
@@ -1278,9 +1342,9 @@ void sx1278_set_rf_tx_power(sx1278 *const dev, int8_t power)
     paConfig = (paConfig & RF_PACONFIG_PASELECT_MASK) | sx1278_get_pa_select(dev, dev->settings.Channel);
     paConfig = (paConfig & RF_PACONFIG_MAX_POWER_MASK) | 0x70;
 
-    if((paConfig & RF_PACONFIG_PASELECT_PABOOST) == RF_PACONFIG_PASELECT_PABOOST)
+    if ((paConfig & RF_PACONFIG_PASELECT_PABOOST) == RF_PACONFIG_PASELECT_PABOOST)
     {
-        if(power > 17)
+        if (power > 17)
         {
             paDac = (paDac & RF_PADAC_20DBM_MASK) | RF_PADAC_20DBM_ON;
         }
@@ -1288,13 +1352,13 @@ void sx1278_set_rf_tx_power(sx1278 *const dev, int8_t power)
         {
             paDac = (paDac & RF_PADAC_20DBM_MASK) | RF_PADAC_20DBM_OFF;
         }
-        if((paDac & RF_PADAC_20DBM_ON) == RF_PADAC_20DBM_ON)
+        if ((paDac & RF_PADAC_20DBM_ON) == RF_PADAC_20DBM_ON)
         {
-            if(power < 5)
+            if (power < 5)
             {
                 power = 5;
             }
-            if(power > 20)
+            if (power > 20)
             {
                 power = 20;
             }
@@ -1302,11 +1366,11 @@ void sx1278_set_rf_tx_power(sx1278 *const dev, int8_t power)
         }
         else
         {
-            if(power < 2)
+            if (power < 2)
             {
                 power = 2;
             }
-            if(power > 17)
+            if (power > 17)
             {
                 power = 17;
             }
@@ -1315,11 +1379,11 @@ void sx1278_set_rf_tx_power(sx1278 *const dev, int8_t power)
     }
     else
     {
-        if(power < -1)
+        if (power < -1)
         {
             power = -1;
         }
-        if(power > 14)
+        if (power > 14)
         {
             power = 14;
         }
@@ -1421,6 +1485,7 @@ void sx1278_rx_chain_calibration(sx1278 *const dev)
 }
 
 //-----------------------------------------------------------------------------
+#ifdef RADIO_MODEM_FSK
 uint8_t sx1278_get_fsk_bandwidth_reg_value(uint32_t bandwidth)
 {
     uint8_t i;
@@ -1435,6 +1500,7 @@ uint8_t sx1278_get_fsk_bandwidth_reg_value(uint32_t bandwidth)
     // ERROR: Value not found
     while(1);
 }
+#endif //RADIO_MODEM_FSK
 
 //-----------------------------------------------------------------------------
 uint8_t sx1278_get_lora_bandwidth_reg_value(uint32_t bandwidth)
@@ -1461,91 +1527,98 @@ ISR_PREFIX void on_dio0_irq(void *ctx)
     switch (dev->settings.State)
     {
         case RF_RX_RUNNING:
+        {
             // rx_done interrupt
             switch (dev->settings.modem)
             {
-            case MODEM_FSK:
-                if (dev->settings.Fsk.CrcOn == true)
+#ifdef RADIO_MODEM_FSK
+                case MODEM_FSK:
                 {
-                    irqFlags = sx1278_read(dev, REG_IRQFLAGS2);
-                    if ((irqFlags & RF_IRQFLAGS2_CRCOK) != RF_IRQFLAGS2_CRCOK)
+                    if (dev->settings.Fsk.CrcOn == true)
                     {
-                        // Clear Irqs
-                        sx1278_write(dev, REG_IRQFLAGS1, RF_IRQFLAGS1_RSSI |
-                                                   RF_IRQFLAGS1_PREAMBLEDETECT |
-                                                   RF_IRQFLAGS1_SYNCADDRESSMATCH);
-                        sx1278_write(dev, REG_IRQFLAGS2, RF_IRQFLAGS2_FIFOOVERRUN);
-
-                        sx1278_set_timeout(dev, RXTimeoutTimer, NULL, 0);
-
-                        if (dev->settings.Fsk.RxContinuous == false)
+                        irqFlags = sx1278_read(dev, REG_IRQFLAGS2);
+                        if ((irqFlags & RF_IRQFLAGS2_CRCOK) != RF_IRQFLAGS2_CRCOK)
                         {
-                            sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, NULL, 0);
-                            dev->settings.State = RF_IDLE;
+                            // Clear Irqs
+                            sx1278_write(dev, REG_IRQFLAGS1, RF_IRQFLAGS1_RSSI |
+                                                    RF_IRQFLAGS1_PREAMBLEDETECT |
+                                                    RF_IRQFLAGS1_SYNCADDRESSMATCH);
+                            sx1278_write(dev, REG_IRQFLAGS2, RF_IRQFLAGS2_FIFOOVERRUN);
+
+                            sx1278_set_timeout(dev, RXTimeoutTimer, NULL, 0);
+
+                            if (dev->settings.Fsk.RxContinuous == false)
+                            {
+                                sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, NULL, 0);
+                                dev->settings.State = RF_IDLE;
+                            }
+                            else
+                            {
+                                // Continuous mode restart Rx chain
+                                sx1278_write(dev, REG_RXCONFIG, sx1278_read(dev, REG_RXCONFIG) | RF_RXCONFIG_RESTARTRXWITHOUTPLLLOCK);
+                                sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
+                            }
+
+                            if ((dev->events != NULL) && (dev->events->rx_error != NULL))
+                            {
+                                dev->events->rx_error(dev);
+                            }
+                            dev->settings.FskPacketHandler.PreambleDetected = false;
+                            dev->settings.FskPacketHandler.SyncWordDetected = false;
+                            dev->settings.FskPacketHandler.NbBytes = 0;
+                            dev->settings.FskPacketHandler.Size = 0;
+                            break;
+                        }
+                    }
+
+                    // sx1278_read received packet size
+                    if ((dev->settings.FskPacketHandler.Size == 0) && (dev->settings.FskPacketHandler.NbBytes == 0))
+                    {
+                        if (dev->settings.Fsk.FixLen == false)
+                        {
+                            sx1278_read_fifo(dev, (uint8_t*)&dev->settings.FskPacketHandler.Size, 1);
                         }
                         else
                         {
-                            // Continuous mode restart Rx chain
-                            sx1278_write(dev, REG_RXCONFIG, sx1278_read(dev, REG_RXCONFIG) | RF_RXCONFIG_RESTARTRXWITHOUTPLLLOCK);
-                            sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
+                            dev->settings.FskPacketHandler.Size = sx1278_read(dev, REG_PAYLOADLENGTH);
                         }
-
-                        if ((dev->events != NULL) && (dev->events->rx_error != NULL))
-                        {
-                            dev->events->rx_error(dev);
-                        }
-                        dev->settings.FskPacketHandler.PreambleDetected = false;
-                        dev->settings.FskPacketHandler.SyncWordDetected = false;
-                        dev->settings.FskPacketHandler.NbBytes = 0;
-                        dev->settings.FskPacketHandler.Size = 0;
-                        break;
-                    }
-                }
-
-                // sx1278_read received packet size
-                if ((dev->settings.FskPacketHandler.Size == 0) && (dev->settings.FskPacketHandler.NbBytes == 0))
-                {
-                    if (dev->settings.Fsk.FixLen == false)
-                    {
-                        sx1278_read_fifo(dev, (uint8_t*)&dev->settings.FskPacketHandler.Size, 1);
+                        sx1278_read_fifo(dev, dev->rx_tx_buffer + dev->settings.FskPacketHandler.NbBytes, dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes);
+                        dev->settings.FskPacketHandler.NbBytes += (dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes);
                     }
                     else
                     {
-                        dev->settings.FskPacketHandler.Size = sx1278_read(dev, REG_PAYLOADLENGTH);
+                        sx1278_read_fifo(dev, dev->rx_tx_buffer + dev->settings.FskPacketHandler.NbBytes, dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes);
+                        dev->settings.FskPacketHandler.NbBytes += (dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes);
                     }
-                    sx1278_read_fifo(dev, dev->rx_tx_buffer + dev->settings.FskPacketHandler.NbBytes, dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes);
-                    dev->settings.FskPacketHandler.NbBytes += (dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes);
-                }
-                else
-                {
-                    sx1278_read_fifo(dev, dev->rx_tx_buffer + dev->settings.FskPacketHandler.NbBytes, dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes);
-                    dev->settings.FskPacketHandler.NbBytes += (dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes);
-                }
 
-                sx1278_set_timeout(dev, RXTimeoutTimer, NULL, 0);
+                    sx1278_set_timeout(dev, RXTimeoutTimer, NULL, 0);
 
-                if (dev->settings.Fsk.RxContinuous == false)
-                {
-                    dev->settings.State = RF_IDLE;
-                    sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, NULL, 0);
-                }
-                else
-                {
-                    // Continuous mode restart Rx chain
-                    sx1278_write(dev, REG_RXCONFIG, sx1278_read(dev, REG_RXCONFIG) | RF_RXCONFIG_RESTARTRXWITHOUTPLLLOCK);
-                    sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
-                }
+                    if (dev->settings.Fsk.RxContinuous == false)
+                    {
+                        dev->settings.State = RF_IDLE;
+                        sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, NULL, 0);
+                    }
+                    else
+                    {
+                        // Continuous mode restart Rx chain
+                        sx1278_write(dev, REG_RXCONFIG, sx1278_read(dev, REG_RXCONFIG) | RF_RXCONFIG_RESTARTRXWITHOUTPLLLOCK);
+                        sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
+                    }
 
-                if ((dev->events != NULL) && (dev->events->rx_done != NULL))
-                {
-                    dev->events->rx_done(dev, dev->rx_tx_buffer, dev->settings.FskPacketHandler.Size, dev->settings.FskPacketHandler.RssiValue, 0);
+                    if ((dev->events != NULL) && (dev->events->rx_done != NULL))
+                    {
+                        dev->events->rx_done(dev, dev->rx_tx_buffer, dev->settings.FskPacketHandler.Size, dev->settings.FskPacketHandler.RssiValue, 0);
+                    }
+                    dev->settings.FskPacketHandler.PreambleDetected = false;
+                    dev->settings.FskPacketHandler.SyncWordDetected = false;
+                    dev->settings.FskPacketHandler.NbBytes = 0;
+                    dev->settings.FskPacketHandler.Size = 0;
+
+                    break;
                 }
-                dev->settings.FskPacketHandler.PreambleDetected = false;
-                dev->settings.FskPacketHandler.SyncWordDetected = false;
-                dev->settings.FskPacketHandler.NbBytes = 0;
-                dev->settings.FskPacketHandler.Size = 0;
-                break;
-            case MODEM_LORA:
+#endif //RADIO_MODEM_FSK
+
+                case MODEM_LORA:
                 {
                     // Clear Irq
                     sx1278_write(dev, REG_LR_IRQFLAGS, RFLR_IRQFLAGS_RXDONE);
@@ -1611,31 +1684,42 @@ ISR_PREFIX void on_dio0_irq(void *ctx)
                     {
                         dev->events->rx_done(dev, dev->rx_tx_buffer, dev->settings.LoRaPacketHandler.Size, dev->settings.LoRaPacketHandler.RssiValue, dev->settings.LoRaPacketHandler.SnrValue);
                     }
+
+                    break;
                 }
-                break;
-            default:
-                break;
+
+                default:
+                {
+                    break;
+                }
             }
             break;
+        }
         case RF_TX_RUNNING:
+        {
             sx1278_set_timeout(dev, TXTimeoutTimer, NULL, 0);
             // tx_done interrupt
             switch (dev->settings.modem)
             {
-            case MODEM_LORA:
-                // Clear Irq
-                sx1278_write(dev, REG_LR_IRQFLAGS, RFLR_IRQFLAGS_TXDONE);
-                // Intentional fall through
-            case MODEM_FSK:
-            default:
-                dev->settings.State = RF_IDLE;
-                if ((dev->events != NULL) && (dev->events->tx_done != NULL))
+                case MODEM_LORA:
                 {
-                    dev->events->tx_done(dev);
+                    // Clear Irq
+                    sx1278_write(dev, REG_LR_IRQFLAGS, RFLR_IRQFLAGS_TXDONE);
+                    // Intentional fall through
                 }
-                break;
+                case MODEM_FSK:
+                default:
+                {
+                    dev->settings.State = RF_IDLE;
+                    if ((dev->events != NULL) && (dev->events->tx_done != NULL))
+                    {
+                        dev->events->tx_done(dev);
+                    }
+                    break;
+                }
             }
             break;
+        }
         default:
             break;
     }
@@ -1648,8 +1732,10 @@ ISR_PREFIX void on_dio1_irq(void *ctx)
     switch (dev->settings.State)
     {
         case RF_RX_RUNNING:
+        {
             switch (dev->settings.modem)
             {
+#ifdef RADIO_MODEM_FSK
                 case MODEM_FSK:
                     // Stop Timer
                     sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, NULL, 0);
@@ -1685,6 +1771,8 @@ ISR_PREFIX void on_dio1_irq(void *ctx)
                         dev->settings.FskPacketHandler.NbBytes += (dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes);
                     }
                     break;
+#endif //RADIO_MODEM_FSK
+
                 case MODEM_LORA:
                     // Sync time out
                     sx1278_set_timeout(dev, RXTimeoutTimer, NULL, 0);
@@ -1699,33 +1787,48 @@ ISR_PREFIX void on_dio1_irq(void *ctx)
                     break;
                 default:
                     break;
-                }
-                break;
-            case RF_TX_RUNNING:
+            }
+            break;
+        }
+
+        case RF_TX_RUNNING:
+        {
                 switch (dev->settings.modem)
                 {
-                case MODEM_FSK:
-                    // FifoEmpty interrupt
-                    if ((dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes) > dev->settings.FskPacketHandler.ChunkSize)
+#ifdef RADIO_MODEM_FSK
+                    case MODEM_FSK:
                     {
-                        sx1278_write_fifo(dev, (dev->rx_tx_buffer + dev->settings.FskPacketHandler.NbBytes), dev->settings.FskPacketHandler.ChunkSize);
-                        dev->settings.FskPacketHandler.NbBytes += dev->settings.FskPacketHandler.ChunkSize;
+                        // FifoEmpty interrupt
+                        if ((dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes) > dev->settings.FskPacketHandler.ChunkSize)
+                        {
+                            sx1278_write_fifo(dev, (dev->rx_tx_buffer + dev->settings.FskPacketHandler.NbBytes), dev->settings.FskPacketHandler.ChunkSize);
+                            dev->settings.FskPacketHandler.NbBytes += dev->settings.FskPacketHandler.ChunkSize;
+                        }
+                        else
+                        {
+                            // sx1278_write the last chunk of data
+                            sx1278_write_fifo(dev, dev->rx_tx_buffer + dev->settings.FskPacketHandler.NbBytes, dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes);
+                            dev->settings.FskPacketHandler.NbBytes += dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes;
+                        }
+                        break;
                     }
-                    else
+#endif //RADIO_MODEM_FSK
+
+                    case MODEM_LORA:
                     {
-                        // sx1278_write the last chunk of data
-                        sx1278_write_fifo(dev, dev->rx_tx_buffer + dev->settings.FskPacketHandler.NbBytes, dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes);
-                        dev->settings.FskPacketHandler.NbBytes += dev->settings.FskPacketHandler.Size - dev->settings.FskPacketHandler.NbBytes;
+                        break;
                     }
-                    break;
-                case MODEM_LORA:
-                    break;
-                default:
-                    break;
+
+                    default:
+                        break;
                 }
             break;
+        }
+
         default:
+        {
             break;
+        }
     }
 }
 
@@ -1736,8 +1839,10 @@ ISR_PREFIX void on_dio2_irq(void *ctx)
     switch (dev->settings.State)
     {
         case RF_RX_RUNNING:
+        {
             switch (dev->settings.modem)
             {
+#ifdef RADIO_MODEM_FSK
                 case MODEM_FSK:
                     // Checks if DIO4 is connected. If it is not PreambleDtected is set to true.
                     if (dev->dio_irq[4] == NULL)
@@ -1759,6 +1864,8 @@ ISR_PREFIX void on_dio2_irq(void *ctx)
                         dev->settings.FskPacketHandler.RxGain = (sx1278_read(dev, REG_LNA) >> 5) & 0x07;
                     }
                     break;
+#endif //RADIO_MODEM_FSK
+
                 case MODEM_LORA:
                     if (dev->settings.LoRa.FreqHopOn == true)
                     {
@@ -1775,7 +1882,9 @@ ISR_PREFIX void on_dio2_irq(void *ctx)
                     break;
             }
             break;
+        }
         case RF_TX_RUNNING:
+        {
             switch (dev->settings.modem)
             {
                 case MODEM_FSK:
@@ -1796,6 +1905,7 @@ ISR_PREFIX void on_dio2_irq(void *ctx)
                     break;
             }
             break;
+        }
         default:
             break;
     }
@@ -1807,8 +1917,10 @@ ISR_PREFIX void on_dio3_irq(void *ctx)
     sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.modem)
     {
+#ifdef RADIO_MODEM_FSK
         case MODEM_FSK:
             break;
+#endif //RADIO_MODEM_FSK
         case MODEM_LORA:
             if ((sx1278_read(dev, REG_LR_IRQFLAGS) & RFLR_IRQFLAGS_CADDETECTED) == RFLR_IRQFLAGS_CADDETECTED)
             {
@@ -1840,6 +1952,7 @@ ISR_PREFIX void on_dio4_irq(void *ctx)
     sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.modem)
     {
+#ifdef RADIO_MODEM_FSK
         case MODEM_FSK:
         {
             if (dev->settings.FskPacketHandler.PreambleDetected == false)
@@ -1848,8 +1961,11 @@ ISR_PREFIX void on_dio4_irq(void *ctx)
             }
             break;
         }
+#endif //RADIO_MODEM_FSK
+
         case MODEM_LORA:
             break;
+
         default:
             break;
     }
@@ -1861,12 +1977,17 @@ ISR_PREFIX void on_dio5_irq(void *ctx)
     sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.modem)
     {
-    case MODEM_FSK:
-        break;
-    case MODEM_LORA:
-        break;
-    default:
-        break;
+
+#ifdef RADIO_MODEM_FSK
+        case MODEM_FSK:
+            break;
+#endif //RADIO_MODEM_FSK
+
+        case MODEM_LORA:
+            break;
+
+        default:
+            break;
     }
 }
 
