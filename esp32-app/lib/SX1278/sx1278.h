@@ -146,12 +146,12 @@ typedef struct
     /**
      * @brief Callback when Transmission is done.
      */
-    void (*tx_done)(void);
+    void (*tx_done)(void *args);
 
     /**
      * @brief Callback when Transmission is timed out.
      */
-    void (*tx_timeout)(void);
+    void (*tx_timeout)(void *args);
 
     /**
      * @brief Rx Done callback prototype.
@@ -163,31 +163,31 @@ typedef struct
      *                     FSK : N/A (set to 0)
      *                     LoRa: SNR value in dB
      */
-    void (*rx_done)(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
+    void (*rx_done)(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
 
     /**
      * @brief Callback when Reception is timed out.
      */
-    void (*rx_timeout)(void);
+    void (*rx_timeout)(void *args);
 
     /**
      * @brief Callback when Reception ends up in error.
      */
-    void (*rx_error)(void);
+    void (*rx_error)(void *args);
 
     /**
      * @brief  FHSS Change Channel callback prototype.
      *
      * @param[in] current_channel   Index number of the current channel
      */
-    void (*fhss_change_channel)(uint8_t current_channel);
+    void (*fhss_change_channel)(void *args, uint8_t current_channel);
 
     /**
      * @brief CAD Done callback prototype.
      *
      * @param[in] channel_activity_detected    True, if Channel activity detected.
      */
-    void (*cad_done) (bool channel_activity_detected);
+    void (*cad_done) (void *args, bool channel_activity_detected);
 } RadioEvents_t;
 
 
@@ -546,7 +546,7 @@ typedef void (*DioIrqHandler)(void*);
 /**
  * @brief Timeout timer callback function definition
  */
-typedef void (*TimeoutFuncPtr)(void);
+typedef void (*TimeoutFuncPtr)(void*);
 
 
 /**

@@ -1,5 +1,6 @@
 #include "radio.h"
 #include "hw_config.h"
+#include "App/utils.h"
 #include <functional>
 
 // Radio LORA settings
@@ -27,21 +28,42 @@ typedef enum
 	MSG_READ_ERROR = 1<<1,
 	MSG_INIT_ERROR = 1<<2,
 	MSG_BATT_LOW   = 1<<3,
-} radio_msg_frame_status;
+} radio_msg_sensor_frame_status;
 
 /**
- * @brief Radio Msg frame footprint, sent to the clock
+ * @brief Msg frame footprint, sent to the clock
  */
 typedef struct
 {
 	uint8_t hdr[3];
 	uint8_t status;
+	uint32_t vbatt;
 	float temperature;
 	float pressure;
 	float humidity;
-	float altitude;
 	uint32_t checksum;
-} radio_msg_frame;
+} radio_msg_sensor_frame;
+
+/**
+ * @brief Msg frame footprint, received from the clock
+ */
+typedef struct
+{
+	uint8_t hdr[3];
+	uint8_t status;
+	uint32_t update_data_interval; //[s] in seconds
+	uint32_t checksum;
+} radio_msg_clock_frame;
+
+/**
+ * @brief Clock global Msg frame
+ */
+static radio_msg_clock_frame msgf =
+{
+	.hdr = {'L','U','6'},
+    .status = MSG_NO_ERROR,
+    .update_data_interval = 10, //[s]
+};
 
 //------------------------------------------------------------------------------
 uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len)
@@ -57,76 +79,38 @@ uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len)
 }
 
 //------------------------------------------------------------------------------
-static void parse_incoming_msg(uint8_t *payload, uint16_t size)
+static void parse_incoming_msg_sensor(uint8_t *payload, uint16_t size)
 {
-    const radio_msg_frame *mf = (const radio_msg_frame *)payload;
-    const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_frame)-sizeof(mf->checksum)));
+    const radio_msg_sensor_frame *mf = (const radio_msg_sensor_frame *)payload;
+    const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_sensor_frame)-sizeof(mf->checksum)));
     if (mf->checksum != checksum)
     {
-        Serial.printf("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x\n\r", mf->checksum, checksum);
+        dbg("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x\n\r", mf->checksum, checksum);
         return;
     }
 
     if (~(mf->status & MSG_NO_ERROR))
     {
-        Serial.printf("MSG_NO_ERROR\n\r");
-        Serial.printf("T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%], A:%3.1f[m]\n\r", mf->temperature, mf->pressure, mf->humidity, mf->altitude);
+        dbg("MSG_NO_ERROR\n\r");
+        dbg("T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]\n\r", mf->temperature, mf->pressure, mf->humidity);
     }
 	else if (mf->status & MSG_READ_ERROR)
     {
-        Serial.printf("MSG_READ_ERROR\n\r");
+        dbg("MSG_READ_ERROR\n\r");
     }
 	else if (mf->status & MSG_INIT_ERROR)
     {
-        Serial.printf("MSG_INIT_ERROR\n\r");
+        dbg("MSG_INIT_ERROR\n\r");
     }
 	if (mf->status & MSG_BATT_LOW)
     {
-        Serial.printf("MSG_BATT_LOW\n\r");
+        dbg("MSG_BATT_LOW\n\r");
     }
 }
 
 //------------------------------------------------------------------------------
-// A nice way to register class member function as "C" callback
-#include <functional>
-
-template <typename T>
-struct Callback;
-
-template <typename Ret, typename... Params>
-struct Callback<Ret(Params...)>
-{
-    template <typename... Args>
-    static Ret callback(Args... args)
-    {
-        return func(args...);
-    }
-    static std::function<Ret(Params...)> func;
-};
-
-template <typename Ret, typename... Params>
-std::function<Ret(Params...)> Callback<Ret(Params...)>::func;
-
-typedef void (*on_func_callback)(void);
-
-template<typename T>
-on_func_callback makeCCallback(void (T::*method)(), T* r)
-{
-    Callback<void()>::func = std::bind(method, r);
-    void (*c_function_pointer)() = static_cast<decltype(c_function_pointer)>(Callback<void()>::callback);
-    return c_function_pointer;
-}
-
-typedef void (*on_rx_done_func_callback)(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
-
-template<typename T>
-on_rx_done_func_callback makeCCallback2(void (T::*method)(uint8_t *, uint16_t, int16_t, int8_t), T* r)
-{
-    Callback<void(uint8_t*, uint16_t, int16_t, int8_t)>::func = std::bind(method, r, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 );
-    void (*c_function_pointer)(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) = static_cast<decltype(c_function_pointer)>(Callback<void(uint8_t *, uint16_t, int16_t, int8_t)>::callback);
-    return c_function_pointer;
-}
 RadioEvents_t events;
+
 //------------------------------------------------------------------------------
 Radio::Radio()
     : spi(HSPI)
@@ -159,10 +143,10 @@ Radio::Radio()
     // Verify if SX1278 connected to the the board
     while (sx1278_read(&dev, REG_VERSION) == 0x00)
     {
-        Serial.printf("SX1278 Radio could not be detected!\n\r");
+        dbg("SX1278 Radio could not be detected!\n\r");
         sx1278_delay_ms(1000);
     }
-    Serial.printf("REG_VERSION: 0x%x", sx1278_read(&dev, REG_VERSION));
+    dbg("REG_VERSION: 0x%x", sx1278_read(&dev, REG_VERSION));
 
     sx1278_set_max_payload_length(&dev, MODEM_LORA, MAX_PAYLOAD_LENGTH);
     sx1278_set_tx_config(&dev, MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
@@ -177,42 +161,44 @@ Radio::Radio()
                           LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
                           LORA_IQ_INVERSION_ON, true);
 
-    sx1278_set_rx(&dev, RX_TIMEOUT_VALUE);
+    sx1278_set_rx(&dev, 0);
 }
 
 //------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-void Radio::on_tx_done(void)
+void Radio::on_tx_done(void *args)
 {
-    Serial.printf("> on_tx_done\n\r");
+    dbg("> on_tx_done\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void Radio::on_rx_done(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
+void Radio::on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-    //sx1278_send(&dev, (uint8_t*)GatewayMsg, sizeof(GatewayMsg));
-    //sx1278_set_sleep(&dev);
-    Serial.printf("> on_rx_done\n\r");
-    Serial.printf("> RssiValue: %d\n\r", rssi);
-    Serial.printf("> SnrValue: %d\n\r", snr);
-    Serial.printf("> PAYLOAD: %s\n\r", payload);
-    parse_incoming_msg(payload, size);
+    dbg("> on_rx_done\n\r");
+    dbg("> RssiValue: %d\n\r", rssi);
+    dbg("> SnrValue: %d\n\r", snr);
+    dbg("> PAYLOAD: %s\n\r", payload);
+    parse_incoming_msg_sensor(payload, size);
+    sx1278 *const dev = (sx1278*)args;
+    msgf.checksum = radio_msg_frame_checksum((const uint8_t*)&msgf, (sizeof(msgf)-sizeof(msgf.checksum)));
+    sx1278_send(dev, (uint8_t*)&msgf, sizeof(msgf));
+    sx1278_set_rx(dev, 0);
 }
 
 //-----------------------------------------------------------------------------
-void Radio::on_tx_timeout(void)
+void Radio::on_tx_timeout(void *args)
 {
-    Serial.printf("> on_tx_timeout\n\r");
+    dbg("> on_tx_timeout\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void Radio::on_rx_timeout(void)
+void Radio::on_rx_timeout(void *args)
 {
-    Serial.printf("> on_rx_timeout\n\r");
+    dbg("> on_rx_timeout\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void Radio::on_rx_error(void)
+void Radio::on_rx_error(void *args)
 {
-    Serial.printf("> on_rx_error\n\r");
+    dbg("> on_rx_error\n\r");
 }

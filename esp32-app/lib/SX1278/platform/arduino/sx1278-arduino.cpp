@@ -134,7 +134,7 @@ void sx1278_set_timeout(sx1278 *const dev, TimeoutTimer_t timer, TimeoutFuncPtr 
         {
             if (func)
             {
-                rx_timeout_timer.timeOut(timeout_ms, func);
+                rx_timeout_timer.timeOut(timeout_ms, func, dev);
             }
             else
             {
@@ -146,7 +146,7 @@ void sx1278_set_timeout(sx1278 *const dev, TimeoutTimer_t timer, TimeoutFuncPtr 
         {
             if (func)
             {
-                tx_timeout_timer.timeOut(timeout_ms, func);
+                tx_timeout_timer.timeOut(timeout_ms, func, dev);
             }
             else
             {
@@ -158,7 +158,7 @@ void sx1278_set_timeout(sx1278 *const dev, TimeoutTimer_t timer, TimeoutFuncPtr 
         {
             if (func)
             {
-                rx_timeout_syncword.timeOut(timeout_ms, func);
+                rx_timeout_syncword.timeOut(timeout_ms, func, dev);
             }
             else
             {

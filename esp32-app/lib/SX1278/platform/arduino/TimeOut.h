@@ -16,7 +16,7 @@
   COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
   IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/  
+*/
 
 #ifndef TimeOut_h
 #define TimeOut_h
@@ -53,24 +53,25 @@ class TimeOut;
 typedef class TimeOutNode {
 	TimeOutNode();
 	friend class TimeOut;
-	void (*callback)();
+	void (*callback)(void *args);
+	void *callbackArgs;
 	unsigned long delay;
 	unsigned long timeStamp;
 	bool lock;
-	bool undeletable;	
+	bool undeletable;
 	TimeOutNode *next;
 	TimeOut *linkedTO; //bound timeOut instance*/
 	void callbackTrigger();
-}*TimeOutNodePtr;
+} *TimeOutNodePtr;
 
 class TimeOut {
 public:
 	TimeOut();
-	TimeOut(unsigned long _delay, void (*_callback)());
-	TimeOut(uint8_t hour, uint8_t minute, uint8_t seconde, void (*_callback)());
-	bool timeOut(unsigned long _delay, void (*_callback)());
-	bool timeOut(unsigned long _delay, void (*_callback)(), uint8_t _timerType);
-	bool timeOut(uint8_t hour, uint8_t minute, uint8_t seconde, void (*_callback)(), uint8_t _timerType);
+	TimeOut(unsigned long _delay, void (*_callback)(void *args), void *_callbackArgs);
+	TimeOut(uint8_t hour, uint8_t minute, uint8_t seconde, void (*_callback)(void *args), void *_callbackArgs);
+	bool timeOut(unsigned long _delay, void (*_callback)(void *args), void *_callbackArgs);
+	bool timeOut(unsigned long _delay, void (*_callback)(void *args), void *_callbackArgs, uint8_t _timerType);
+	bool timeOut(uint8_t hour, uint8_t minute, uint8_t seconde, void (*_callback)(void *args), void *_callbackArgs, uint8_t _timerType);
 	void cancel();
 	static bool handler();
 	static void printContainer(HardwareSerial& stream);
@@ -89,7 +90,8 @@ class Interval;
 
 typedef class intervalNode {
 	friend class Interval;
-	void (*callback)();
+	void (*callback)(void *args);
+	void *callbackArgs;
 	unsigned long delay = 0;
 	unsigned long timeStamp = 0;
 	bool set = false;
@@ -102,8 +104,8 @@ typedef class intervalNode {
 
 class Interval {
 public:
-	bool interval(unsigned long _delay, void (*_callback)());
-	bool interval(uint8_t hour, uint8_t minute, uint8_t seconde, void (*_callback)());	
+	bool interval(unsigned long _delay, void (*_callback)(void *args), void *_callbackArgs);
+	bool interval(uint8_t hour, uint8_t minute, uint8_t seconde, void (*_callback)(void *args), void *_callbackArgs);
 	void cancel();
 	static bool handler();
 	static void printContainer(HardwareSerial& stream);

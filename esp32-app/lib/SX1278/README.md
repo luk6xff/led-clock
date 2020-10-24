@@ -47,7 +47,7 @@ Simple snippet how to quickly use the library for LORA communication on mbed pla
 static RadioEvents_t RadioEvents;
 
 // Function to be executed on Radio Tx Done event
-void Ontx_done(void);
+void on_tx_done(void);
 
 // Function to be executed on Radio Rx Done event
 void on_rx_done(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
@@ -109,7 +109,7 @@ int main()
 }
 
 //-----------------------------------------------------------------------------
-void Ontx_done(void)
+void on_tx_done(void)
 {
     sx1278_set_sleep();
     debug_if(DEBUG_ON, "> Ontx_done\n\r");

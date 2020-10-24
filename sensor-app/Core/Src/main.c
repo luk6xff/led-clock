@@ -39,7 +39,8 @@ typedef enum
 	MSG_READ_ERROR = 1<<1,
 	MSG_INIT_ERROR = 1<<2,
 	MSG_BATT_LOW   = 1<<3,
-} radio_msg_frame_status;
+} radio_msg_sensor_frame_status;
+
 /**
  * @brief Msg frame footprint, sent to the clock
  */
@@ -47,12 +48,24 @@ typedef struct
 {
 	uint8_t hdr[3];
 	uint8_t status;
+	uint32_t vbatt;
 	float temperature;
 	float pressure;
 	float humidity;
-	float altitude;
 	uint32_t checksum;
-} radio_msg_frame;
+} radio_msg_sensor_frame;
+
+/**
+ * @brief Msg frame footprint, received from the clock
+ */
+typedef struct
+{
+	uint8_t hdr[3];
+	uint8_t status;
+	uint32_t update_data_interval; //[s] in seconds
+	uint32_t checksum;
+} radio_msg_clock_frame;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -71,7 +84,7 @@ typedef struct
 #define LORA_NB_SYMB_HOP                            4
 #define LORA_IQ_INVERSION_ON                        false
 #define LORA_CRC_ENABLED                            true
-#define RX_TIMEOUT_VALUE                            3000      // in ms
+#define RX_TIMEOUT_VALUE                            5000      // in ms
 #define MAX_PAYLOAD_LENGTH                          60        // bytes
 
 /* USER CODE END PD */
@@ -114,21 +127,16 @@ static void MX_RTC_Init(void);
 uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len);
 static void radio_init();
 static void sensors_init();
+static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size);
 static void standby_state_enter();
-void on_tx_done(void);
-void on_tx_timeout(void);
+void on_tx_done(void *args);
+void on_tx_timeout(void *args);
+void on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-	if (GPIO_Pin == SX1278_DIO0_Pin)
-	{
-		dbg("EXT\n");
-	}
-}
 
 // LORA SX1278 RADIO
 sx1278_cube_hal radio_cube_hal_dev =
@@ -156,10 +164,13 @@ bme280_cube_hal bme280_cube_hal_dev =
 };
 
 // Last measured values
-static float temperature, pressure, humidity, altitude;
+static float temperature, pressure, humidity;
+
+// Update sensor data interval
+static uint32_t update_data_interval = 10;
 
 // Msg frame
-static radio_msg_frame msgf =
+static radio_msg_sensor_frame msgf =
 {
 	.hdr = {'L','U','6'},
 };
@@ -219,11 +230,14 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+      // Sleep a given time in seconds
+      sx1278_delay_ms(update_data_interval*1000);
+
       // Read data from the sensor
       if (bme280_read_data(&bme280_dev, &temperature, &pressure, &humidity))
       {
-          // bme280_read_altitude(&bme280_dev, SEA_LEVEL_PRESSURE_HPA, &altitude);
-          sprintf(dbg_buf, "T:%d, P:%d, H:%d, A:%d\n\r", (int)temperature, (int)pressure, (int)humidity, (int)altitude);
+          sprintf(dbg_buf, "T:%d, P:%d, H:%d\n\r", (int)temperature, (int)pressure, (int)humidity);
           dbg(dbg_buf);
           msgf.status = MSG_NO_ERROR;
       }
@@ -235,12 +249,11 @@ int main(void)
       msgf.temperature = temperature;
       msgf.pressure = pressure;
       msgf.humidity = humidity;
-      msgf.altitude = altitude;;
       msgf.checksum = radio_msg_frame_checksum((const uint8_t*)&msgf, (sizeof(msgf)-sizeof(msgf.checksum)));
       // Send result data
       sx1278_send(&radio_dev, (uint8_t*)&msgf, sizeof(msgf));
       dbg("DT_S\n\r");
-      sx1278_delay_ms(RX_TIMEOUT_VALUE);
+      sx1278_set_rx(&radio_dev, 0);
       //standby_state_enter();
       /**
        * @note WWDG Watchdog init function done in wwdg.c (MX_WWDG_Init(void))
@@ -541,7 +554,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : SX1278_DIO0_Pin */
   GPIO_InitStruct.Pin = SX1278_DIO0_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(SX1278_DIO0_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SX1278_RESET_Pin */
@@ -551,15 +564,30 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SX1278_RESET_GPIO_Port, &GPIO_InitStruct);
 
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI2_3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
+
 }
 
 /* USER CODE BEGIN 4 */
+//-----------------------------------------------------------------------------
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == SX1278_DIO0_Pin)
+	{
+		dbg("EXT\n");
+		(radio_dev.dio_irq[0])(&radio_dev);
+	}
+}
+
+//-----------------------------------------------------------------------------
 static void radio_init()
 {
 	// Set radio_dev
 	radio_dev.events = &radio_events;
 	radio_dev.events->tx_done = on_tx_done;
-	radio_dev.events->rx_done = NULL;
+	radio_dev.events->rx_done = on_rx_done;
 	radio_dev.events->tx_timeout = on_tx_timeout;
 	radio_dev.events->rx_timeout = NULL;
 	radio_dev.events->rx_error = NULL;
@@ -579,18 +607,31 @@ static void radio_init()
 	                      LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
 	                      LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
 	                      LORA_IQ_INVERSION_ON, 4000);
+
+    sx1278_set_rx_config(&radio_dev, MODEM_LORA, LORA_BANDWIDTH, LORA_SPREADING_FACTOR,
+                          LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
+                          LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON, 0,
+                          LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
+                          LORA_IQ_INVERSION_ON, true);
 }
 
-
-void on_tx_done(void)
+//-----------------------------------------------------------------------------
+void on_tx_done(void *args)
 {
     dbg("OT_D\n\r");
 }
 
 //-----------------------------------------------------------------------------
-void on_tx_timeout(void)
+void on_tx_timeout(void *args)
 {
     dbg("OT_T\n\r");
+}
+
+//-----------------------------------------------------------------------------
+void on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
+{
+	dbg("> on_rx_done\n\r");
+	parse_incoming_msg_clock(payload, size);
 }
 
 //-----------------------------------------------------------------------------
@@ -602,6 +643,26 @@ static void sensors_init()
 		dbg("SI_F\n\r");
 		Error_Handler();
 	}
+}
+
+//------------------------------------------------------------------------------
+static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size)
+{
+    const radio_msg_clock_frame *mf = (const radio_msg_clock_frame *)payload;
+    const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_clock_frame)-sizeof(mf->checksum)));
+    if (mf->checksum != checksum)
+    {
+        dbg("INV CHKSUM!");
+        return;
+    }
+
+    if (~(mf->status & MSG_NO_ERROR))
+    {
+        dbg("MSG_NO_ERROR\n\r");
+        update_data_interval = mf->update_data_interval;
+        sprintf(dbg_buf, "UT:%d", mf->update_data_interval);
+        dbg(dbg_buf);
+    }
 }
 
 //-----------------------------------------------------------------------------

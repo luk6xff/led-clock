@@ -44,6 +44,14 @@ void sx1278_ioirq_init(sx1278 *const dev)
     /**
      * @note dio0 HAL_GPIO_EXTI_Callback must be reimplemented in the main and shall
      *       contain a call to the proper sx1278 isr handler function
+     *       e.g:
+     *		void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+     *		{
+     *			if (GPIO_Pin == SX1278_DIO0_Pin)
+     *			{
+     *				(sx1278_dev.dio_irq[0])(&sx1278_dev);
+     *			}
+     *		}
      */
 }
 
@@ -86,41 +94,17 @@ void sx1278_set_timeout(sx1278 *const dev, TimeoutTimer_t timer, TimeoutFuncPtr 
 {
     switch(timer)
     {
+        // EMPTY - not used, It can be based on https://github.com/Lora-net/LoRaMac-node/blob/master/src/system/timer.h
 	    case RXTimeoutTimer:
         {
-            if (func)
-            {
-                // TODO Shall be based on https://github.com/Lora-net/LoRaMac-node/blob/master/src/system/timer.h
-                //rx_timeout_timer.attach_us(mbed::callback(func), timeout_ms*1000);
-            }
-            else
-            {
-                //rx_timeout_timer.detach();
-            }
             break;
         }
         case TXTimeoutTimer:
         {
-            if (func)
-            {
-                //tx_timeout_timer.attach_us(mbed::callback(func), timeout_ms*1000);
-            }
-            else
-            {
-                //tx_timeout_timer.detach();
-            }
             break;
         }
         case RXTimeoutSyncWordTimer:
         {
-            if (func)
-            {
-                //rx_timeout_syncword.attach_us(mbed::callback(func), timeout_ms*1000);
-            }
-            else
-            {
-                //rx_timeout_syncword.detach();
-            }
             break;
         }
     }

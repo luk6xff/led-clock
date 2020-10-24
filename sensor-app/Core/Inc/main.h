@@ -64,6 +64,7 @@ void Error_Handler(void);
 #define DBG_LPUART1_TX_GPIO_Port GPIOA
 #define SX1278_DIO0_Pin GPIO_PIN_3
 #define SX1278_DIO0_GPIO_Port GPIOA
+#define SX1278_DIO0_EXTI_IRQn EXTI2_3_IRQn
 #define SX1278_NSS_Pin GPIO_PIN_4
 #define SX1278_NSS_GPIO_Port GPIOA
 #define SX1278_SCK_Pin GPIO_PIN_5

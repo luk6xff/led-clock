@@ -16,43 +16,58 @@
   COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
   IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/  
+*/
 
 #include "TimeOut.h"
 
+//------------------------------------------------------------------------------
 TimeOutNode::TimeOutNode() :
 	delay(0),
 	timeStamp(0),
 	//lock(false),
-	undeletable(false),	
+	undeletable(false),
 	next(NULL),
 	linkedTO(NULL) //bound timeOut instance
 {}
 
+//------------------------------------------------------------------------------
 TimeOutNodePtr TimeOut::head = NULL;
 
-void TimeOutNode::callbackTrigger() {
-	if(callback)callback(); 
-	else {
+//------------------------------------------------------------------------------
+void TimeOutNode::callbackTrigger()
+{
+	if (callback)
+	{
+		callback(callbackArgs);
+	}
+	else
+	{
 		linkedTO->TO_callbackCaller();
 	}
 }
 
+//------------------------------------------------------------------------------
 TimeOut::TimeOut(){}
 
-TimeOut::TimeOut(unsigned long _delay, void (*_callback)()) {
-	timeOut(_delay,_callback);
+//------------------------------------------------------------------------------
+TimeOut::TimeOut(unsigned long _delay, void (*_callback)(void *args), void *_callbackArgs)
+{
+	timeOut(_delay, _callback, _callbackArgs);
 }
 
-TimeOut::TimeOut(uint8_t hour, uint8_t minute, uint8_t seconde, void (*_callback)()){
+//------------------------------------------------------------------------------
+TimeOut::TimeOut(uint8_t hour, uint8_t minute, uint8_t seconde, void (*_callback)(void *args), void *_callbackArgs)
+{
 	unsigned long delay = hr(hour) + mn(minute) + sc(seconde);
-	timeOut(delay, _callback);
+	timeOut(delay, _callback, _callbackArgs);
 }
 
-
-bool TimeOut::timeOut(unsigned long _delay, void (*_callback)()){
-	node = new TimeOutNode;		
+//------------------------------------------------------------------------------
+bool TimeOut::timeOut(unsigned long _delay, void (*_callback)(void *args), void *_callbackArgs)
+{
+	node = new TimeOutNode;
 	node->callback = _callback;
+	node->callbackArgs = _callbackArgs;
 	node->delay = _delay;
 	node->linkedTO = this;
 	node->timeStamp = millis();
@@ -60,20 +75,27 @@ bool TimeOut::timeOut(unsigned long _delay, void (*_callback)()){
 	return true;
 }
 
-
-bool TimeOut::timeOut(unsigned long _delay, void (*_callback)(), uint8_t _timerType){
-	timeOut(_delay, _callback);
+//------------------------------------------------------------------------------
+bool TimeOut::timeOut(unsigned long _delay, void (*_callback)(void *args), void *_callbackArgs, uint8_t _timerType)
+{
+	timeOut(_delay, _callback, _callbackArgs);
 	if ( TIMEOUT_UNDELETABLE == _timerType ) node->undeletable = true;
 	return true;
 }
 
-bool TimeOut::timeOut(uint8_t hour, uint8_t minute, uint8_t seconde, void (*_callback)(), uint8_t _timerType){
+//------------------------------------------------------------------------------
+bool TimeOut::timeOut(uint8_t hour, uint8_t minute, uint8_t seconde,
+					void (*_callback)(void *args), void *_callbackArgs, uint8_t _timerType)
+{
 	unsigned long delay = hr(hour) + mn(minute) + sc(seconde);
-	timeOut(delay, _callback, _timerType);
+	timeOut(delay, _callback, _callbackArgs, _timerType);
+	return true;
 }
 
 
-void TimeOut::cancel(){
+//------------------------------------------------------------------------------
+void TimeOut::cancel()
+{
 	if (node && node->undeletable) return; //do not cancel a timer if Undeleable
 	if (!TimeOut::head) return; // if there is no timer set, do nothing
 	TimeOutNodePtr tmpNode = TimeOut::head;
@@ -91,24 +113,29 @@ void TimeOut::cancel(){
 }
 
 
-bool TimeOut::handler(){
+//------------------------------------------------------------------------------
+bool TimeOut::handler()
+{
 	if(!TimeOut::head) return false; // if there is no timer set, do nothing
 	unsigned long now = millis();
 	if (now - TimeOut::head->timeStamp > TimeOut::head->delay){
 		TimeOut::head->callbackTrigger();
-		TimeOutNodePtr temp = TimeOut::head;		
+		TimeOutNodePtr temp = TimeOut::head;
 		if(TimeOut::head->next)
 			TimeOut::head = TimeOut::head->next; //switch to next timer
-		else 
+		else
 			TimeOut::head = NULL;
 		delete temp; //delete triggered timer
 	}
 	else {
 		return false;
 	}
+	return true;
 }
 
-void TimeOut::triage(TimeOutNodePtr current){	//sort timer by time remainin to be triggered
+//------------------------------------------------------------------------------
+void TimeOut::triage(TimeOutNodePtr current)
+{	//sort timer by time remainin to be triggered
 	if (!TimeOut::head) { //if list is emty, set it to first
 		TimeOut::head = current;
 		return;
@@ -131,18 +158,20 @@ void TimeOut::triage(TimeOutNodePtr current){	//sort timer by time remainin to b
 		else if (!it->next) {//if delay is the bigger, place it at the end
 			it->next = current;
 			return;
-		}	
+		}
 		previous = it;
-		it = it->next;	//it++	
+		it = it->next;	//it++
 	}
 }
 
 
-void TimeOut::printContainer(HardwareSerial& stream){
+//------------------------------------------------------------------------------
+void TimeOut::printContainer(HardwareSerial& stream)
+{
 	stream.println("Timer container contain the following timer: ");
 	unsigned long now = millis();
 	TimeOutNodePtr it = TimeOut::head;
-	while(it){	
+	while(it){
 		if(!TimeOut::head){
 			stream.println("No timer set");
 			return;
@@ -157,36 +186,50 @@ void TimeOut::printContainer(HardwareSerial& stream){
 	stream.println();
 }
 
+//------------------------------------------------------------------------------
 intervalNodePtr Interval::head = NULL;
 
-void intervalNode::callbackTrigger() {
-	if(callback) callback(); 
-	else {
+//------------------------------------------------------------------------------
+void intervalNode::callbackTrigger()
+{
+	if (callback)
+	{
+		callback(callbackArgs);
+	}
+	else
+	{
 		Serial.println("callbackCaller trig");
 		linkedInterv->ITV_callbackCaller();
 	}
 }
 
-
-bool Interval::interval(unsigned long _delay, void (*_callback)()){
+//------------------------------------------------------------------------------
+bool Interval::interval(unsigned long _delay, void (*_callback)(void *args), void *_callbackArgs)
+{
 	if (node) {
 		return false; //can't set an already set interval
 	}
 	node = new intervalNode;
 	node->timeStamp = millis();
 	node->callback = _callback;
+	node->callbackArgs = _callbackArgs;
 	node->delay = _delay;
 	node->linkedInterv = this;
 	triage(node); //place the instance into container
 	return true;
 }
 
-bool Interval::interval(uint8_t hour, uint8_t minute, uint8_t seconde, void (*_callback)()){
+//------------------------------------------------------------------------------
+bool Interval::interval(uint8_t hour, uint8_t minute, uint8_t seconde, void (*_callback)(void *args), void *_callbackArgs)
+{
 	unsigned long delay = hr(hour) + mn(minute) + sc(seconde);
-	interval(delay, _callback);
+	interval(delay, _callback, _callbackArgs);
+	return true;
 }
 
-void Interval::cancel(){
+//------------------------------------------------------------------------------
+void Interval::cancel()
+{
 	intervalNodePtr tmp = Interval::head;
 	intervalNodePtr previous = NULL;
 	while(this->node!=tmp){
@@ -201,15 +244,17 @@ void Interval::cancel(){
 	delete tmp;
 }
 
-bool Interval::handler(){
+//------------------------------------------------------------------------------
+bool Interval::handler()
+{
 	if(!Interval::head) return false;
 	unsigned long now = millis();
 	if (now - Interval::head->timeStamp > Interval::head->delay){
 		Interval::head->callbackTrigger();
-		intervalNodePtr temp = Interval::head;	
+		intervalNodePtr temp = Interval::head;
 		if(Interval::head->next)
 			Interval::head = Interval::head->next; //switch to next timer
-		else 
+		else
 			Interval::head = NULL;
 			//reset triggered instance
 		temp->timeStamp = now;
@@ -219,14 +264,17 @@ bool Interval::handler(){
 	else {
 		return false;
 	}
+	return true;
 }
 
-void Interval::printContainer(HardwareSerial& stream){
+//------------------------------------------------------------------------------
+void Interval::printContainer(HardwareSerial& stream)
+{
 	Serial.println("Interval container contain the following timer: ");
 	if(!Interval::head) stream.println("Container emty! ");
 	unsigned long now = millis();
 	intervalNodePtr node = Interval::head;
-	while(node){	
+	while(node){
 		/*if(!Interval::head){
 			Serial.println("No timer set");
 			return;
@@ -241,8 +289,11 @@ void Interval::printContainer(HardwareSerial& stream){
 	stream.println();
 }
 
-void Interval::triage(intervalNodePtr current){ //sort timer by time to be trigged
-	if (!Interval::head) {
+//------------------------------------------------------------------------------
+void Interval::triage(intervalNodePtr current)
+{ //sort timer by time to be trigged
+	if (!Interval::head)
+	{
 		Interval::head = current;
 		return;
 	}
@@ -262,8 +313,10 @@ void Interval::triage(intervalNodePtr current){ //sort timer by time to be trigg
 		else if (!it->next) {//if delay is the bigger, place it at the end
 			it->next = current;
 			return;
-		}	
+		}
 		previous = it;
-		it = it->next;	//it++	
+		it = it->next;	//it++
 	}
 }
+
+//------------------------------------------------------------------------------

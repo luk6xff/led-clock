@@ -19,8 +19,8 @@
 #define TEST_DISPLAY
 //#define TEST_LIGHT_SENSOR
 //#define TEST_RTC
-//#define TEST_RADIO
-#define TEST_NTP
+#define TEST_RADIO
+//#define TEST_NTP
 
 //------------------------------------------------------------------------------
 /**
@@ -168,6 +168,12 @@ void tests_run()
         dbg("SystemTime time: %s", SystemTime::timeToStr(time.getTime()));
         dbg("SystemTime date: %s", SystemTime::dateToStr(time.getTime()));
     #endif // TEST_RTC
+
+
+    #ifdef TEST_RADIO
+        // Empty, all is done in radio.cpp
+    #endif  // TEST_RADIO
+
 
     #ifdef TEST_NTP
         if (ntp.updateTime())

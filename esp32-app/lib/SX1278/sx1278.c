@@ -122,37 +122,37 @@ static uint8_t sx1278_get_lora_bandwidth_reg_value(uint32_t bandwidth);
 /**
  * @brief DIO 0 IRQ callback
  */
-static void on_dio0_irq(void* ctx);
+static void on_dio0_irq(void *ctx);
 
 /**
  * @brief DIO 1 IRQ callback
  */
-static void on_dio1_irq(void* ctx);
+static void on_dio1_irq(void *ctx);
 
 /**
  * @brief DIO 2 IRQ callback
  */
-static void on_dio2_irq(void* ctx);
+static void on_dio2_irq(void *ctx);
 
 /**
  * @brief DIO 3 IRQ callback
  */
-static void on_dio3_irq(void* ctx);
+static void on_dio3_irq(void *ctx);
 
 /**
  * @brief DIO 4 IRQ callback
  */
-static void on_dio4_irq(void* ctx);
+static void on_dio4_irq(void *ctx);
 
 /**
  * @brief DIO 5 IRQ callback
  */
-static void on_dio5_irq(void* ctx);
+static void on_dio5_irq(void *ctx);
 
 /**
  * @brief Tx & Rx timeout timer callback
  */
-static void on_timeout_irq();
+static void on_timeout_irq(void *ctx);
 
 
 /**
@@ -896,7 +896,7 @@ void sx1278_set_rx(sx1278 *const dev, uint32_t timeout)
     dev->settings.State = RF_RX_RUNNING;
     if (timeout != 0)
     {
-        sx1278_set_timeout(dev, RXTimeoutTimer, &on_timeout_irq, timeout);
+        sx1278_set_timeout(dev, RXTimeoutTimer, on_timeout_irq, timeout);
     }
 
     if (dev->settings.modem == MODEM_FSK)
@@ -905,7 +905,7 @@ void sx1278_set_rx(sx1278 *const dev, uint32_t timeout)
 
         if (rxContinuous == false)
         {
-            sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, &on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
+            sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
         }
     }
     else // MODEM_LORA
@@ -980,7 +980,7 @@ void sx1278_set_tx(sx1278 *const dev, uint32_t timeout)
     }
 
     dev->settings.State = RF_TX_RUNNING;
-    sx1278_set_timeout(dev, TXTimeoutTimer, &on_timeout_irq, timeout);
+    sx1278_set_timeout(dev, TXTimeoutTimer, on_timeout_irq, timeout);
     sx1278_set_op_mode(dev, RF_OPMODE_TRANSMITTER);
 }
 
@@ -1041,7 +1041,7 @@ void sx1278_set_tx_continuous_wave(sx1278 *const dev, uint32_t freq, int8_t powe
     sx1278_write(dev, REG_DIOMAPPING2, RF_DIOMAPPING2_DIO4_10 | RF_DIOMAPPING2_DIO5_10);
 
     dev->settings.State = RF_TX_RUNNING;
-    sx1278_set_timeout(dev, TXTimeoutTimer, &on_timeout_irq, timeout);
+    sx1278_set_timeout(dev, TXTimeoutTimer, on_timeout_irq, timeout);
     sx1278_set_op_mode(dev, RF_OPMODE_TRANSMITTER);
 }
 
@@ -1194,8 +1194,9 @@ void sx1278_set_public_network(sx1278 *const dev, bool enable)
 }
 
 //-----------------------------------------------------------------------------
-void on_timeout_irq(sx1278 *const dev)
+void on_timeout_irq(void *ctx)
 {
+    sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.State)
     {
     case RF_RX_RUNNING:
@@ -1216,7 +1217,7 @@ void on_timeout_irq(sx1278 *const dev)
             {
                 // Continuous mode restart Rx chain
                 sx1278_write(dev, REG_RXCONFIG, sx1278_read(dev, REG_RXCONFIG) | RF_RXCONFIG_RESTARTRXWITHOUTPLLLOCK);
-                sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, &on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
+                sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
             }
             else
             {
@@ -1226,7 +1227,7 @@ void on_timeout_irq(sx1278 *const dev)
         }
         if ((dev->events != NULL) && (dev->events->rx_timeout != NULL))
         {
-            dev->events->rx_timeout();
+            dev->events->rx_timeout(dev);
         }
         break;
     case RF_TX_RUNNING:
@@ -1257,7 +1258,7 @@ void on_timeout_irq(sx1278 *const dev)
         dev->settings.State = RF_IDLE;
         if ((dev->events != NULL) && (dev->events->tx_timeout != NULL))
         {
-            dev->events->tx_timeout();
+            dev->events->tx_timeout(dev);
         }
         break;
     default:
@@ -1452,7 +1453,7 @@ uint8_t sx1278_get_lora_bandwidth_reg_value(uint32_t bandwidth)
 }
 
 //-----------------------------------------------------------------------------
-ISR_PREFIX void on_dio0_irq(void* ctx)
+ISR_PREFIX void on_dio0_irq(void *ctx)
 {
     sx1278 *const dev = (sx1278*)ctx;
     volatile uint8_t irqFlags = 0;
@@ -1460,7 +1461,6 @@ ISR_PREFIX void on_dio0_irq(void* ctx)
     switch (dev->settings.State)
     {
         case RF_RX_RUNNING:
-            //TimerStop(&rx_timeoutTimer);
             // rx_done interrupt
             switch (dev->settings.modem)
             {
@@ -1487,12 +1487,12 @@ ISR_PREFIX void on_dio0_irq(void* ctx)
                         {
                             // Continuous mode restart Rx chain
                             sx1278_write(dev, REG_RXCONFIG, sx1278_read(dev, REG_RXCONFIG) | RF_RXCONFIG_RESTARTRXWITHOUTPLLLOCK);
-                            sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, &on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
+                            sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
                         }
 
                         if ((dev->events != NULL) && (dev->events->rx_error != NULL))
                         {
-                            dev->events->rx_error();
+                            dev->events->rx_error(dev);
                         }
                         dev->settings.FskPacketHandler.PreambleDetected = false;
                         dev->settings.FskPacketHandler.SyncWordDetected = false;
@@ -1533,12 +1533,12 @@ ISR_PREFIX void on_dio0_irq(void* ctx)
                 {
                     // Continuous mode restart Rx chain
                     sx1278_write(dev, REG_RXCONFIG, sx1278_read(dev, REG_RXCONFIG) | RF_RXCONFIG_RESTARTRXWITHOUTPLLLOCK);
-                    sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, &on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
+                    sx1278_set_timeout(dev, RXTimeoutSyncWordTimer, on_timeout_irq, dev->settings.Fsk.RxSingleTimeout);
                 }
 
                 if ((dev->events != NULL) && (dev->events->rx_done != NULL))
                 {
-                    dev->events->rx_done(dev->rx_tx_buffer, dev->settings.FskPacketHandler.Size, dev->settings.FskPacketHandler.RssiValue, 0);
+                    dev->events->rx_done(dev, dev->rx_tx_buffer, dev->settings.FskPacketHandler.Size, dev->settings.FskPacketHandler.RssiValue, 0);
                 }
                 dev->settings.FskPacketHandler.PreambleDetected = false;
                 dev->settings.FskPacketHandler.SyncWordDetected = false;
@@ -1564,7 +1564,7 @@ ISR_PREFIX void on_dio0_irq(void* ctx)
 
                         if ((dev->events != NULL) && (dev->events->rx_error != NULL))
                         {
-                            dev->events->rx_error();
+                            dev->events->rx_error(dev);
                         }
                         break;
                     }
@@ -1586,7 +1586,7 @@ ISR_PREFIX void on_dio0_irq(void* ctx)
                     }
                     else
                     {
-                        if(dev->settings.Channel > RF_MID_BAND_THRESH)
+                        if (dev->settings.Channel > RF_MID_BAND_THRESH)
                         {
                             dev->settings.LoRaPacketHandler.RssiValue = RSSI_OFFSET_HF + rssi + ( rssi >> 4 );
                         }
@@ -1609,7 +1609,7 @@ ISR_PREFIX void on_dio0_irq(void* ctx)
 
                     if ((dev->events != NULL) && (dev->events->rx_done != NULL))
                     {
-                        dev->events->rx_done(dev->rx_tx_buffer, dev->settings.LoRaPacketHandler.Size, dev->settings.LoRaPacketHandler.RssiValue, dev->settings.LoRaPacketHandler.SnrValue);
+                        dev->events->rx_done(dev, dev->rx_tx_buffer, dev->settings.LoRaPacketHandler.Size, dev->settings.LoRaPacketHandler.RssiValue, dev->settings.LoRaPacketHandler.SnrValue);
                     }
                 }
                 break;
@@ -1631,7 +1631,7 @@ ISR_PREFIX void on_dio0_irq(void* ctx)
                 dev->settings.State = RF_IDLE;
                 if ((dev->events != NULL) && (dev->events->tx_done != NULL))
                 {
-                    dev->events->tx_done();
+                    dev->events->tx_done(dev);
                 }
                 break;
             }
@@ -1642,7 +1642,7 @@ ISR_PREFIX void on_dio0_irq(void* ctx)
 }
 
 //-----------------------------------------------------------------------------
-ISR_PREFIX void on_dio1_irq(void* ctx)
+ISR_PREFIX void on_dio1_irq(void *ctx)
 {
     sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.State)
@@ -1694,7 +1694,7 @@ ISR_PREFIX void on_dio1_irq(void* ctx)
                     dev->settings.State = RF_IDLE;
                     if ((dev->events != NULL) && (dev->events->rx_timeout != NULL))
                     {
-                        dev->events->rx_timeout();
+                        dev->events->rx_timeout(dev);
                     }
                     break;
                 default:
@@ -1730,7 +1730,7 @@ ISR_PREFIX void on_dio1_irq(void* ctx)
 }
 
 //-----------------------------------------------------------------------------
-ISR_PREFIX void on_dio2_irq(void* ctx)
+ISR_PREFIX void on_dio2_irq(void *ctx)
 {
     sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.State)
@@ -1767,7 +1767,7 @@ ISR_PREFIX void on_dio2_irq(void* ctx)
 
                         if ((dev->events != NULL) && (dev->events->fhss_change_channel != NULL))
                         {
-                            dev->events->fhss_change_channel((sx1278_read(dev, REG_LR_HOPCHANNEL) & RFLR_HOPCHANNEL_CHANNEL_MASK));
+                            dev->events->fhss_change_channel(dev, (sx1278_read(dev, REG_LR_HOPCHANNEL) & RFLR_HOPCHANNEL_CHANNEL_MASK));
                         }
                     }
                     break;
@@ -1788,7 +1788,7 @@ ISR_PREFIX void on_dio2_irq(void* ctx)
 
                         if ((dev->events != NULL) && (dev->events->fhss_change_channel != NULL))
                         {
-                            dev->events->fhss_change_channel((sx1278_read(dev, REG_LR_HOPCHANNEL) & RFLR_HOPCHANNEL_CHANNEL_MASK));
+                            dev->events->fhss_change_channel(dev, (sx1278_read(dev, REG_LR_HOPCHANNEL) & RFLR_HOPCHANNEL_CHANNEL_MASK));
                         }
                     }
                     break;
@@ -1802,7 +1802,7 @@ ISR_PREFIX void on_dio2_irq(void* ctx)
 }
 
 //-----------------------------------------------------------------------------
-ISR_PREFIX void on_dio3_irq(void* ctx)
+ISR_PREFIX void on_dio3_irq(void *ctx)
 {
     sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.modem)
@@ -1816,7 +1816,7 @@ ISR_PREFIX void on_dio3_irq(void* ctx)
                 sx1278_write(dev, REG_LR_IRQFLAGS, RFLR_IRQFLAGS_CADDETECTED | RFLR_IRQFLAGS_CADDONE);
                 if ((dev->events != NULL) && (dev->events->cad_done != NULL))
                 {
-                    dev->events->cad_done(true);
+                    dev->events->cad_done(dev, true);
                 }
             }
             else
@@ -1825,7 +1825,7 @@ ISR_PREFIX void on_dio3_irq(void* ctx)
                 sx1278_write(dev, REG_LR_IRQFLAGS, RFLR_IRQFLAGS_CADDONE);
                 if ((dev->events != NULL) && (dev->events->cad_done != NULL))
                 {
-                    dev->events->cad_done(false);
+                    dev->events->cad_done(dev, false);
                 }
             }
             break;
@@ -1835,7 +1835,7 @@ ISR_PREFIX void on_dio3_irq(void* ctx)
 }
 
 //-----------------------------------------------------------------------------
-ISR_PREFIX void on_dio4_irq(void* ctx)
+ISR_PREFIX void on_dio4_irq(void *ctx)
 {
     sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.modem)
@@ -1856,7 +1856,7 @@ ISR_PREFIX void on_dio4_irq(void* ctx)
 }
 
 //-----------------------------------------------------------------------------
-ISR_PREFIX void on_dio5_irq(void* ctx)
+ISR_PREFIX void on_dio5_irq(void *ctx)
 {
     sx1278 *const dev = (sx1278*)ctx;
     switch (dev->settings.modem)
