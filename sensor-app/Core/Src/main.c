@@ -533,7 +533,7 @@ static void enter_low_power_mode()
 {
 	/* Put radio and sensor  into sleep mode */
 	radio_sleep();
-	HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_SET);
+	//HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_RESET);
 
 	/* Disable all used wakeup sources */
@@ -571,7 +571,7 @@ static void enter_low_power_mode()
 	/* WakeUp happens here */
 	/* Enable SysTick. */
 	//HAL_ResumeTick();
-	HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_RESET);
+	//HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_SET);
 	HAL_Delay(100);
 	dbg("MERPM");
