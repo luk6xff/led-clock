@@ -29,6 +29,7 @@ const QueueHandle_t& RadioSensorTask::getRadioSensorQ()
 //------------------------------------------------------------------------------
 void RadioSensorTask::run()
 {
+    const TickType_t sleepTime = (100 / portTICK_PERIOD_MS);
     Radio radioSensor(m_radioSensorCfg);
     for(;;)
     {
@@ -38,18 +39,28 @@ void RadioSensorTask::run()
         {
             dbg(">>>RadioSensorData received:");
             Radio::parse_incoming_msg_sensor((uint8_t*)&msg, sizeof(msg));
-            //radioSensor.send(&msg);
+            // Send response to the sensor
+            radioSensor.sendResponseToSensor();
+            RadioSensorData data =
+            {
+                .vbatt = msg.vbatt,
+                .temperature = msg.temperature,
+                .pressure = msg.pressure,
+                .humidity = msg.humidity,
+            };
+            pushRadioSensorMsg(data);
         }
+        vTaskDelay(sleepTime);
     }
 }
 
 //------------------------------------------------------------------------------
-bool RadioSensorTask::pushRadioSensorMsg(const RadioSensorData& dt)
+bool RadioSensorTask::pushRadioSensorMsg(const RadioSensorData& data)
 {
     BaseType_t status = pdFAIL;
     if (m_radioSensorQ)
     {
-        status = xQueueSendToBack(m_radioSensorQ, &dt, 0);
+        status = xQueueSendToBack(m_radioSensorQ, &data, 0);
     }
     return (status == pdPASS) ? true : false;
 }

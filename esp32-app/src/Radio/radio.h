@@ -56,12 +56,12 @@ typedef struct
 } radio_msg_clock_frame;
 
 
-class Radio
+class Radio final
 {
 
 public:
     explicit Radio(RadioSensorSettings& radioSensorCfg);
-    void send(radio_msg_clock_frame *msgf);
+    void sendResponseToSensor();
 
     static void parse_incoming_msg_sensor(uint8_t *payload, uint16_t size);
 
@@ -91,7 +91,7 @@ private:
     /**
      * @brief Clock global Msg frame
      */
-    static radio_msg_clock_frame msgf;
+    radio_msg_clock_frame msgf;
 };
 
 

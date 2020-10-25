@@ -26,15 +26,6 @@
 QueueHandle_t Radio::msgSensorDataQ = nullptr;
 
 //------------------------------------------------------------------------------
-radio_msg_clock_frame Radio::msgf =
-{
-    .hdr = {'L','U','6'},
-    .status = MSG_NO_ERROR,
-    .crit_vbatt_level     = 2700,   //[mV]
-    .update_data_interval = 600, //[s]
-};
-
-//------------------------------------------------------------------------------
 Radio::Radio(RadioSensorSettings& radioSensorCfg)
     : cfg(radioSensorCfg)
     , spi(HSPI)
@@ -56,10 +47,10 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
 
     // Set dev
     dev.events = &events;
-    dev.events->tx_done = &Radio::on_tx_done;
+    //dev.events->tx_done = &Radio::on_tx_done;
     dev.events->rx_done = &Radio::on_rx_done;
-    dev.events->tx_timeout = &Radio::on_tx_timeout;
-    dev.events->rx_timeout = &Radio::on_rx_timeout;
+    // dev.events->tx_timeout = &Radio::on_tx_timeout;
+    // dev.events->rx_timeout = &Radio::on_rx_timeout;
     dev.events->rx_error = &Radio::on_rx_error;
     dev.settings.modem = MODEM_LORA;
 
@@ -87,11 +78,16 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
                           LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
                           LORA_IQ_INVERSION_ON, true);
 
-    // Update global cfg structure
-    msgf.crit_vbatt_level = cfg.crit_vbatt_level,         //[mV]
-    msgf.update_data_interval = cfg.update_data_interval, //[s]
+    // Update clock msg cfg structure
+    msgf =
+    {
+        .hdr = {'L','U','6'},
+        .status = MSG_NO_ERROR,
+        .crit_vbatt_level     = cfg.crit_vbatt_level,     //[mV]
+        .update_data_interval = cfg.update_data_interval, //[s]
+    };
 
-    msgSensorDataQ = xQueueCreate(2, sizeof(radio_msg_sensor_frame));
+    msgSensorDataQ = xQueueCreate(4, sizeof(radio_msg_sensor_frame));
     if (!msgSensorDataQ)
     {
         err("RADIO: msgSensorDataQ has not been created!.");
@@ -101,16 +97,11 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
 }
 
 //-----------------------------------------------------------------------------
-void Radio::send(radio_msg_clock_frame *msgf)
+void Radio::sendResponseToSensor()
 {
-    if (!msgf)
-    {
-        return;
-    }
-
-    msgf->checksum = radio_msg_frame_checksum((const uint8_t*)msgf, (sizeof(radio_msg_clock_frame)-sizeof(msgf->checksum)));
+    msgf.checksum = radio_msg_frame_checksum((const uint8_t*)&msgf, (sizeof(radio_msg_clock_frame)-sizeof(msgf.checksum)));
     // Send result data
-    sx1278_send(&dev, (uint8_t*)msgf, sizeof(radio_msg_clock_frame));
+    sx1278_send(&dev, (uint8_t*)&msgf, sizeof(radio_msg_clock_frame));
     sx1278_set_rx(&dev, 0);
 }
 
@@ -141,7 +132,7 @@ void Radio::parse_incoming_msg_sensor(uint8_t *payload, uint16_t size)
     if (~(mf->status & MSG_NO_ERROR))
     {
         dbg("MSG_NO_ERROR");
-        dbg("T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]", mf->temperature, mf->pressure, mf->humidity);
+        dbg("VBATT:%d[mV], T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]", mf->vbatt, mf->temperature, mf->pressure, mf->humidity);
     }
 	else if (mf->status & MSG_READ_ERROR)
     {
@@ -169,6 +160,11 @@ void Radio::on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi
     if (msgSensorDataQ)
     {
         radio_msg_sensor_frame frame;
+        if (size != sizeof(frame))
+        {
+            return;
+        }
+
         memcpy(&frame, payload, sizeof(frame));
         portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
         xQueueSendFromISR(msgSensorDataQ, &frame, &xHigherPriorityTaskWoken);

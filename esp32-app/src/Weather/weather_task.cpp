@@ -36,7 +36,7 @@ void WeatherTask::run()
     oneCallClient.setMetric(true);
     oneCallClient.setLanguage(m_weatherCfg.language);
     for(;;)
-    {   
+    {
         if (!WiFi.isConnected())
         {
             vTaskDelay(sleepTime);
