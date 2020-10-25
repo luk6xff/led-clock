@@ -59,11 +59,15 @@ WWDG_HandleTypeDef hwwdg;
 
 /* USER CODE BEGIN PV */
 char dbg_buf[32];
-void dbg(const char* msg)
+void dbg(const char *msg)
 {
 	/* Place your implementation of fputc here */
 	uint16_t len = strlen(msg);
-	HAL_UART_Transmit(&huart2, msg, len, 500);
+	uint8_t buf[len+2];
+	memcpy(buf, msg, len);
+	buf[len] = '\r';
+	buf[len+1] = '\n';
+	HAL_UART_Transmit(&huart2, buf, len+2, 500);
 }
 /* USER CODE END PV */
 
@@ -78,16 +82,12 @@ static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 
 
-static void standby_state_enter();
+static void enter_low_power_mode();
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-
-
-
 
 // Last measured values
 static float temperature, pressure, humidity;
@@ -135,13 +135,14 @@ int main(void)
   /* USER CODE BEGIN 2 */
   dbg("LUK6");
 
-  // Check and handle if the system was resumed from StandBy mode
-  if(__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
-  {
-    // Clear Standby flag
-    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
-  }
+//  // Check and handle if the system was resumed from StandBy mode
+//  if(__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
+//  {
+//    // Clear Standby flag
+//    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
+//  }
 
+  app_settings_init();
   radio_init();
   sensor_init();
   /* USER CODE END 2 */
@@ -153,9 +154,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-      // Sleep a given time in seconds
-      sx1278_delay_ms(10000);
+      // Sleep a given time in seconds // LU_TODO
+      //sx1278_delay_ms(app_settings_get_current()->update_interval*1000);
 
       // Read data from the sensor
       if (sensor_get_data(&temperature, &pressure, &humidity))
@@ -164,7 +164,7 @@ int main(void)
       }
       else
       {
-          dbg("RDF");
+          dbg("MRDF");
           msgf.status = MSG_READ_ERROR;
       }
       msgf.temperature = temperature;
@@ -172,7 +172,7 @@ int main(void)
       msgf.humidity = humidity;
       // Send result data
       radio_send(&msgf);
-      //standby_state_enter();
+      enter_low_power_mode();
       /**
        * @note WWDG Watchdog init function done in wwdg.c (MX_WWDG_Init(void))
        *	   Window time configured with following values:
@@ -314,10 +314,10 @@ static void MX_RTC_Init(void)
   }
   /** Enable the WakeUp 
   */
-  if (HAL_RTCEx_SetWakeUpTimer(&hrtc, 0, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
-  {
-    Error_Handler();
-  }
+//  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
@@ -394,6 +394,7 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+
 }
 
 /**
@@ -488,34 +489,131 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
 //-----------------------------------------------------------------------------
-static void standby_state_enter()
+/**
+  * @brief  System Power Configuration
+  *         The system Power is configured as follow :
+  *            + Regulator in LP mode
+  *            + VREFINT OFF, with fast wakeup enabled
+  *            + HSI as SysClk after Wake Up
+  *            + No IWDG
+  *            + Automatic Wakeup using RTC clocked by LSI (after ~4s)
+  * @param  None
+  * @retval None
+  */
+static void SystemPower_Config(void)
 {
-	// Put sensor and radio into sleep mode
-	//sx1278_set_sleep(&radio_dev);
+  GPIO_InitTypeDef GPIO_InitStructure = {0};
+
+  /* Enable Power Control clock */
+  __HAL_RCC_PWR_CLK_ENABLE();
+
+  /* Enable Ultra low power mode */
+  HAL_PWREx_EnableUltraLowPower();
+
+  /* Enable the fast wake up from Ultra low power mode */
+  HAL_PWREx_EnableFastWakeUp();
+
+  /* Enable GPIOs clock */
+//  __HAL_RCC_GPIOA_CLK_ENABLE();
+//  __HAL_RCC_GPIOB_CLK_ENABLE();
+//  __HAL_RCC_GPIOC_CLK_ENABLE();
+//  __HAL_RCC_GPIOH_CLK_ENABLE();
+
+  /* Configure all GPIO port pins in Analog Input mode (floating input trigger OFF) */
+  /* Note: Debug using ST-Link is not possible during the execution of this   */
+  /*       example because communication between ST-link and the device       */
+  /*       under test is done through UART. All GPIO pins are disabled (set   */
+  /*       to analog input mode) including  UART I/O pins.           */
+//  GPIO_InitStructure.Pin = GPIO_PIN_All;
+//  GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
+//  GPIO_InitStructure.Pull = GPIO_NOPULL;
+//
+//  HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+//  HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
+//  HAL_GPIO_Init(GPIOC, &GPIO_InitStructure);
+//  HAL_GPIO_Init(GPIOH, &GPIO_InitStructure);
+//
+//  /* Disable GPIOs clock */
+//  __HAL_RCC_GPIOA_CLK_DISABLE();
+//  __HAL_RCC_GPIOB_CLK_DISABLE();
+//  __HAL_RCC_GPIOC_CLK_DISABLE();
+//  __HAL_RCC_GPIOH_CLK_DISABLE();
+}
+
+//-----------------------------------------------------------------------------
+static void enter_low_power_mode()
+{
+	// Put radio and sensor  into sleep mode
+	radio_sleep();
 	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_RESET);
-
-	// Enable Ultra low power mode */
-	HAL_PWREx_EnableUltraLowPower();
-
-	// Enable the fast wake up from Ultra low power mode
-	HAL_PWREx_EnableFastWakeUp();
 
 	// Disable all used wakeup sources
 	HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
 
 	// Clear all related wakeup flags
-	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+	//__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
 
 	// Disable All interrupts
-	__disable_irq();
+	//__disable_irq();
 
-	// Setting the Wake up time
-	HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 10,  RTC_WAKEUPCLOCK_CK_SPRE_16BITS);
+	/* ## Setting the Wake up time ############################################*/
+	/*  RTC Wakeup Interrupt Generation:
+	  Wakeup Time Base = (RTC_WAKEUPCLOCK_RTCCLK_DIV /(LSE or LSI))
+	  Wakeup Time = Wakeup Time Base * WakeUpCounter
+	  = (RTC_WAKEUPCLOCK_RTCCLK_DIV /(LSE or LSI)) * WakeUpCounter
+		==> WakeUpCounter = Wakeup Time / Wakeup Time Base
+
+	  To configure the wake up timer to 20s the WakeUpCounter is set to 0x1FFF:
+	  RTC_WAKEUPCLOCK_RTCCLK_DIV = RTCCLK_Div16 = 16
+	  Wakeup Time Base = 16 /(~37.000KHz) = ~0,432 ms
+	  Wakeup Time = ~20s = 0,432ms * WakeUpCounter
+		==> WakeUpCounter = ~20s/0,432ms = 20000/0.432 = 46296 = 0xB4D8 */
+	HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0xB4D8, RTC_WAKEUPCLOCK_RTCCLK_DIV16);
+
+	//HAL_SuspendTick();
+
+	dbg("MELPM");
+	/* Enable Power Control clock */
+	SystemPower_Config();
 
 	// Enter the Standby mode
-	HAL_PWR_EnterSTANDBYMode();
+	//HAL_PWR_EnterSTANDBYMode();
+	/* Enter Stop Mode */
+	HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+
+
+	//HAL_ResumeTick();       /* Needed in case of Timer usage. */
+	//HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
+	/* Wakeup here */
+	//SystemClock_Config();   /* Re-configure the system clock */
+
+	/* USER CODE BEGIN SysInit */
+
+	/* USER CODE END SysInit */
+	dbg("MBERPM");
+	/* Initialize all configured peripherals */
+	//	  MX_GPIO_Init();
+	//	  MX_I2C1_Init();
+	//	  MX_SPI1_Init();
+	//	  MX_USART2_UART_Init();
+	//	  //MX_WWDG_Init();
+	//	  MX_RTC_Init();
+	dbg("MERPM");
 }
+
+/**
+  * @brief  RTC Wake Up callback
+  * @param  None
+  * @retval None
+  */
+void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
+{
+  /* Clear Wake Up Flag */
+  __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+}
+
 
 /* USER CODE END 4 */
 

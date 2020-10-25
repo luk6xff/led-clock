@@ -72,7 +72,7 @@ void radio_init()
 	// Verify if SX1278 connected to the the board
 	while (sx1278_read(&radio_dev, REG_VERSION) != 0x12)
 	{
-	    dbg("RDN");
+	    dbg("RRDN");
 	    sx1278_delay_ms(1000);
 	}
 
@@ -101,8 +101,14 @@ void radio_send(radio_msg_sensor_frame *msgf)
 	msgf->checksum = radio_msg_frame_checksum((const uint8_t*)msgf, (sizeof(radio_msg_sensor_frame)-sizeof(msgf->checksum)));
 	// Send result data
 	sx1278_send(&radio_dev, (uint8_t*)msgf, sizeof(radio_msg_sensor_frame));
-	dbg("DTS");
+	dbg("RDTS");
 	sx1278_set_rx(&radio_dev, 0);
+}
+
+//-----------------------------------------------------------------------------
+void radio_sleep()
+{
+	sx1278_set_sleep(&radio_dev);
 }
 
 //-----------------------------------------------------------------------------
@@ -131,7 +137,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 //-----------------------------------------------------------------------------
 static void on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-	dbg("ORD");
+	dbg("RORD");
 	parse_incoming_msg_clock(payload, size);
 }
 
@@ -142,13 +148,13 @@ static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size)
     const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_clock_frame)-sizeof(mf->checksum)));
     if (mf->checksum != checksum)
     {
-        dbg("ICHK");
+        dbg("RICHK");
         return;
     }
 
     if (~(mf->status & MSG_NO_ERROR))
     {
-        dbg("MRCV");
+        dbg("RMRCV");
         // Check and store setting if needed
         bool settings_update = false;
         if (mf->update_data_interval != app_settings_get_current()->update_interval)
@@ -170,7 +176,7 @@ static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size)
         {
         	if (!app_settings_store(app_settings_get_current()))
         	{
-                dbg("SUF");
+                dbg("RSUF");
         	}
         }
     }

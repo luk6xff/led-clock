@@ -52,8 +52,10 @@ static bool eeprom_write(const uint32_t addr, const uint8_t* data, const uint32_
 //------------------------------------------------------------------------------
 static const app_settings app_settings_default =
 {
-	.magic = 0x454D5053,   // EMPS (EnergyMeterProbeSettings)
-	.version = 0x00000001,
+	.magic					= 0xAABBCCDD,
+	.version				= 0x00000001,
+	.critical_battery_level = 3000,
+	.update_interval		= 30,
 
 };
 
