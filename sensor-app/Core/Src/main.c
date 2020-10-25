@@ -81,7 +81,7 @@ static void MX_WWDG_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 
-
+static void system_low_power_mode_config(void);
 static void enter_low_power_mode();
 
 /* USER CODE END PFP */
@@ -492,7 +492,7 @@ static void MX_GPIO_Init(void)
 
 //-----------------------------------------------------------------------------
 /**
-  * @brief  System Power Configuration
+  * @brief  System Low Power Configuration
   *         The system Power is configured as follow :
   *            + Regulator in LP mode
   *            + VREFINT OFF, with fast wakeup enabled
@@ -502,12 +502,9 @@ static void MX_GPIO_Init(void)
   * @param  None
   * @retval None
   */
-static void SystemPower_Config(void)
+static void system_low_power_mode_config(void)
 {
   GPIO_InitTypeDef GPIO_InitStructure = {0};
-
-  /* Enable Power Control clock */
-  __HAL_RCC_PWR_CLK_ENABLE();
 
   /* Enable Ultra low power mode */
   HAL_PWREx_EnableUltraLowPower();
@@ -519,13 +516,12 @@ static void SystemPower_Config(void)
 //  __HAL_RCC_GPIOA_CLK_ENABLE();
 //  __HAL_RCC_GPIOB_CLK_ENABLE();
 //  __HAL_RCC_GPIOC_CLK_ENABLE();
-//  __HAL_RCC_GPIOH_CLK_ENABLE();
-
-  /* Configure all GPIO port pins in Analog Input mode (floating input trigger OFF) */
-  /* Note: Debug using ST-Link is not possible during the execution of this   */
-  /*       example because communication between ST-link and the device       */
-  /*       under test is done through UART. All GPIO pins are disabled (set   */
-  /*       to analog input mode) including  UART I/O pins.           */
+//
+//  /* Configure all GPIO port pins in Analog Input mode (floating input trigger OFF) */
+//  /* Note: Debug using ST-Link is not possible during the execution of this   */
+//  /*       example because communication between ST-link and the device       */
+//  /*       under test is done through UART. All GPIO pins are disabled (set   */
+//  /*       to analog input mode) including  UART I/O pins.           */
 //  GPIO_InitStructure.Pin = GPIO_PIN_All;
 //  GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
 //  GPIO_InitStructure.Pull = GPIO_NOPULL;
@@ -533,30 +529,31 @@ static void SystemPower_Config(void)
 //  HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
 //  HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
 //  HAL_GPIO_Init(GPIOC, &GPIO_InitStructure);
-//  HAL_GPIO_Init(GPIOH, &GPIO_InitStructure);
 //
 //  /* Disable GPIOs clock */
 //  __HAL_RCC_GPIOA_CLK_DISABLE();
 //  __HAL_RCC_GPIOB_CLK_DISABLE();
 //  __HAL_RCC_GPIOC_CLK_DISABLE();
-//  __HAL_RCC_GPIOH_CLK_DISABLE();
 }
 
 //-----------------------------------------------------------------------------
+/**
+  * @brief  Puts device into low power STOP mode
+  *
+  * @param  None
+  * @retval None
+  */
 static void enter_low_power_mode()
 {
-	// Put radio and sensor  into sleep mode
+	/* Put radio and sensor  into sleep mode */
 	radio_sleep();
 	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_RESET);
 
-	// Disable all used wakeup sources
+	/* Disable all used wakeup sources */
 	HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
 
 	// Clear all related wakeup flags
 	//__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
-
-	// Disable All interrupts
-	//__disable_irq();
 
 	/* ## Setting the Wake up time ############################################*/
 	/*  RTC Wakeup Interrupt Generation:
@@ -572,26 +569,25 @@ static void enter_low_power_mode()
 		==> WakeUpCounter = ~20s/0,432ms = 20000/0.432 = 46296 = 0xB4D8 */
 	HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0xB4D8, RTC_WAKEUPCLOCK_RTCCLK_DIV16);
 
-	//HAL_SuspendTick();
+	/* Disable SysTick. */
+	HAL_SuspendTick();
 
 	dbg("MELPM");
-	/* Enable Power Control clock */
-	SystemPower_Config();
 
-	// Enter the Standby mode
+	/* Enable Low Power Control clock */
+	system_low_power_mode_config();
+
+	/* Enter the Standby mode */
 	//HAL_PWR_EnterSTANDBYMode();
 	/* Enter Stop Mode */
 	HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
 
+	/* WakeUp happens here */
+	/* Enable SysTick. */
+	HAL_ResumeTick();
 
-	//HAL_ResumeTick();       /* Needed in case of Timer usage. */
-	//HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
-	/* Wakeup here */
 	//SystemClock_Config();   /* Re-configure the system clock */
 
-	/* USER CODE BEGIN SysInit */
-
-	/* USER CODE END SysInit */
 	dbg("MBERPM");
 	/* Initialize all configured peripherals */
 	//	  MX_GPIO_Init();
