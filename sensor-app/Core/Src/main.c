@@ -151,16 +151,16 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-	  /* USER CODE BEGIN 3 */
+	/* USER CODE BEGIN 3 */
 	// Read data from the sensor
 	if (sensor_get_data(&temperature, &pressure, &humidity))
 	{
-	  msgf.status = MSG_NO_ERROR;
+		msgf.status = MSG_NO_ERROR;
 	}
 	else
 	{
-	  dbg("MRDF");
-	  msgf.status = MSG_READ_ERROR;
+		dbg("MRDF");
+		msgf.status = MSG_READ_ERROR;
 	}
 	msgf.temperature = temperature;
 	msgf.pressure = pressure;
@@ -308,10 +308,11 @@ static void MX_RTC_Init(void)
     Error_Handler();
   }
   /** Enable the WakeUp */
-  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  /* NOT NEDDED HERE, WakeupTimer is set in enter_low_power_mode */
+//  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
@@ -492,7 +493,7 @@ static void MX_GPIO_Init(void)
   *            + VREFINT OFF, with fast wakeup enabled
   *            + HSI as SysClk after Wake Up
   *            + No IWDG
-  *            + Automatic Wakeup using RTC clocked by LSI (after ~4s)
+  *            + Automatic Wakeup using RTC clocked by LSI
   * @param  None
   * @retval None
   */
@@ -532,13 +533,14 @@ static void enter_low_power_mode()
 {
 	/* Put radio and sensor  into sleep mode */
 	radio_sleep();
+	HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_RESET);
 
 	/* Disable all used wakeup sources */
 	HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
 
-	// Clear all related wakeup flags
-	//__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+	/* Clear all related wakeup flags */
+	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
 
 	/* ## Setting the Wake up time ############################################*/
 	/*  RTC Wakeup Interrupt Generation:
@@ -558,8 +560,7 @@ static void enter_low_power_mode()
 	//HAL_SuspendTick();
 
 	dbg("MELPM");
-
-	/* Enable Low Power Control clock */
+	/* Enable System Low Power */
 	system_low_power_mode_config();
 
 	/* Enter Low Power Standby mode */
@@ -570,7 +571,9 @@ static void enter_low_power_mode()
 	/* WakeUp happens here */
 	/* Enable SysTick. */
 	//HAL_ResumeTick();
+	HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_SET);
+	HAL_Delay(100);
 	dbg("MERPM");
 }
 
