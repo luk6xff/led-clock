@@ -125,8 +125,8 @@ int main(void)
   /* Check and handle if the system was resumed from StandBy mode */
   if(__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
   {
-    // Clear Standby flag
-    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
+		/* Clear Standby flag */
+		__HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
   }
   /* USER CODE END SysInit */
 
@@ -159,7 +159,7 @@ int main(void)
 	}
 	else
 	{
-		dbg("MRDF");
+		dbg("M_MRE");
 		msgf.status = MSG_READ_ERROR;
 	}
 	msgf.temperature = temperature;
