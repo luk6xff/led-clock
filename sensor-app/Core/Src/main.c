@@ -531,6 +531,9 @@ static void system_low_power_mode_config(void)
   */
 static void enter_low_power_mode()
 {
+	/* If defined, device goes into standby mode instead of stop mode */
+	//#define LOW_POWER_STANBY_MODE
+
 	/* Put radio and sensor  into sleep mode */
 	radio_sleep();
 	//HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_SET);
@@ -549,24 +552,27 @@ static void enter_low_power_mode()
 	  = (RTC_WAKEUPCLOCK_RTCCLK_DIV /(LSE or LSI)) * WakeUpCounter
 		==> WakeUpCounter = Wakeup Time / Wakeup Time Base
 
-	  To configure the wake up timer to 20s the WakeUpCounter is set to 0x1FFF:
+	  To configure the wake up timer to 20s the WakeUpCounter is set to 0xB4D8:
 	  RTC_WAKEUPCLOCK_RTCCLK_DIV = RTCCLK_Div16 = 16
-	  Wakeup Time Base = 16 /(~37.000KHz) = ~0,432 ms
-	  Wakeup Time = ~20s = 0,432ms * WakeUpCounter
-		==> WakeUpCounter = ~20s/0,432ms = 20000/0.432 = 46296 = 0xB4D8 */
+	  Wakeup Time Base = 16 /(~37.000KHz) = ~0.432 ms
+	  Wakeup Time = ~20s = 0.432ms * WakeUpCounter
+		==> WakeUpCounter = ~20s/0.432ms = 20000/0.432 = 46296 = 0xB4D8 */
 	HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0xB4D8, RTC_WAKEUPCLOCK_RTCCLK_DIV16);
 
 	/* Disable SysTick. */
 	//HAL_SuspendTick();
-
-	dbg("MELPM");
 	/* Enable System Low Power */
 	system_low_power_mode_config();
 
+#ifdef LOW_POWER_STANBY_MODE
 	/* Enter Low Power Standby mode */
-	//HAL_PWR_EnterSTANDBYMode();
+	dbg("M_LPM_STANDBY");
+	HAL_PWR_EnterSTANDBYMode();
+#else
 	/* Enter Low Power Stop Mode */
+	dbg("M_LPM_STOP");
 	HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+#endif
 
 	/* WakeUp happens here */
 	/* Enable SysTick. */
