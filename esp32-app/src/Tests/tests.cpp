@@ -102,7 +102,11 @@ void tests_run()
 #endif
 
 #ifdef TEST_RADIO
-    Radio radio;
+    RadioSensorSettings radioConfig = {
+        .crit_vbatt_level = 3000,
+        .update_data_interval = 30,
+    };
+    Radio radio(radioConfig);
 #endif
 
 #ifdef TEST_NTP

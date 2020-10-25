@@ -121,7 +121,7 @@ void AppConfig::setDefaults()
     defaultSettings =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000001,
+        .version = 0x00000002,
     };
 
     // WIFI
@@ -149,6 +149,13 @@ void AppConfig::setDefaults()
     memcpy(weatherCfg.owmAppid, DEV_CFG_WEATHER_OWM_APPID, OWM_APPID_MAXLEN);
 #endif
     defaultSettings.weather = weatherCfg;
+
+    // RADIO_SENSOR
+    RadioSensorSettings radioSensorCfg = {
+        .crit_vbatt_level = 3000,
+        .update_data_interval = 60,
+    };
+    defaultSettings.radioSensor = radioSensorCfg;
 }
 
 //------------------------------------------------------------------------------
@@ -164,6 +171,7 @@ void AppConfig::printCurrentSettings()
     inf("systime: %s", getCurrent().time.toStr().c_str());
     inf("ntp: %s", getCurrent().ntp.toStr().c_str());
     inf("weather: %s", getCurrent().weather.toStr().c_str());
+    inf("radio_sensor: %s", getCurrent().radioSensor.toStr().c_str());
     inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
 }
 

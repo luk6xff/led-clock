@@ -3,6 +3,7 @@
 #include "App/utils.h"
 #include <functional>
 
+//------------------------------------------------------------------------------
 // Radio LORA settings
 #define RF_FREQUENCY                                RF_FREQUENCY_434_0
 #define TX_OUTPUT_POWER                             14        // dBm
@@ -19,113 +20,29 @@
 #define RX_TIMEOUT_VALUE                            8000      // in ms
 #define MAX_PAYLOAD_LENGTH                          60        // bytes
 
-/**
- * @brief Radio Msg frame status field description
- */
-typedef enum
+//------------------------------------------------------------------------------
+radio_msg_clock_frame Radio::msgf =
 {
-	MSG_NO_ERROR   = 1<<0,
-	MSG_READ_ERROR = 1<<1,
-	MSG_INIT_ERROR = 1<<2,
-	MSG_BATT_LOW   = 1<<3,
-} radio_msg_sensor_frame_status;
-
-/**
- * @brief Msg frame footprint, sent to the clock
- */
-typedef struct
-{
-	uint8_t hdr[3];
-	uint8_t status;
-	uint32_t vbatt;
-	float temperature;
-	float pressure;
-	float humidity;
-	uint32_t checksum;
-} radio_msg_sensor_frame;
-
-/**
- * @brief Msg frame footprint, received from the clock
- */
-typedef struct
-{
-	uint8_t hdr[3];
-	uint8_t status;
-	uint32_t crit_vbatt_level;     //[mV]
-	uint32_t update_data_interval; //[s] in seconds
-	uint32_t checksum;
-} radio_msg_clock_frame;
-
-/**
- * @brief Clock global Msg frame
- */
-static radio_msg_clock_frame msgf =
-{
-	.hdr = {'L','U','6'},
+    .hdr = {'L','U','6'},
     .status = MSG_NO_ERROR,
-    .crit_vbatt_level = 3000,   //[mV]
-    .update_data_interval = 30, //[s]
+    .crit_vbatt_level     = 2700,   //[mV]
+    .update_data_interval = 600, //[s]
 };
 
 //------------------------------------------------------------------------------
-uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len)
-{
-    uint8_t i;
-    uint16_t sum = 0;
-
-    for (i = 0; i < data_len; i++)
-    {
-        sum = sum ^ data[i];
-    }
-    return sum;
-}
-
-//------------------------------------------------------------------------------
-static void parse_incoming_msg_sensor(uint8_t *payload, uint16_t size)
-{
-    const radio_msg_sensor_frame *mf = (const radio_msg_sensor_frame *)payload;
-    const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_sensor_frame)-sizeof(mf->checksum)));
-    if (mf->checksum != checksum)
-    {
-        dbg("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x", mf->checksum, checksum);
-        return;
-    }
-
-    if (~(mf->status & MSG_NO_ERROR))
-    {
-        dbg("MSG_NO_ERROR");
-        dbg("T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]", mf->temperature, mf->pressure, mf->humidity);
-    }
-	else if (mf->status & MSG_READ_ERROR)
-    {
-        dbg("MSG_READ_ERROR");
-    }
-	else if (mf->status & MSG_INIT_ERROR)
-    {
-        dbg("MSG_INIT_ERROR");
-    }
-	if (mf->status & MSG_BATT_LOW)
-    {
-        dbg("MSG_BATT_LOW");
-    }
-}
-
-//------------------------------------------------------------------------------
-RadioEvents_t events;
-
-//------------------------------------------------------------------------------
-Radio::Radio()
-    : spi(HSPI)
+Radio::Radio(RadioSensorSettings& radioSensorCfg)
+    : cfg(radioSensorCfg)
+    , spi(HSPI)
 {
     // Set arduino_dev
     arduino_dev.spi_settings = SPISettings();
     arduino_dev.spi =   &spi;
-    arduino_dev.mosi =  GPIO_NUM_13;
-    arduino_dev.miso =  GPIO_NUM_12;
-    arduino_dev.sck =   GPIO_NUM_14;
-    arduino_dev.nss =   GPIO_NUM_15;
-    arduino_dev.reset = GPIO_NUM_27;
-    arduino_dev.dio0 =  GPIO_NUM_26;
+    arduino_dev.mosi =  RADIO_MOSI_PIN;
+    arduino_dev.miso =  RADIO_MISO_PIN;
+    arduino_dev.sck =   RADIO_SCK_PIN;
+    arduino_dev.nss =   RADIO_NSS_PIN;
+    arduino_dev.reset = RADIO_RST_PIN;
+    arduino_dev.dio0 =  RADIO_DI0_PIN;
     arduino_dev.dio1 =  -1; // Not used
     arduino_dev.dio2 =  -1;
     arduino_dev.dio3 =  -1;
@@ -165,11 +82,57 @@ Radio::Radio()
                           LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
                           LORA_IQ_INVERSION_ON, true);
 
+    // Update global cfg structure
+    msgf.crit_vbatt_level = cfg.crit_vbatt_level,         //[mV]
+    msgf.update_data_interval = cfg.update_data_interval, //[s]
+
     sx1278_set_rx(&dev, 0);
 }
 
 //------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+uint16_t Radio::radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len)
+{
+    uint8_t i;
+    uint16_t sum = 0;
+
+    for (i = 0; i < data_len; i++)
+    {
+        sum = sum ^ data[i];
+    }
+    return sum;
+}
+
+//------------------------------------------------------------------------------
+void Radio::parse_incoming_msg_sensor(uint8_t *payload, uint16_t size)
+{
+    const radio_msg_sensor_frame *mf = (const radio_msg_sensor_frame *)payload;
+    const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_sensor_frame)-sizeof(mf->checksum)));
+    if (mf->checksum != checksum)
+    {
+        dbg("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x", mf->checksum, checksum);
+        return;
+    }
+
+    if (~(mf->status & MSG_NO_ERROR))
+    {
+        dbg("MSG_NO_ERROR");
+        dbg("T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]", mf->temperature, mf->pressure, mf->humidity);
+    }
+	else if (mf->status & MSG_READ_ERROR)
+    {
+        dbg("MSG_READ_ERROR");
+    }
+	else if (mf->status & MSG_INIT_ERROR)
+    {
+        dbg("MSG_INIT_ERROR");
+    }
+	if (mf->status & MSG_BATT_LOW)
+    {
+        dbg("MSG_BATT_LOW");
+    }
+}
+
+//------------------------------------------------------------------------------
 void Radio::on_tx_done(void *args)
 {
     dbg("> on_tx_done");

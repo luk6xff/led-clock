@@ -33,14 +33,14 @@ struct WeatherSettings
     WeatherSettings()
         : updateInterval(3600)
     {
-        city = { 
+        city = {
                 49.692167, // Ubiad, PL
                 20.708694
                 };
         memset(city.cityName, 0, CITY_NAME_MAXLEN);
         memset(owmAppid, 0, OWM_APPID_MAXLEN);
         memset(language, 0, LANG_MAXLEN);
-        memcpy(city.cityName, "Ubiad", CITY_NAME_MAXLEN);       
+        memcpy(city.cityName, "Ubiad", CITY_NAME_MAXLEN);
         memcpy(owmAppid, "INVALID_KEY", OWM_APPID_MAXLEN);
         memcpy(language, "pl", LANG_MAXLEN);
     }

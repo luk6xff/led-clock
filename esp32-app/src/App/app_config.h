@@ -10,6 +10,7 @@
 #include "Clock/system_time.h"
 #include "Clock/ntp.h"
 #include "Weather/weather_settings.h"
+#include "Radio/radio_sensor_task.h"
 #include "wifi_task.h"
 #include "rtos_common.h"
 
@@ -37,6 +38,7 @@ public:
         SystemTimeSettings time;
         NtpSettings ntp;
         WeatherSettings weather;
+        RadioSensorSettings radioSensor;
     } Settings;
 
 public:
