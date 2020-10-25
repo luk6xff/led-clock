@@ -2,14 +2,14 @@
 #include "App/utils.h"
 
 //------------------------------------------------------------------------------
-#define RADIO_SENSOR_TASK_STACK_SIZE (8192)
-#define RADIO_SENSOR_TASK_PRIORITY     (6)
+#define RADIO_SENSOR_TASK_STACK_SIZE (8192*2)
+#define RADIO_SENSOR_TASK_PRIORITY        (3)
 
 #define MODULE_NAME "[RSEN]"
 
 //------------------------------------------------------------------------------
 RadioSensorTask::RadioSensorTask(RadioSensorSettings& radioSensorCfg)
-    : Task("RadioSensorTask", RADIO_SENSOR_TASK_STACK_SIZE, RADIO_SENSOR_TASK_PRIORITY, 3)
+    : Task("RadioSensorTask", RADIO_SENSOR_TASK_STACK_SIZE, RADIO_SENSOR_TASK_PRIORITY)
     , m_radioSensorCfg(radioSensorCfg)
     , m_radioSensorQ(nullptr)
 {
