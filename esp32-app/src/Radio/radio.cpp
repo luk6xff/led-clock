@@ -64,7 +64,7 @@ static radio_msg_clock_frame msgf =
 	.hdr = {'L','U','6'},
     .status = MSG_NO_ERROR,
     .crit_vbatt_level = 3000,   //[mV]
-    .update_data_interval = 10, //[s]
+    .update_data_interval = 30, //[s]
 };
 
 //------------------------------------------------------------------------------

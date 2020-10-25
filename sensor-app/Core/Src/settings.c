@@ -86,18 +86,18 @@ void app_settings_init()
         {
             if (!app_settings_store(&app_settings_default))
             {
-                dbg("STNE");
+                dbg("S_TNE");
                 app_settings_current = app_settings_default;
             }
             else
             {
-                dbg("STNS");
+                dbg("S_TNS");
             }
         }
     }
     else
     {
-        dbg("STND");
+        dbg("S_TND");
         app_settings_current = app_settings_default;
     }
 }

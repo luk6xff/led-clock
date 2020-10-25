@@ -72,7 +72,7 @@ void radio_init()
 	// Verify if SX1278 connected to the the board
 	while (sx1278_read(&radio_dev, REG_VERSION) != 0x12)
 	{
-	    dbg("RRDN");
+	    dbg("R_RDN");
 	    sx1278_delay_ms(1000);
 	}
 
@@ -101,7 +101,7 @@ void radio_send(radio_msg_sensor_frame *msgf)
 	msgf->checksum = radio_msg_frame_checksum((const uint8_t*)msgf, (sizeof(radio_msg_sensor_frame)-sizeof(msgf->checksum)));
 	// Send result data
 	sx1278_send(&radio_dev, (uint8_t*)msgf, sizeof(radio_msg_sensor_frame));
-	dbg("RDTS");
+	dbg("R_DTS");
 	sx1278_set_rx(&radio_dev, 0);
 }
 
@@ -137,7 +137,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 //-----------------------------------------------------------------------------
 static void on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-	dbg("RORD");
+	dbg("R_ORD");
 	parse_incoming_msg_clock(payload, size);
 }
 
@@ -148,26 +148,26 @@ static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size)
     const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_clock_frame)-sizeof(mf->checksum)));
     if (mf->checksum != checksum)
     {
-        dbg("RICHK");
+        dbg("R_ICHK");
         return;
     }
 
     if (~(mf->status & MSG_NO_ERROR))
     {
-        dbg("RMRCV");
+        dbg("R_MRCV");
         // Check and store setting if needed
         bool settings_update = false;
         if (mf->update_data_interval != app_settings_get_current()->update_interval)
         {
             app_settings_get_current()->update_interval = mf->update_data_interval;
-            sprintf(dbg_buf, "UT:%d", mf->update_data_interval);
+            sprintf(dbg_buf, "R_UT:%d", mf->update_data_interval);
             dbg(dbg_buf);
             settings_update = true;
         }
         if (mf->crit_vbatt_level != app_settings_get_current()->critical_battery_level)
         {
             app_settings_get_current()->critical_battery_level = mf->crit_vbatt_level;
-            sprintf(dbg_buf, "CB:%d", mf->crit_vbatt_level);
+            sprintf(dbg_buf, "R_CB:%d", mf->crit_vbatt_level);
             dbg(dbg_buf);
             settings_update = true;
         }
@@ -176,7 +176,7 @@ static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size)
         {
         	if (!app_settings_store(app_settings_get_current()))
         	{
-                dbg("RSUF");
+                dbg("R_SUF");
         	}
         }
     }

@@ -82,7 +82,7 @@ static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 
 static void system_low_power_mode_config(void);
-static void enter_low_power_mode();
+static void enter_low_power_mode(bool on_startup);
 
 /* USER CODE END PFP */
 
@@ -149,7 +149,22 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+	  /* Check if we should wake up or go to sleep again */
+	  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2) < app_settings_get_current()->update_interval)
+	  {
+			sprintf(dbg_buf, "M_LWP_LOOP:%d, %d", HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2), app_settings_get_current()->update_interval);
+			dbg(dbg_buf);
+			enter_low_power_mode(true);
+			continue;
+	  }
+	  else
+	  {
+			sprintf(dbg_buf, "M_LWP_EXIT:%d", HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2));
+			dbg(dbg_buf);
+			HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR2, 0);
+	  }
+
+	/* USER CODE END WHILE */
 
 	/* USER CODE BEGIN 3 */
 	// Read data from the sensor
@@ -165,9 +180,12 @@ int main(void)
 	msgf.temperature = temperature;
 	msgf.pressure = pressure;
 	msgf.humidity = humidity;
-	// Send result data
+
+	/* Send result data */
 	radio_send(&msgf);
-	enter_low_power_mode();
+
+	/* Wait 5 sends for incoming data from clock */
+	HAL_Delay(5000);
 	/**
 	 * @note WWDG Watchdog init function done in wwdg.c (MX_WWDG_Init(void))
 	 *	   Window time configured with following values:
@@ -529,14 +547,19 @@ static void system_low_power_mode_config(void)
   * @param  None
   * @retval None
   */
-static void enter_low_power_mode()
+static void enter_low_power_mode(bool on_startup)
 {
 	/* If defined, device goes into standby mode instead of stop mode */
 	//#define LOW_POWER_STANBY_MODE
 
-	/* Put radio and sensor  into sleep mode */
+	//if (!on_startup)
+	//{
+		/* Put radio into sleep mode */
 	radio_sleep();
-	//HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_SET);
+		//HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_SET);
+	//}
+
+	/* Disable sensor */
 	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_RESET);
 
 	/* Disable all used wakeup sources */
@@ -544,6 +567,13 @@ static void enter_low_power_mode()
 
 	/* Clear all related wakeup flags */
 	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+
+	/* Update timeout register */
+	uint32_t tmp = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2);
+	tmp += 20; // In seconds
+    sprintf(dbg_buf, "RTC_TMP:%d", tmp);
+    dbg(dbg_buf);
+	HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR2, tmp);
 
 	/* ## Setting the Wake up time ############################################*/
 	/*  RTC Wakeup Interrupt Generation:
@@ -580,7 +610,7 @@ static void enter_low_power_mode()
 	//HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_SET);
 	HAL_Delay(100);
-	dbg("MERPM");
+	dbg("M_LPM_RUN");
 }
 
 /**
