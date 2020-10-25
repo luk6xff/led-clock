@@ -122,7 +122,12 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  /* Check and handle if the system was resumed from StandBy mode */
+  if(__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
+  {
+    // Clear Standby flag
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
+  }
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -135,13 +140,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
   dbg("LUK6");
 
-//  // Check and handle if the system was resumed from StandBy mode
-//  if(__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
-//  {
-//    // Clear Standby flag
-//    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
-//  }
-
   app_settings_init();
   radio_init();
   sensor_init();
@@ -153,37 +151,34 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-      // Sleep a given time in seconds // LU_TODO
-      //sx1278_delay_ms(app_settings_get_current()->update_interval*1000);
-
-      // Read data from the sensor
-      if (sensor_get_data(&temperature, &pressure, &humidity))
-      {
-          msgf.status = MSG_NO_ERROR;
-      }
-      else
-      {
-          dbg("MRDF");
-          msgf.status = MSG_READ_ERROR;
-      }
-      msgf.temperature = temperature;
-      msgf.pressure = pressure;
-      msgf.humidity = humidity;
-      // Send result data
-      radio_send(&msgf);
-      enter_low_power_mode();
-      /**
-       * @note WWDG Watchdog init function done in wwdg.c (MX_WWDG_Init(void))
-       *	   Window time configured with following values:
-       * 	   (PCLK1 (1048000[Hz]) / 4096 / LL_WWDG_PRESCALER_8) = 31.99[Hz] (~30[ms])
-       * 	   WWDG Window value = 80 means that the WWDG counter should be refreshed only
-       *   	   when the counter is below 80 (and greater than 64) otherwise a reset will
-       *  	   be generated.
-       *  	   WWDG Downcounter value = 127, WWDG timeout = 30 ms * 64 = 1920[ms]
-       * 	   127 / 32 =~ 4[s]
-       */
-      //HAL_WWDG_Refresh(&hwwdg);
+	  /* USER CODE BEGIN 3 */
+	// Read data from the sensor
+	if (sensor_get_data(&temperature, &pressure, &humidity))
+	{
+	  msgf.status = MSG_NO_ERROR;
+	}
+	else
+	{
+	  dbg("MRDF");
+	  msgf.status = MSG_READ_ERROR;
+	}
+	msgf.temperature = temperature;
+	msgf.pressure = pressure;
+	msgf.humidity = humidity;
+	// Send result data
+	radio_send(&msgf);
+	enter_low_power_mode();
+	/**
+	 * @note WWDG Watchdog init function done in wwdg.c (MX_WWDG_Init(void))
+	 *	   Window time configured with following values:
+	 * 	   (PCLK1 (1048000[Hz]) / 4096 / LL_WWDG_PRESCALER_8) = 31.99[Hz] (~30[ms])
+	 * 	   WWDG Window value = 80 means that the WWDG counter should be refreshed only
+	 *   	   when the counter is below 80 (and greater than 64) otherwise a reset will
+	 *  	   be generated.
+	 *  	   WWDG Downcounter value = 127, WWDG timeout = 30 ms * 64 = 1920[ms]
+	 * 	   127 / 32 =~ 4[s]
+	 */
+	//HAL_WWDG_Refresh(&hwwdg);
   }
   /* USER CODE END 3 */
 }
@@ -512,16 +507,7 @@ static void system_low_power_mode_config(void)
   /* Enable the fast wake up from Ultra low power mode */
   HAL_PWREx_EnableFastWakeUp();
 
-  /* Enable GPIOs clock */
-//  __HAL_RCC_GPIOA_CLK_ENABLE();
-//  __HAL_RCC_GPIOB_CLK_ENABLE();
-//  __HAL_RCC_GPIOC_CLK_ENABLE();
-//
 //  /* Configure all GPIO port pins in Analog Input mode (floating input trigger OFF) */
-//  /* Note: Debug using ST-Link is not possible during the execution of this   */
-//  /*       example because communication between ST-link and the device       */
-//  /*       under test is done through UART. All GPIO pins are disabled (set   */
-//  /*       to analog input mode) including  UART I/O pins.           */
 //  GPIO_InitStructure.Pin = GPIO_PIN_All;
 //  GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
 //  GPIO_InitStructure.Pull = GPIO_NOPULL;
@@ -570,32 +556,22 @@ static void enter_low_power_mode()
 	HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0xB4D8, RTC_WAKEUPCLOCK_RTCCLK_DIV16);
 
 	/* Disable SysTick. */
-	HAL_SuspendTick();
+	//HAL_SuspendTick();
 
 	dbg("MELPM");
 
 	/* Enable Low Power Control clock */
 	system_low_power_mode_config();
 
-	/* Enter the Standby mode */
+	/* Enter Low Power Standby mode */
 	//HAL_PWR_EnterSTANDBYMode();
-	/* Enter Stop Mode */
+	/* Enter Low Power Stop Mode */
 	HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
 
 	/* WakeUp happens here */
 	/* Enable SysTick. */
-	HAL_ResumeTick();
-
-	//SystemClock_Config();   /* Re-configure the system clock */
-
-	dbg("MBERPM");
-	/* Initialize all configured peripherals */
-	//	  MX_GPIO_Init();
-	//	  MX_I2C1_Init();
-	//	  MX_SPI1_Init();
-	//	  MX_USART2_UART_Init();
-	//	  //MX_WWDG_Init();
-	//	  MX_RTC_Init();
+	//HAL_ResumeTick();
+	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_SET);
 	dbg("MERPM");
 }
 
