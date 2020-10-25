@@ -61,10 +61,12 @@ class Radio
 
 public:
     explicit Radio(RadioSensorSettings& radioSensorCfg);
+    void send(radio_msg_clock_frame *msgf);
+
+    static void parse_incoming_msg_sensor(uint8_t *payload, uint16_t size);
 
 private:
     static uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len);
-    static void parse_incoming_msg_sensor(uint8_t *payload, uint16_t size);
 
     // Callbacks
     static void on_tx_done(void *args);
@@ -72,6 +74,12 @@ private:
     static void on_tx_timeout(void *args);
     static void on_rx_timeout(void *args);
     static void on_rx_error(void *args);
+
+public:
+    /**
+     * @brief Radio sensor global data queue
+     */
+    static QueueHandle_t msgSensorDataQ;
 
 private:
     RadioSensorSettings& cfg;

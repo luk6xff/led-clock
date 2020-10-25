@@ -22,6 +22,8 @@ App::App()
     , m_dispTask(nullptr)
     , m_clockTask(nullptr)
     , m_ntpTask(nullptr)
+    , m_weatherTask(nullptr)
+    , m_radioSensorTask(nullptr)
 {
 
 }

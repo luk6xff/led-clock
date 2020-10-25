@@ -150,19 +150,19 @@ int main(void)
   while (1)
   {
 	  /* Check if we should wake up or go to sleep again */
-	  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2) < app_settings_get_current()->update_interval)
-	  {
-			sprintf(dbg_buf, "M_LWP_LOOP:%d, %d", HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2), app_settings_get_current()->update_interval);
-			dbg(dbg_buf);
-			enter_low_power_mode(true);
-			continue;
-	  }
-	  else
-	  {
-			sprintf(dbg_buf, "M_LWP_EXIT:%d", HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2));
-			dbg(dbg_buf);
-			HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR2, 0);
-	  }
+//	  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2) < app_settings_get_current()->update_interval)
+//	  {
+//			sprintf(dbg_buf, "M_LWP_LOOP:%d, %d", HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2), app_settings_get_current()->update_interval);
+//			dbg(dbg_buf);
+//			enter_low_power_mode(true);
+//			continue;
+//	  }
+//	  else
+//	  {
+//			sprintf(dbg_buf, "M_LWP_EXIT:%d", HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2));
+//			dbg(dbg_buf);
+//			HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR2, 0);
+//	  }
 
 	/* USER CODE END WHILE */
 
@@ -185,7 +185,7 @@ int main(void)
 	radio_send(&msgf);
 
 	/* Wait 5 sends for incoming data from clock */
-	HAL_Delay(5000);
+	HAL_Delay(100);
 	/**
 	 * @note WWDG Watchdog init function done in wwdg.c (MX_WWDG_Init(void))
 	 *	   Window time configured with following values:

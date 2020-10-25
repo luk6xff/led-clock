@@ -20,6 +20,11 @@
 #define RX_TIMEOUT_VALUE                            8000      // in ms
 #define MAX_PAYLOAD_LENGTH                          60        // bytes
 
+
+
+//------------------------------------------------------------------------------
+QueueHandle_t Radio::msgSensorDataQ = nullptr;
+
 //------------------------------------------------------------------------------
 radio_msg_clock_frame Radio::msgf =
 {
@@ -86,6 +91,26 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
     msgf.crit_vbatt_level = cfg.crit_vbatt_level,         //[mV]
     msgf.update_data_interval = cfg.update_data_interval, //[s]
 
+    msgSensorDataQ = xQueueCreate(2, sizeof(radio_msg_sensor_frame));
+    if (!msgSensorDataQ)
+    {
+        err("RADIO: msgSensorDataQ has not been created!.");
+    }
+
+    sx1278_set_rx(&dev, 0);
+}
+
+//-----------------------------------------------------------------------------
+void Radio::send(radio_msg_clock_frame *msgf)
+{
+    if (!msgf)
+    {
+        return;
+    }
+
+    msgf->checksum = radio_msg_frame_checksum((const uint8_t*)msgf, (sizeof(radio_msg_clock_frame)-sizeof(msgf->checksum)));
+    // Send result data
+    sx1278_send(&dev, (uint8_t*)msgf, sizeof(radio_msg_clock_frame));
     sx1278_set_rx(&dev, 0);
 }
 
@@ -141,15 +166,13 @@ void Radio::on_tx_done(void *args)
 //-----------------------------------------------------------------------------
 void Radio::on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-    dbg("> on_rx_done");
-    dbg("> RssiValue: %d", rssi);
-    dbg("> SnrValue: %d", snr);
-    dbg("> PAYLOAD: %s", payload);
-    parse_incoming_msg_sensor(payload, size);
-    sx1278 *const dev = (sx1278*)args;
-    msgf.checksum = radio_msg_frame_checksum((const uint8_t*)&msgf, (sizeof(msgf)-sizeof(msgf.checksum)));
-    sx1278_send(dev, (uint8_t*)&msgf, sizeof(msgf));
-    sx1278_set_rx(dev, 0);
+    if (msgSensorDataQ)
+    {
+        radio_msg_sensor_frame frame;
+        memcpy(&frame, payload, sizeof(frame));
+        portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+        xQueueSendFromISR(msgSensorDataQ, &frame, &xHigherPriorityTaskWoken);
+    }
 }
 
 //-----------------------------------------------------------------------------

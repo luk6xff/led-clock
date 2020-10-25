@@ -9,7 +9,7 @@
 
 //------------------------------------------------------------------------------
 RadioSensorTask::RadioSensorTask(RadioSensorSettings& radioSensorCfg)
-    : Task("RadioSensorTask", RADIO_SENSOR_TASK_STACK_SIZE, RADIO_SENSOR_TASK_PRIORITY)
+    : Task("RadioSensorTask", RADIO_SENSOR_TASK_STACK_SIZE, RADIO_SENSOR_TASK_PRIORITY, 0)
     , m_radioSensorCfg(radioSensorCfg)
     , m_radioSensorQ(nullptr)
 {
@@ -29,11 +29,17 @@ const QueueHandle_t& RadioSensorTask::getRadioSensorQ()
 //------------------------------------------------------------------------------
 void RadioSensorTask::run()
 {
-    const TickType_t sleepTime = (10000 / portTICK_PERIOD_MS);
     Radio radioSensor(m_radioSensorCfg);
     for(;;)
     {
-        vTaskDelay(sleepTime);
+        radio_msg_sensor_frame msg;
+        const BaseType_t rc = xQueueReceive(Radio::msgSensorDataQ, &msg, portMAX_DELAY);
+        if (rc == pdTRUE)
+        {
+            dbg(">>>RadioSensorData received:");
+            Radio::parse_incoming_msg_sensor((uint8_t*)&msg, sizeof(msg));
+            //radioSensor.send(&msg);
+        }
     }
 }
 
