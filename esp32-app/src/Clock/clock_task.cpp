@@ -33,15 +33,20 @@ void ClockTask::run()
     const TickType_t timeMeasDelay = (200 / portTICK_PERIOD_MS);
     SystemTime time(m_timeCfg);
     DateTime dt;
+    DateTime lastDt;
     for(;;)
     {
         dt = time.getTime();
         if (dt.isValid())
         {
-            if (pushTimeMsg(dt))
+            if (lastDt != dt)
             {
-                dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
+                if (pushTimeMsg(dt))
+                {
+                    dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
+                }
             }
+            lastDt = dt;
         }
         else
         {

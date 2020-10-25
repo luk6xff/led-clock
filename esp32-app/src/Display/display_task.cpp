@@ -41,17 +41,16 @@ void DisplayTask::run()
             {
                 if (dt.second() % 2)
                 {
-                    timeDots = true;
+                    timeDots = false;
                 }
                 else
                 {
-                    timeDots = false;
+                    timeDots = true;
                 }
                 m_disp.printTime(dt, m_timeDispMode, timeDots);
                 dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
             }
         }
-        
         vTaskDelay(dispRefreshTime);
     }
 }
