@@ -82,7 +82,7 @@ static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 
 static void system_low_power_mode_config(void);
-static void enter_low_power_mode(bool on_startup);
+static void enter_low_power_mode();
 
 /* USER CODE END PFP */
 
@@ -135,7 +135,7 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI1_Init();
   MX_USART2_UART_Init();
-  //MX_WWDG_Init();
+  MX_WWDG_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
   dbg("LUK6");
@@ -149,25 +149,25 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  /* Check if we should wake up or go to sleep again */
-//	  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2) < app_settings_get_current()->update_interval)
-//	  {
-//			sprintf(dbg_buf, "M_LWP_LOOP:%d, %d", HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2), app_settings_get_current()->update_interval);
-//			dbg(dbg_buf);
-//			enter_low_power_mode(true);
-//			continue;
-//	  }
-//	  else
-//	  {
-//			sprintf(dbg_buf, "M_LWP_EXIT:%d", HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2));
-//			dbg(dbg_buf);
-//			HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR2, 0);
-//	  }
+	/* Check if we should wake up or go to sleep again */
+	if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2) < app_settings_get_current()->update_interval)
+	{
+		sprintf(dbg_buf, "M_LWP_LOOP:%d, %d", HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2), app_settings_get_current()->update_interval);
+		dbg(dbg_buf);
+		enter_low_power_mode();
+		continue;
+	}
+	else
+	{
+		sprintf(dbg_buf, "M_LWP_EXIT:%d", HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2));
+		dbg(dbg_buf);
+		HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR2, 0);
+	}
 
 	/* USER CODE END WHILE */
 
 	/* USER CODE BEGIN 3 */
-	// Read data from the sensor
+	/* Read data from the sensor */
 	if (sensor_get_data(&temperature, &pressure, &humidity))
 	{
 		msgf.status = MSG_NO_ERROR;
@@ -184,19 +184,16 @@ int main(void)
 	/* Send result data */
 	radio_send(&msgf);
 
-	/* Wait 5 sends for incoming data from clock */
-	HAL_Delay(100);
-	/**
-	 * @note WWDG Watchdog init function done in wwdg.c (MX_WWDG_Init(void))
-	 *	   Window time configured with following values:
-	 * 	   (PCLK1 (1048000[Hz]) / 4096 / LL_WWDG_PRESCALER_8) = 31.99[Hz] (~30[ms])
-	 * 	   WWDG Window value = 80 means that the WWDG counter should be refreshed only
-	 *   	   when the counter is below 80 (and greater than 64) otherwise a reset will
-	 *  	   be generated.
-	 *  	   WWDG Downcounter value = 127, WWDG timeout = 30 ms * 64 = 1920[ms]
-	 * 	   127 / 32 =~ 4[s]
-	 */
-	//HAL_WWDG_Refresh(&hwwdg);
+	/* Refresh watchdog, no more than 2[s] must expire before next refresh */
+	HAL_WWDG_Refresh(&hwwdg);
+	uint8_t rxMsgWaitCnt = 4;
+	while(rxMsgWaitCnt--)
+	{
+		/* Wait 1 second for incoming data from clock */
+		HAL_Delay(1000);
+		/* Refresh watchdog, no more than 2[s] must expire before next refresh */
+		HAL_WWDG_Refresh(&hwwdg);
+	}
   }
   /* USER CODE END 3 */
 }
@@ -325,12 +322,12 @@ static void MX_RTC_Init(void)
   {
     Error_Handler();
   }
-  /** Enable the WakeUp */
-  /* NOT NEDDED HERE, WakeupTimer is set in enter_low_power_mode */
-//  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
+  /** Enable the WakeUp 
+  */
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
@@ -423,11 +420,18 @@ static void MX_WWDG_Init(void)
   /* USER CODE END WWDG_Init 0 */
 
   /* USER CODE BEGIN WWDG_Init 1 */
-
+	/*##-2- Init & Start WWDG peripheral ######################################*/
+	/* WWDG clock counter = (PCLK1 (1MHz/4096)/8) = 30.52 Hz (~32.7 ms)
+	 WWDG Window value = 127 means that the WWDG counter should be refreshed only
+	 when the counter is below 127 (and greater than 64) otherwise a reset will
+	 be generated.
+	 WWDG Counter value = 127, WWDG timeout = 32.7 ms * 64 = 2.097 s
+	 In this case the refresh window is comprised between : ~32.7 * (127-127) = 0[ms] and ~32.7 * 64 = 2.097[s]
+	*/
   /* USER CODE END WWDG_Init 1 */
   hwwdg.Instance = WWDG;
   hwwdg.Init.Prescaler = WWDG_PRESCALER_8;
-  hwwdg.Init.Window = 80;
+  hwwdg.Init.Window = 127;
   hwwdg.Init.Counter = 127;
   hwwdg.Init.EWIMode = WWDG_EWI_DISABLE;
   if (HAL_WWDG_Init(&hwwdg) != HAL_OK)
@@ -547,17 +551,15 @@ static void system_low_power_mode_config(void)
   * @param  None
   * @retval None
   */
-static void enter_low_power_mode(bool on_startup)
+static void enter_low_power_mode()
 {
 	/* If defined, device goes into standby mode instead of stop mode */
 	//#define LOW_POWER_STANBY_MODE
 
-	//if (!on_startup)
-	//{
-		/* Put radio into sleep mode */
+
+	/* Put radio into sleep mode */
 	radio_sleep();
-		//HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_SET);
-	//}
+	//HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_SET);
 
 	/* Disable sensor */
 	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_RESET);
@@ -571,8 +573,6 @@ static void enter_low_power_mode(bool on_startup)
 	/* Update timeout register */
 	uint32_t tmp = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2);
 	tmp += 20; // In seconds
-    sprintf(dbg_buf, "RTC_TMP:%d", tmp);
-    dbg(dbg_buf);
 	HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR2, tmp);
 
 	/* ## Setting the Wake up time ############################################*/
