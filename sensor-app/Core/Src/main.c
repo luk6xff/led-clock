@@ -47,6 +47,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
 I2C_HandleTypeDef hi2c1;
 
 UART_HandleTypeDef hlpuart1;
@@ -79,10 +80,12 @@ static void MX_SPI1_Init(void);
 static void MX_WWDG_Init(void);
 static void MX_RTC_Init(void);
 static void MX_LPUART1_UART_Init(void);
+static void MX_ADC_Init(void);
 /* USER CODE BEGIN PFP */
 
 static void system_low_power_mode_config(void);
 static void enter_low_power_mode();
+static uint32_t adc_read_vbatt();
 
 /* USER CODE END PFP */
 
@@ -137,6 +140,7 @@ int main(void)
   MX_WWDG_Init();
   MX_RTC_Init();
   MX_LPUART1_UART_Init();
+  MX_ADC_Init();
   /* USER CODE BEGIN 2 */
   dbg("LUK6");
 
@@ -174,12 +178,13 @@ int main(void)
 	}
 	else
 	{
-		dbg("M_MRE");
+		dbg("M_MNO");
 		msgf.status = MSG_READ_ERROR;
 	}
 	msgf.temperature = temperature;
 	msgf.pressure = pressure;
 	msgf.humidity = humidity;
+	msgf.vbatt = 3300;//adc_read_vbatt();
 
 	/* Send result data */
 	radio_send(&msgf);
@@ -245,6 +250,57 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief ADC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC_Init(void)
+{
+
+  /* USER CODE BEGIN ADC_Init 0 */
+
+  /* USER CODE END ADC_Init 0 */
+
+  LL_ADC_REG_InitTypeDef ADC_REG_InitStruct = {0};
+  LL_ADC_InitTypeDef ADC_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC1);
+
+  /* USER CODE BEGIN ADC_Init 1 */
+
+  /* USER CODE END ADC_Init 1 */
+  /** Configure Regular Channel 
+  */
+  LL_ADC_REG_SetSequencerChAdd(ADC1, LL_ADC_CHANNEL_VREFINT);
+  LL_ADC_SetCommonPathInternalCh(__LL_ADC_COMMON_INSTANCE(ADC1), LL_ADC_PATH_INTERNAL_VREFINT);
+  /** Common config 
+  */
+  ADC_REG_InitStruct.TriggerSource = LL_ADC_REG_TRIG_SOFTWARE;
+  ADC_REG_InitStruct.SequencerDiscont = LL_ADC_REG_SEQ_DISCONT_DISABLE;
+  ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_SINGLE;
+  ADC_REG_InitStruct.DMATransfer = LL_ADC_REG_DMA_TRANSFER_NONE;
+  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
+  LL_ADC_REG_Init(ADC1, &ADC_REG_InitStruct);
+  LL_ADC_SetSamplingTimeCommonChannels(ADC1, LL_ADC_SAMPLINGTIME_1CYCLE_5);
+  LL_ADC_SetOverSamplingScope(ADC1, LL_ADC_OVS_DISABLE);
+  LL_ADC_REG_SetSequencerScanDirection(ADC1, LL_ADC_REG_SEQ_SCAN_DIR_FORWARD);
+  LL_ADC_SetCommonFrequencyMode(__LL_ADC_COMMON_INSTANCE(ADC1), LL_ADC_CLOCK_FREQ_MODE_HIGH);
+  LL_ADC_DisableIT_EOC(ADC1);
+  LL_ADC_DisableIT_EOS(ADC1);
+  //LL_ADC_EnableInternalRegulator(ADC1);
+  ADC_InitStruct.Clock = LL_ADC_CLOCK_SYNC_PCLK_DIV1;
+  ADC_InitStruct.Resolution = LL_ADC_RESOLUTION_12B;
+  ADC_InitStruct.DataAlignment = LL_ADC_DATA_ALIGN_RIGHT;
+  ADC_InitStruct.LowPowerMode = LL_ADC_LP_AUTOPOWEROFF;
+  LL_ADC_Init(ADC1, &ADC_InitStruct);
+  /* USER CODE BEGIN ADC_Init 2 */
+
+  /* USER CODE END ADC_Init 2 */
+
 }
 
 /**
@@ -358,10 +414,10 @@ static void MX_RTC_Init(void)
   }
   /** Enable the WakeUp 
   */
-  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-  {
-    Error_Handler();
-  }
+//  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
@@ -612,6 +668,7 @@ static void enter_low_power_mode()
 	dbg("M_LPM_RUN");
 }
 
+//-----------------------------------------------------------------------------
 /**
   * @brief  RTC Wake Up callback
   * @param  None
@@ -619,10 +676,31 @@ static void enter_low_power_mode()
   */
 void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
 {
-  /* Clear Wake Up Flag */
-  __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+	/* Clear Wake Up Flag */
+	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
 }
 
+//---------------------------------------------------------------------------------
+static uint32_t adc_read_vbatt()
+{
+	LL_ADC_EnableInternalRegulator(ADC1);
+	LL_ADC_SetCommonPathInternalCh( __LL_ADC_COMMON_INSTANCE(ADC1), LL_ADC_PATH_INTERNAL_VREFINT );
+	do
+	{
+		LL_ADC_Enable(ADC1);
+	} while( !LL_ADC_IsActiveFlag_ADRDY(ADC1));
+
+	LL_ADC_REG_StartConversion(ADC1);
+	while( !LL_ADC_IsActiveFlag_EOC(ADC1));
+
+	uint32_t adc_raw = LL_ADC_REG_ReadConversionData12(ADC1);
+	do
+	{
+		LL_ADC_Disable(ADC1);
+	} while( LL_ADC_IsEnabled(ADC1) );
+	LL_ADC_DisableInternalRegulator(ADC1);
+	return __LL_ADC_CALC_VREFANALOG_VOLTAGE(adc_raw, LL_ADC_RESOLUTION_12B);
+}
 
 /* USER CODE END 4 */
 

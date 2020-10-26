@@ -34,8 +34,6 @@ extern void dbg(const char* msg);
 #define MAX_PAYLOAD_LENGTH                          60        // bytes
 
 //-----------------------------------------------------------------------------
-static void on_tx_done(void *args);
-static void on_tx_timeout(void *args);
 static void on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
 static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size);
 static uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len);
@@ -148,13 +146,13 @@ static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size)
     const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_clock_frame)-sizeof(mf->checksum)));
     if (mf->checksum != checksum)
     {
-        dbg("R_ICHK");
+        dbg("R_ICH");
         return;
     }
 
     if (~(mf->status & MSG_NO_ERROR))
     {
-        dbg("R_MRCV");
+        dbg("R_MNE");
         // Check and store setting if needed
         bool settings_update = false;
         if (mf->update_data_interval != app_settings_get_current()->update_interval)
