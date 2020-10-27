@@ -43,8 +43,8 @@ void WifiTask::run()
     wm.setSaveConfigCallback([](String ssid, String pass)
     {
         // LU_TODO Store new wifi settings
-    })
-    wm.resetSettings();
+    });
+    //wm.resetSettings();
 
     for(;;)
     {
