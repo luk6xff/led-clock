@@ -4,3 +4,5 @@
 .vscode/launch.json
 .vscode/ipch
 src/App/app_dev_cfg.h
+lib/esp32_https_server/
+data/

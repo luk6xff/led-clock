@@ -1,6 +1,7 @@
 #include "wifi_task.h"
 #include "App/rtos_common.h"
 #include "App/utils.h"
+#include <WiFiManager.h>
 
 //------------------------------------------------------------------------------
 #define WIFI_TASK_STACK_SIZE (8192)
@@ -33,10 +34,18 @@ const EventGroupHandle_t& WifiTask::getWifiEvtHandle()
 void WifiTask::run()
 {
     const TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
+    uint8_t wifiConnectionFailureCnt = 0;
     WiFi.setAutoConnect(0);
     WiFi.softAPdisconnect();
     WiFi.setAutoConnect(true);
     WiFi.setAutoReconnect(true);
+    WiFiManager wm;
+    wm.setSaveConfigCallback([](String ssid, String pass)
+    {
+        // LU_TODO Store new wifi settings
+    })
+    wm.resetSettings();
+
     for(;;)
     {
         if (WiFi.status() == WL_CONNECTED)
@@ -46,7 +55,7 @@ void WifiTask::run()
         }
 
         xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_DISCONNECTED);
-        WiFi.mode(WIFI_STA);
+        WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP   
         WiFi.begin(m_wifiCfg.ssid0, m_wifiCfg.pass0);
 
         // Wait until connected or timeou exceeded
@@ -63,7 +72,20 @@ void WifiTask::run()
             err("%s Connection failed, waiting for %d seconds...",
                 MODULE_NAME, WIFI_TIMEOUT_MS/1000);
             vTaskDelay(WIFI_TIMEOUT_MS / portTICK_PERIOD_MS);
-            continue;
+            wifiConnectionFailureCnt++;
+            if (wifiConnectionFailureCnt >= 3)
+            {
+                // If no connection run Captive portal
+                if (!wm.autoConnect("LedClock", m_wifiCfg.pass0))
+                {
+                    dbg("%s Starting CaptivePortal", MODULE_NAME);
+                }
+                wifiConnectionFailureCnt = 0;
+            }
+            else
+            {
+                continue;
+            }
         }
 
         if (WiFi.status() == WL_CONNECTED)

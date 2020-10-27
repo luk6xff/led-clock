@@ -4,52 +4,94 @@
 #include "../App/app.h"
 #include "../App/utils.h"
 #include "../hw_config.h"
-#include "../Display/display.h"
-#include "../Clock/system_time.h"
-#include "../Display/light_sensor.h"
-#include "../Radio/radio.h"
-#include "../Clock/ntp.h"
-#include "WiFi.h"
 
 //------------------------------------------------------------------------------
 /**
- * @brief Enabled/Disabled Defines
+ * @brief Enabled/Disabled TEST Defines
  */
-
-#define TEST_DISPLAY
+//#define TEST_RTOS_TASK
+//#define TEST_DISPLAY
 //#define TEST_LIGHT_SENSOR
 //#define TEST_RTC
-#define TEST_RADIO
+//#define TEST_RADIO
 //#define TEST_NTP
+#define TEST_CAPTIVE_PORTAL
 
 //------------------------------------------------------------------------------
-/**
- * @brief LED PIN
- */
-#define BLINK_GPIO (gpio_num_t)CONFIG_BLINK_GPIO
-#ifndef LED_BUILTIN
-    #define LED_BUILTIN 4
+#if defined(TEST_RTC) || defined(TEST_DISPLAY)
+    #include "../Display/display.h"
+    #include "../Display/light_sensor.h"
+    #include "../Clock/system_time.h"
 #endif
 
+#ifdef TEST_LIGHT_SENSOR
+    #include "../Display/light_sensor.h"
+#endif
+
+#ifdef TEST_RADIO
+    #include "../Radio/radio.h"
+#endif
+
+#ifdef TEST_NTP
+    #include "../Clock/ntp.h"
+    #include "WiFi.h"
+#endif
+
+#ifdef TEST_CAPTIVE_PORTAL
+    #include <WiFiManager.h>
+#endif
+
+
 //------------------------------------------------------------------------------
 /**
- * @brief FreeRtos demo blink task
+ * @brief TEST Globals
  */
-void blink_task(void *pvParameter)
-{
-    gpio_pad_select_gpio(BLINK_GPIO);
-    /* Set the GPIO as a push/pull output */
-    gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
-    while(1)
+//#define TEST_RTOS_TASK
+#ifdef TEST_RTOS_TASK
+    #define BLINK_GPIO (gpio_num_t)CONFIG_BLINK_GPIO
+    #ifndef LED_BUILTIN
+        #define LED_BUILTIN 4
+    #endif
+
+    /**
+     * @brief FreeRtos demo blink task
+     */
+    void blink_task(void *pvParameter)
     {
-        /* Blink off (output low) */
-        gpio_set_level(BLINK_GPIO, 0);
-        vTaskDelay(500 / portTICK_PERIOD_MS);
-        /* Blink on (output high) */
-        gpio_set_level(BLINK_GPIO, 1);
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        gpio_pad_select_gpio(BLINK_GPIO);
+        /* Set the GPIO as a push/pull output */
+        gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
+        while(1)
+        {
+            /* Blink off (output low) */
+            gpio_set_level(BLINK_GPIO, 0);
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+            /* Blink on (output high) */
+            gpio_set_level(BLINK_GPIO, 1);
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+        }
     }
-}
+#endif
+
+#ifdef TEST_DISPLAY
+#endif
+
+#ifdef TEST_LIGHT_SENSOR
+#endif
+
+#ifdef TEST_RTC
+#endif
+
+#ifdef TEST_RADIO
+#endif
+
+#ifdef TEST_NTP
+#endif
+
+#ifdef TEST_CAPTIVE_PORTAL
+    WiFiManager wm;
+#endif
+
 
 //------------------------------------------------------------------------------
 void tests_setup()
@@ -58,19 +100,51 @@ void tests_setup()
     utils::init();
     //utils::util_i2c_scanner();
 
-    // Create blink task
+#ifdef TEST_RTOS_TASK
     xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+#endif
+
+#ifdef TEST_DISPLAY
+#endif
+
+#ifdef TEST_LIGHT_SENSOR
+#endif
+
+#ifdef TEST_RTC
+#endif
+
+#ifdef TEST_RADIO
+#endif
+
+#ifdef TEST_NTP
+#endif
+
+#ifdef TEST_CAPTIVE_PORTAL
+    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP    
+    // put your setup code here, to run once:
+    Serial.begin(9600);
+    
+    //reset settings - wipe credentials for testing
+    //wm.resetSettings();
+
+    wm.setConfigPortalBlocking(false);
+
+    //automatically connect using saved credentials if they exist
+    //If connection fails it starts an access point with the specified name
+    if(wm.autoConnect()){
+        Serial.println("connected...yeey :)");
+    }
+    else {
+        Serial.println("Configportal running");
+    }
+#endif
+
 }
 
 
 //------------------------------------------------------------------------------
 void tests_run()
 {
-
-    static bool	timeDots = true;
-    static uint32_t timeLast = 0;
-    static uint32_t timeSecCnt = 0;
-
 
 ////////////////////////////////////////////////////////////////////////////////
 ///<! SETUP
@@ -85,6 +159,13 @@ void tests_run()
         DISPLAY_CS_PIN,
     };
     Display disp(cfg);
+    
+    static bool	timeDots = true;
+    static uint32_t timeLast = 0;
+    static uint32_t timeSecCnt = 0;
+    timeLast   = millis();
+    timeSecCnt =  millis();
+    Display::DateTimePrintMode timeDispMode = Display::THM;
 #endif
 
 #ifdef TEST_LIGHT_SENSOR
@@ -121,17 +202,22 @@ void tests_run()
 #endif
 
 
+#ifdef TEST_CAPTIVE_PORTAL
+    wm.process();
+#endif
+
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 ///<! LOOP
 ////////////////////////////////////////////////////////////////////////////////
-    timeLast = millis();
-    timeSecCnt =  millis();
-
-    Display::DateTimePrintMode timeDispMode = Display::THM;
     while(1)
     {
 
-    #ifdef TEST_DISPLAY
+#ifdef TEST_DISPLAY
         disp.update();
         disp.processAutoIntensityLevelControl();
         DateTime dt = time.getTime();
@@ -160,33 +246,38 @@ void tests_run()
             timeDots = timeDots ^ 1;
             timeSecCnt = millis();
         }
-    #endif // TEST_DISPLAY
+#endif // TEST_DISPLAY
 
-    #ifdef TEST_LIGHT_SENSOR
+
+#ifdef TEST_LIGHT_SENSOR
         dbg("BH1750 Light: %3.2f [lx]", light.getIlluminance());
-    #endif // TEST_LIGHT_SENSOR
+#endif // TEST_LIGHT_SENSOR
 
 
-    #ifdef TEST_RTC
+#ifdef TEST_RTC
         dbg("SystemTime temperature: %3.2f", time.getTemperature());
         dbg("SystemTime time: %s", SystemTime::timeToStr(time.getTime()));
         dbg("SystemTime date: %s", SystemTime::dateToStr(time.getTime()));
-    #endif // TEST_RTC
+#endif // TEST_RTC
 
 
-    #ifdef TEST_RADIO
+#ifdef TEST_RADIO
         // Empty, all is done in radio.cpp
-    #endif  // TEST_RADIO
+#endif  // TEST_RADIO
 
 
-    #ifdef TEST_NTP
+#ifdef TEST_NTP
         if (ntp.updateTime())
         {
             DateTime dt(ntp.getCurrentTime());
             dbg("NTP UTC:%s", dt.timestamp().c_str());
             time.setUtcTime(dt);
         }
-    #endif
+#endif
+
+#ifdef TEST_CAPTIVE_PORTAL
+
+#endif
     }
 }
 
