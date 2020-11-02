@@ -15,7 +15,8 @@
 //#define TEST_RTC
 //#define TEST_RADIO
 //#define TEST_NTP
-#define TEST_CAPTIVE_PORTAL
+//#define TEST_CAPTIVE_PORTAL
+#define TEST_WEB_SERVER
 
 //------------------------------------------------------------------------------
 #if defined(TEST_RTC) || defined(TEST_DISPLAY)
@@ -39,6 +40,13 @@
 
 #ifdef TEST_CAPTIVE_PORTAL
     #include <WiFiManager.h>
+#endif
+
+#ifdef TEST_WEB_SERVER
+    #include <WiFi.h>
+    #include <ESPmDNS.h>
+    #include <ArduinoOTA.h>
+    #include <WebServer.h>
 #endif
 
 
@@ -92,6 +100,20 @@
     WiFiManager wm;
 #endif
 
+#ifdef TEST_WEB_SERVER
+    const char* ssid = "INTEHNXXX";
+    const char* password = "Faza1994XX";
+
+    WebServer server(80);
+
+    const char* www_username = "admin";
+    const char* www_password = "admin";
+    // Allows you to set the realm of authentication Default:"Login Required"
+    const char* www_realm = "Custom Auth Realm";
+    // the Content of the HTML response in case of Unautherized Access Default:empty
+    String authFailResponse = "Authentication Failed";
+#endif
+
 
 //------------------------------------------------------------------------------
 void tests_setup()
@@ -139,6 +161,43 @@ void tests_setup()
     }
 #endif
 
+#ifdef TEST_WEB_SERVER
+    Serial.begin(9600);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+    if (WiFi.waitForConnectResult() != WL_CONNECTED)
+    {
+        Serial.println("WiFi Connect Failed! Rebooting...");
+        delay(1000);
+        ESP.restart();
+    }
+    ArduinoOTA.begin();
+
+    server.on("/", []() {
+        if (!server.authenticate(www_username, www_password))
+            //Basic Auth Method with Custom realm and Failure Response
+            //return server.requestAuthentication(BASIC_AUTH, www_realm, authFailResponse);
+            //Digest Auth Method with realm="Login Required" and empty Failure Response
+            //return server.requestAuthentication(DIGEST_AUTH);
+            //Digest Auth Method with Custom realm and empty Failure Response
+            //return server.requestAuthentication(DIGEST_AUTH, www_realm);
+            //Digest Auth Method with Custom realm and Failure Response
+        {
+            return server.requestAuthentication(DIGEST_AUTH, www_realm, authFailResponse);
+        }
+        server.send(200, "text/plain", "Login OK");
+    });
+    server.begin();
+
+    Serial.print("Open http://");
+    Serial.print(WiFi.localIP());
+    Serial.println("/ in your browser to see it working");
+
+    if (MDNS.begin("ubiad-ledclock"))
+    {
+        Serial.println("MDNS responder started");
+    }
+#endif
 }
 
 
@@ -191,7 +250,7 @@ void tests_run()
 #endif
 
 #ifdef TEST_NTP
-    WiFi.begin("INTEHNETY", "Faza199490");
+    WiFi.begin("INTEHNXXX", "Faza1994XX");
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(500);
@@ -207,7 +266,9 @@ void tests_run()
 #endif
 
 
+#ifdef TEST_WEB_SERVER
 
+#endif
 
 
 
@@ -277,6 +338,11 @@ void tests_run()
 
 #ifdef TEST_CAPTIVE_PORTAL
 
+#endif
+
+#ifdef TEST_WEB_SERVER
+    ArduinoOTA.handle();
+    server.handleClient();
 #endif
     }
 }
