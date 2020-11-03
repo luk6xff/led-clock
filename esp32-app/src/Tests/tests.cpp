@@ -16,7 +16,7 @@
 //#define TEST_RADIO
 //#define TEST_NTP
 //#define TEST_CAPTIVE_PORTAL
-#define TEST_WEB_SERVER
+//#define TEST_WEB_SERVER
 
 //------------------------------------------------------------------------------
 #if defined(TEST_RTC) || defined(TEST_DISPLAY)
@@ -142,10 +142,10 @@ void tests_setup()
 #endif
 
 #ifdef TEST_CAPTIVE_PORTAL
-    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP    
+    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
     // put your setup code here, to run once:
     Serial.begin(9600);
-    
+
     //reset settings - wipe credentials for testing
     //wm.resetSettings();
 
@@ -153,10 +153,12 @@ void tests_setup()
 
     //automatically connect using saved credentials if they exist
     //If connection fails it starts an access point with the specified name
-    if(wm.autoConnect()){
+    if (wm.autoConnect())
+    {
         Serial.println("connected...yeey :)");
     }
-    else {
+    else
+    {
         Serial.println("Configportal running");
     }
 #endif
@@ -218,7 +220,7 @@ void tests_run()
         DISPLAY_CS_PIN,
     };
     Display disp(cfg);
-    
+
     static bool	timeDots = true;
     static uint32_t timeLast = 0;
     static uint32_t timeSecCnt = 0;

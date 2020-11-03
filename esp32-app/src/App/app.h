@@ -12,6 +12,7 @@
 #include "Radio/radio_sensor_task.h"
 #include "App/wifi_task.h"
 #include "Weather/weather_task.h"
+#include "WebServer/webserver_task.h"
 
 
 #include <memory>
@@ -38,4 +39,5 @@ private:
     std::unique_ptr<NtpTask> m_ntpTask;
     std::unique_ptr<WeatherTask> m_weatherTask;
     std::unique_ptr<RadioSensorTask> m_radioSensorTask;
+    std::unique_ptr<WebServerTask> m_webServerTask;
 };
