@@ -12,20 +12,12 @@ struct WifiSettings
     {
         const char *admin = "admin";
         memset(this, 0, sizeof(*this));
-        memcpy(ssid0, admin, WIFI_SETTINGS_LEN);
-        memcpy(pass0, admin, WIFI_SETTINGS_LEN);
-        memcpy(ssid1, admin, WIFI_SETTINGS_LEN);
-        memcpy(pass1, admin, WIFI_SETTINGS_LEN);
-        memcpy(ssid2, admin, WIFI_SETTINGS_LEN);
-        memcpy(pass2, admin, WIFI_SETTINGS_LEN);
+        memcpy(ssid, admin, WIFI_SETTINGS_LEN);
+        memcpy(pass, admin, WIFI_SETTINGS_LEN);
     }
 
-    char ssid0[WIFI_SETTINGS_LEN];
-    char pass0[WIFI_SETTINGS_LEN];
-    char ssid1[WIFI_SETTINGS_LEN];
-    char pass1[WIFI_SETTINGS_LEN];
-    char ssid2[WIFI_SETTINGS_LEN];
-    char pass2[WIFI_SETTINGS_LEN];
+    char ssid[WIFI_SETTINGS_LEN];
+    char pass[WIFI_SETTINGS_LEN];
 };
 
 class WifiTask : public Task

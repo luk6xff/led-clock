@@ -64,7 +64,7 @@ const char* PARAM_MESSAGE = "message";
 void WebServerTask::registerHandlers(AsyncWebServer& server)
 {
     // Update Device info tab
-    server.on("/devinfotable.json", HTTP_GET, [] (AsyncWebServerRequest *request)
+    server.on("/devinfo", HTTP_GET, [] (AsyncWebServerRequest *request)
     {
         DeviceInfo devInfo;
         request->send(200, "application/json", devInfo.createDevInfoTable());

@@ -56,7 +56,7 @@ void WifiTask::run()
 
         xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_DISCONNECTED);
         WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-        WiFi.begin(m_wifiCfg.ssid0, m_wifiCfg.pass0);
+        WiFi.begin(m_wifiCfg.ssid, m_wifiCfg.pass);
 
         // Wait until connected or timeou exceeded
         utils::inf("%s Connecting...", MODULE_NAME);
@@ -76,7 +76,7 @@ void WifiTask::run()
             if (wifiConnectionFailureCnt >= 3)
             {
                 // If no connection run Captive portal
-                if (!wm.autoConnect("LedClock", m_wifiCfg.pass0))
+                if (!wm.autoConnect("LedClock", m_wifiCfg.pass))
                 {
                     utils::dbg("%s Starting CaptivePortal", MODULE_NAME);
                 }

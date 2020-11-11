@@ -64,5 +64,5 @@ struct WeatherSettings
     City city;
     char owmAppid[OWM_APPID_MAXLEN];
     char language[4];
-    uint32_t updateInterval;
+    uint32_t updateInterval; // [s] in seconds
 };

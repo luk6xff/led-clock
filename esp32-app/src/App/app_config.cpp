@@ -121,14 +121,14 @@ void AppConfig::setDefaults()
     defaultSettings =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000002,
+        .version = 0x00000000,
     };
 
     // WIFI
     WifiSettings wifiCfg;
 #ifdef DEV_CFG
-    memcpy(wifiCfg.ssid0, DEV_CFG_WIFI_SSID, WIFI_SETTINGS_LEN);
-    memcpy(wifiCfg.pass0, DEV_CFG_WIFI_PASS, WIFI_SETTINGS_LEN);
+    memcpy(wifiCfg.ssid, DEV_CFG_WIFI_SSID, WIFI_SETTINGS_LEN);
+    memcpy(wifiCfg.pass, DEV_CFG_WIFI_PASS, WIFI_SETTINGS_LEN);
 #endif
     defaultSettings.wifi = wifiCfg;
 
@@ -165,9 +165,7 @@ void AppConfig::printCurrentSettings()
     utils::inf("AppCfg size: %d bytes", sizeof(getCurrent()));
     utils::inf("magic: 0x%08x", getCurrent().magic);
     utils::inf("version: 0x%08x", getCurrent().version);
-    utils::inf("wifi.0: %s %s", getCurrent().wifi.ssid0, getCurrent().wifi.pass0);
-    utils::inf("wifi.1: %s %s", getCurrent().wifi.ssid1, getCurrent().wifi.pass1);
-    utils::inf("wifi.2: %s %s", getCurrent().wifi.ssid2, getCurrent().wifi.pass2);
+    utils::inf("wifi: %s %s", getCurrent().wifi.ssid, getCurrent().wifi.pass);
     utils::inf("systime: %s", getCurrent().time.toStr().c_str());
     utils::inf("ntp: %s", getCurrent().ntp.toStr().c_str());
     utils::inf("weather: %s", getCurrent().weather.toStr().c_str());
