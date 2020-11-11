@@ -116,7 +116,7 @@ void App::runTasks()
 //------------------------------------------------------------------------------
 void App::printMotd()
 {
-    inf("\r\nStarting <LUK6XFF LED_CLOCK 2020>\r\nSystem running on CPU %d at %d MHz.\r\nApp Version %s.\r\nFree heap memory %d\r\n",
+    utils::inf("\r\nStarting <LUK6XFF LED_CLOCK 2020>\r\nSystem running on CPU %d at %d MHz.\r\nApp Version %s.\r\nFree heap memory %d\r\n",
         xPortGetCoreID(),
         ESP.getCpuFreqMHz(),
         APP_VERSION,

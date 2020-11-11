@@ -60,10 +60,10 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
     // Verify if SX1278 connected to the the board
     while (sx1278_read(&dev, REG_VERSION) == 0x00)
     {
-        dbg("SX1278 Radio could not be detected!");
+        utils::dbg("SX1278 Radio could not be detected!");
         sx1278_delay_ms(1000);
     }
-    dbg("REG_VERSION: 0x%x", sx1278_read(&dev, REG_VERSION));
+    utils::dbg("REG_VERSION: 0x%x", sx1278_read(&dev, REG_VERSION));
 
     sx1278_set_max_payload_length(&dev, MODEM_LORA, MAX_PAYLOAD_LENGTH);
     sx1278_set_tx_config(&dev, MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
@@ -90,7 +90,7 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
     msgSensorDataQ = xQueueCreate(4, sizeof(radio_msg_sensor_frame));
     if (!msgSensorDataQ)
     {
-        err("RADIO: msgSensorDataQ has not been created!.");
+        utils::err("RADIO: msgSensorDataQ has not been created!.");
     }
 
     sx1278_set_rx(&dev, 0);
@@ -125,33 +125,33 @@ void Radio::parse_incoming_msg_sensor(uint8_t *payload, uint16_t size)
     const uint32_t checksum = radio_msg_frame_checksum((const uint8_t*)mf, (sizeof(radio_msg_sensor_frame)-sizeof(mf->checksum)));
     if (mf->checksum != checksum)
     {
-        dbg("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x", mf->checksum, checksum);
+        utils::dbg("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x", mf->checksum, checksum);
         return;
     }
 
     if (~(mf->status & MSG_NO_ERROR))
     {
-        dbg("MSG_NO_ERROR");
-        dbg("VBATT:%d[mV], T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]", mf->vbatt, mf->temperature, mf->pressure, mf->humidity);
+        utils::dbg("MSG_NO_ERROR");
+        utils::dbg("VBATT:%d[mV], T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]", mf->vbatt, mf->temperature, mf->pressure, mf->humidity);
     }
 	else if (mf->status & MSG_READ_ERROR)
     {
-        dbg("MSG_READ_ERROR");
+        utils::dbg("MSG_READ_ERROR");
     }
 	else if (mf->status & MSG_INIT_ERROR)
     {
-        dbg("MSG_INIT_ERROR");
+        utils::dbg("MSG_INIT_ERROR");
     }
 	if (mf->status & MSG_BATT_LOW)
     {
-        dbg("MSG_BATT_LOW");
+        utils::dbg("MSG_BATT_LOW");
     }
 }
 
 //------------------------------------------------------------------------------
 void Radio::on_tx_done(void *args)
 {
-    dbg("> on_tx_done");
+    utils::dbg("> on_tx_done");
 }
 
 //-----------------------------------------------------------------------------
@@ -174,17 +174,17 @@ void Radio::on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi
 //-----------------------------------------------------------------------------
 void Radio::on_tx_timeout(void *args)
 {
-    dbg("> on_tx_timeout");
+    utils::dbg("> on_tx_timeout");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_timeout(void *args)
 {
-    dbg("> on_rx_timeout");
+    utils::dbg("> on_rx_timeout");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_error(void *args)
 {
-    dbg("> on_rx_error");
+    utils::dbg("> on_rx_error");
 }

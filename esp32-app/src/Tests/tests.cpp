@@ -256,7 +256,7 @@ void tests_run()
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(500);
-        dbg(".");
+        utils::dbg(".");
     }
     NtpSettings ntpConfig(0, 10000, "time.google.com");//"pl.pool.ntp.org");
     Ntp ntp(ntpConfig);
@@ -313,14 +313,14 @@ void tests_run()
 
 
 #ifdef TEST_LIGHT_SENSOR
-        dbg("BH1750 Light: %3.2f [lx]", light.getIlluminance());
+        utils::dbg("BH1750 Light: %3.2f [lx]", light.getIlluminance());
 #endif // TEST_LIGHT_SENSOR
 
 
 #ifdef TEST_RTC
-        dbg("SystemTime temperature: %3.2f", time.getTemperature());
-        dbg("SystemTime time: %s", SystemTime::timeToStr(time.getTime()));
-        dbg("SystemTime date: %s", SystemTime::dateToStr(time.getTime()));
+        utils::dbg("SystemTime temperature: %3.2f", time.getTemperature());
+        utils::dbg("SystemTime time: %s", SystemTime::timeToStr(time.getTime()));
+        utils::dbg("SystemTime date: %s", SystemTime::dateToStr(time.getTime()));
 #endif // TEST_RTC
 
 
@@ -333,7 +333,7 @@ void tests_run()
         if (ntp.updateTime())
         {
             DateTime dt(ntp.getCurrentTime());
-            dbg("NTP UTC:%s", dt.timestamp().c_str());
+            utils::dbg("NTP UTC:%s", dt.timestamp().c_str());
             time.setUtcTime(dt);
         }
 #endif

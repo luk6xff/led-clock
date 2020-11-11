@@ -8,25 +8,44 @@ namespace utils
     /**
      * @brief Debug macros
      */
-    #define dbg(fmt, ...) \
-        do { \
-            Debug.print(DBG_VERBOSE, fmt,  ##__VA_ARGS__); \
-        } while(0)
+    template<typename... Args>
+    void dbg(const char *fmt, const Args&... args)
+    {
+        do
+        {
+            Debug.print(DBG_VERBOSE, fmt, std::forward<const Args>(args)...);
+        } while(0);
+    }
 
-    #define inf(fmt, ...) \
-        do { \
-            Debug.print(DBG_INFO, fmt,  ##__VA_ARGS__); \
-        } while(0)
 
-    #define wrn(fmt, ...) \
-        do { \
-            Debug.print(DBG_WARNING, fmt,  ##__VA_ARGS__); \
-        } while(0)
+    template<typename... Args>
+    void inf(const char *fmt, const Args&... args)
+    {
+        do
+        {
+            Debug.print(DBG_INFO, fmt, std::forward<const Args>(args)...);
+        } while(0);
+    }
 
-    #define err(fmt, ...) \
-        do { \
-            Debug.print(DBG_ERROR, fmt,  ##__VA_ARGS__); \
-        } while(0)
+
+    template<typename... Args>
+    void wrn(const char *fmt, const Args&... args)
+    {
+        do
+        {
+            Debug.print(DBG_WARNING, fmt, std::forward<const Args>(args)...);
+        } while(0);
+    }
+
+
+    template<typename... Args>
+    void err(const char *fmt, const Args&... args)
+    {
+        do
+        {
+            Debug.print(DBG_ERROR, fmt, std::forward<const Args>(args)...);
+        } while(0);
+    }
 
 
     /**

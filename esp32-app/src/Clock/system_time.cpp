@@ -11,12 +11,12 @@ SystemTime::SystemTime(SystemTimeSettings& timeSettings)
     rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
     if (!m_rtc.begin())
     {
-        err("Couldn't find RTC");
+        utils::err("Couldn't find RTC");
     }
 
     if (m_rtc.lostPower())
     {
-        err("RTC lost power, let set the default time!");
+        utils::err("RTC lost power, let set the default time!");
         m_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     }
 }

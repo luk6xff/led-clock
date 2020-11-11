@@ -38,19 +38,19 @@ void AppConfig::init()
     if (getCurrent().magic == getDefaults().magic && \
         getCurrent().version == getDefaults().version)
     {
-        inf("AppCfg settings read succesfully\r\n");
+        utils::inf("AppCfg settings read succesfully\r\n");
     }
     else
     {
-        inf("AppCfg settings read failed, updating with defaults..\r\n");
+        utils::inf("AppCfg settings read failed, updating with defaults..\r\n");
         if (!saveSettings(getDefaults()))
         {
-            inf("Updating AppCfg settings with defaults failed!, setting current as defaults\r\n");
+            utils::inf("Updating AppCfg settings with defaults failed!, setting current as defaults\r\n");
             currentSettings = defaultSettings;
         }
         else
         {
-            inf("Updating AppCfg settings with defaults succeed!\r\n");
+            utils::inf("Updating AppCfg settings with defaults succeed!\r\n");
         }
     }
 }
@@ -161,18 +161,18 @@ void AppConfig::setDefaults()
 //------------------------------------------------------------------------------
 void AppConfig::printCurrentSettings()
 {
-    inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
-    inf("AppCfg size: %d bytes", sizeof(getCurrent()));
-    inf("magic: 0x%08x", getCurrent().magic);
-    inf("version: 0x%08x", getCurrent().version);
-    inf("wifi.0: %s %s", getCurrent().wifi.ssid0, getCurrent().wifi.pass0);
-    inf("wifi.1: %s %s", getCurrent().wifi.ssid1, getCurrent().wifi.pass1);
-    inf("wifi.2: %s %s", getCurrent().wifi.ssid2, getCurrent().wifi.pass2);
-    inf("systime: %s", getCurrent().time.toStr().c_str());
-    inf("ntp: %s", getCurrent().ntp.toStr().c_str());
-    inf("weather: %s", getCurrent().weather.toStr().c_str());
-    inf("radio_sensor: %s", getCurrent().radioSensor.toStr().c_str());
-    inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
+    utils::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
+    utils::inf("AppCfg size: %d bytes", sizeof(getCurrent()));
+    utils::inf("magic: 0x%08x", getCurrent().magic);
+    utils::inf("version: 0x%08x", getCurrent().version);
+    utils::inf("wifi.0: %s %s", getCurrent().wifi.ssid0, getCurrent().wifi.pass0);
+    utils::inf("wifi.1: %s %s", getCurrent().wifi.ssid1, getCurrent().wifi.pass1);
+    utils::inf("wifi.2: %s %s", getCurrent().wifi.ssid2, getCurrent().wifi.pass2);
+    utils::inf("systime: %s", getCurrent().time.toStr().c_str());
+    utils::inf("ntp: %s", getCurrent().ntp.toStr().c_str());
+    utils::inf("weather: %s", getCurrent().weather.toStr().c_str());
+    utils::inf("radio_sensor: %s", getCurrent().radioSensor.toStr().c_str());
+    utils::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
 }
 
 //------------------------------------------------------------------------------

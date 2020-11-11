@@ -17,7 +17,7 @@ ClockTask::ClockTask(SystemTimeSettings& timeCfg, const QueueHandle_t& ntpTimeQ)
     m_timeQ = xQueueCreate(16, sizeof(DateTime));
     if (!m_timeQ)
     {
-        err("%s m_timeQ has not been created!.", MODULE_NAME);
+        utils::err("%s m_timeQ has not been created!.", MODULE_NAME);
     }
 }
 
@@ -43,14 +43,14 @@ void ClockTask::run()
             {
                 if (pushTimeMsg(dt))
                 {
-                    dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
+                    utils::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
                 }
             }
             lastDt = dt;
         }
         else
         {
-            err("%s Invalid DateTime read from RTC: %s", MODULE_NAME, dt.timestamp().c_str());
+            utils::err("%s Invalid DateTime read from RTC: %s", MODULE_NAME, dt.timestamp().c_str());
         }
 
         if (m_ntpTimeQ)
@@ -59,7 +59,7 @@ void ClockTask::run()
             const BaseType_t rc = xQueueReceive(m_ntpTimeQ, &dt, 0);
             if (rc == pdPASS)
             {
-                dbg("%s UTC:%s", MODULE_NAME, dt.timestamp().c_str());
+                utils::dbg("%s UTC:%s", MODULE_NAME, dt.timestamp().c_str());
                 time.setUtcTime(dt);
             }
         }

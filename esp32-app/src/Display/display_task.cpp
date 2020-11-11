@@ -48,7 +48,7 @@ void DisplayTask::run()
                     timeDots = true;
                 }
                 m_disp.printTime(dt, m_timeDispMode, timeDots);
-                dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
+                utils::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
             }
         }
         vTaskDelay(dispRefreshTime);

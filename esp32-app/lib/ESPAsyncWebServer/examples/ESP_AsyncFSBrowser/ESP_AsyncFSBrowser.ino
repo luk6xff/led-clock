@@ -145,7 +145,7 @@ void setup(){
 #elif defined(ESP8266)
   server.addHandler(new SPIFFSEditor(http_username,http_password));
 #endif
-  
+
   server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });

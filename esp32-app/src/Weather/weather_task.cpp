@@ -17,7 +17,7 @@ WeatherTask::WeatherTask(const WeatherSettings& weatherCfg)
     m_weatherQ = xQueueCreate(1, sizeof(WeatherData));
     if (!m_weatherQ)
     {
-        err("%s m_weatherQ has not been created!.", MODULE_NAME);
+        utils::err("%s m_weatherQ has not been created!.", MODULE_NAME);
     }
 }
 
@@ -45,18 +45,18 @@ void WeatherTask::run()
 
         oneCallClient.update(&openWeatherMapOneCallData, m_weatherCfg.owmAppid, m_weatherCfg.city.latitude, m_weatherCfg.city.longitude);
 
-        dbg("Current Weather: ");
-        dbg("%s %s", String(openWeatherMapOneCallData.current.temp, 1).c_str(), (true ? "°C" : "°F") );
-        dbg("%s", openWeatherMapOneCallData.current.weatherDescription.c_str());
-        dbg("Forecasts: ");
+        utils::dbg("Current Weather: ");
+        utils::dbg("%s %s", String(openWeatherMapOneCallData.current.temp, 1).c_str(), (true ? "°C" : "°F") );
+        utils::dbg("%s", openWeatherMapOneCallData.current.weatherDescription.c_str());
+        utils::dbg("Forecasts: ");
 
         for (int i = 0; i < 2; i++)
         {
             if (openWeatherMapOneCallData.daily[i].dt > 0)
             {
-                dbg("dt: %s", String(openWeatherMapOneCallData.daily[i].dt).c_str());
-                dbg("temp: %s %s",String(openWeatherMapOneCallData.daily[i].tempDay, 1).c_str(), (true ? "°C" : "°F") );
-                dbg("desc: %s",  openWeatherMapOneCallData.daily[i].weatherDescription.c_str());
+                utils::dbg("dt: %s", String(openWeatherMapOneCallData.daily[i].dt).c_str());
+                utils::dbg("temp: %s %s",String(openWeatherMapOneCallData.daily[i].tempDay, 1).c_str(), (true ? "°C" : "°F") );
+                utils::dbg("desc: %s",  openWeatherMapOneCallData.daily[i].weatherDescription.c_str());
             }
         }
         vTaskDelay(sleepTime);

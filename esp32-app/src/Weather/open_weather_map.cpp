@@ -31,13 +31,13 @@ void OpenWeatherMapOneCall::doUpdate(OpenWeatherMapOneCallData *data, String pat
   this->data = data;
   JsonStreamingParser parser;
   parser.setListener(this);
-  dbg("[HTTP] Requesting resource at http://%s:%u%s\n", host.c_str(), port, path.c_str());
+  utils::dbg("[HTTP] Requesting resource at http://%s:%u%s\n", host.c_str(), port, path.c_str());
 
   WiFiClient client;
   if (client.connect(host.c_str(), port)) {
     bool isBody = false;
     char c;
-    dbg("[HTTP] connected, now GETting data");
+    utils::dbg("[HTTP] connected, now GETting data");
     client.print("GET " + path + " HTTP/1.1\r\n"
                                  "Host: " +
                  host + "\r\n"
@@ -46,7 +46,7 @@ void OpenWeatherMapOneCall::doUpdate(OpenWeatherMapOneCallData *data, String pat
     while (client.connected() || client.available()) {
       if (client.available()) {
         if ((millis() - lost_do) > lostTest) {
-          dbg("[HTTP] lost in client with a timeout");
+          utils::dbg("[HTTP] lost in client with a timeout");
           client.stop();
           //ESP.restart(); LU_TODO
           return;
@@ -64,19 +64,19 @@ void OpenWeatherMapOneCall::doUpdate(OpenWeatherMapOneCallData *data, String pat
     }
     client.stop();
   } else {
-    dbg("[HTTP] failed to connect to host");
+    utils::dbg("[HTTP] failed to connect to host");
   }
   this->data = nullptr;
 }
 
 void OpenWeatherMapOneCall::whitespace(char c)
 {
-  dbg("whitespace");
+  utils::dbg("whitespace");
 }
 
 void OpenWeatherMapOneCall::startDocument()
 {
-  dbg("start document");
+  utils::dbg("start document");
 }
 
 void OpenWeatherMapOneCall::key(String key)
@@ -263,7 +263,7 @@ void OpenWeatherMapOneCall::value(String value)
         this->data->daily[dailyItemCounter].tempMorn = value.toFloat();
       }
     }
-  
+
     if (currentParent.startsWith("/ROOT/daily[]/_obj/feels_like")) {
       if (currentKey == "day") {
         this->data->daily[dailyItemCounter].feels_likeDay = value.toFloat();
@@ -321,7 +321,7 @@ void OpenWeatherMapOneCall::endObject()
   }
   if (currentParent == "/ROOT/daily[]/_obj") {
     dailyItemCounter++;
-  }  
+  }
   currentKey = "";
   currentParent= currentParent.substring(0, currentParent.lastIndexOf(PATH_SEPERATOR));
 }
@@ -333,7 +333,7 @@ void OpenWeatherMapOneCall::endDocument()
 void OpenWeatherMapOneCall::startArray()
 {
   weatherItemCounter = 0;
-  
+
   currentParent += PATH_SEPERATOR + currentKey + "[]";
   currentKey = "";
 }
@@ -391,7 +391,7 @@ String OpenWeatherMapOneCall::getMeteoconIcon(String icon)
     return "Q";
   }
   // 10n
-  if (icon == "10n") {   
+  if (icon == "10n") {
     return "7";
   }
   // thunderstorm

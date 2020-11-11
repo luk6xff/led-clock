@@ -16,7 +16,7 @@ RadioSensorTask::RadioSensorTask(RadioSensorSettings& radioSensorCfg)
     m_radioSensorQ = xQueueCreate(3, sizeof(RadioSensorData));
     if (!m_radioSensorQ)
     {
-        err("%s m_radioSensorQ has not been created!.", MODULE_NAME);
+        utils::err("%s m_radioSensorQ has not been created!.", MODULE_NAME);
     }
 }
 
@@ -37,7 +37,7 @@ void RadioSensorTask::run()
         const BaseType_t rc = xQueueReceive(Radio::msgSensorDataQ, &msg, portMAX_DELAY);
         if (rc == pdTRUE)
         {
-            dbg(">>>RadioSensorData received:");
+            utils::dbg(">>>RadioSensorData received:");
             Radio::parse_incoming_msg_sensor((uint8_t*)&msg, sizeof(msg));
             // Send response to the sensor
             radioSensor.sendResponseToSensor();

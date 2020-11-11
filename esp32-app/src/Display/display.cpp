@@ -88,7 +88,7 @@ void Display::processAutoIntensityLevelControl()
 #endif
     if (lightVal == -1)
     {
-        err("LightSensor - Illuminance value error!");
+        utils::err("LightSensor - Illuminance value error!");
     }
     // Last display intensty level
     static uint8_t lastIntensityLevel = 0;
@@ -173,7 +173,7 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
 
         default:
         {
-            err("Invalid Print time mode");
+            utils::err("Invalid Print time mode");
             break;
         }
     }
@@ -185,7 +185,7 @@ String Display::utf8Ascii(const char *s)
 
     uint8_t prev_c = '\0';
     String cp;
-    dbg("Converting: %s from UTF-8 to Extended ASCII...", s);
+    utils::dbg("Converting: %s from UTF-8 to Extended ASCII...", s);
 
     while (*s != '\0')
     {
@@ -208,7 +208,7 @@ String Display::utf8Ascii(const char *s)
                 case 0x82: if (tmp_c == 0xAC) c = 0x80; // Euro symbol special case
             }
             prev_c = tmp_c;   // save last char
-            dbg("Converted:0x%x[%d] to:0x%x[%d]", tmp_c, tmp_c, c, c);
+            utils::dbg("Converted:0x%x[%d] to:0x%x[%d]", tmp_c, tmp_c, c, c);
         }
 
         if (c != '\0')
@@ -217,7 +217,7 @@ String Display::utf8Ascii(const char *s)
         }
     }
     cp += '\0';   // terminate the new string
-    dbg(">>>> CP: %s", cp.c_str());
+    utils::dbg(">>>> CP: %s", cp.c_str());
     return cp;
 }
 

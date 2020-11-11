@@ -3,7 +3,7 @@
 // #include <ArduinoJson.h>
 
 
-// const char *I18N::translation = 
+// const char *I18N::translation =
 // {
 //     "{  \
 //         \"wd_mon\": {\"en\":\"Monday\",     \"pl\":\"Poniedziałek\"}   \
@@ -13,10 +13,10 @@
 //         \"wd_fri\": {\"en\":\"Friday\",     \"pl\":\"Piątek\"}   \
 //         \"wd_sat\": {\"en\":\"Saturday\",   \"pl\":\"Sobota\"}         \
 //         \"wd_sun\": {\"en\":\"Sunday\",     \"pl\":\"Niedziela\"}         \
-//     }"    
+//     }"
 // };
 
-const i18n_map I18N::k_i18n = 
+const i18n_map I18N::k_i18n =
 {
     { "wd_mon", {{"en", "Monday"}, {"pl", "Poniedziałek"}} }
 };
@@ -37,7 +37,7 @@ std::string I18N::translate(std::string msgid)
     //         return k_i18n[msgid][""];
     // }
 
-    err("Error can't find: %s msgid in language file!", msgid.c_str());
+    utils::err("Error can't find: %s msgid in language file!", msgid.c_str());
     return "";
 }
 

@@ -20,7 +20,7 @@ WifiTask::WifiTask(const WifiSettings& wifiCfg)
     m_wifiEvt = xEventGroupCreate();
     if (!m_wifiEvt)
     {
-        err("%s event group create failed!", MODULE_NAME);
+        utils::err("%s event group create failed!", MODULE_NAME);
     }
 }
 
@@ -55,11 +55,11 @@ void WifiTask::run()
         }
 
         xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_DISCONNECTED);
-        WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP   
+        WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
         WiFi.begin(m_wifiCfg.ssid0, m_wifiCfg.pass0);
 
         // Wait until connected or timeou exceeded
-        inf("%s Connecting...", MODULE_NAME);
+        utils::inf("%s Connecting...", MODULE_NAME);
         const uint32_t startAttemptTime = millis();
         while (WiFi.status() != WL_CONNECTED &&
                 millis() - startAttemptTime < WIFI_TIMEOUT_MS)
@@ -69,7 +69,7 @@ void WifiTask::run()
 
         if (WiFi.status() != WL_CONNECTED)
         {
-            err("%s Connection failed, waiting for %d seconds...",
+            utils::err("%s Connection failed, waiting for %d seconds...",
                 MODULE_NAME, WIFI_TIMEOUT_MS/1000);
             vTaskDelay(WIFI_TIMEOUT_MS / portTICK_PERIOD_MS);
             wifiConnectionFailureCnt++;
@@ -78,7 +78,7 @@ void WifiTask::run()
                 // If no connection run Captive portal
                 if (!wm.autoConnect("LedClock", m_wifiCfg.pass0))
                 {
-                    dbg("%s Starting CaptivePortal", MODULE_NAME);
+                    utils::dbg("%s Starting CaptivePortal", MODULE_NAME);
                 }
                 wifiConnectionFailureCnt = 0;
             }
@@ -90,7 +90,7 @@ void WifiTask::run()
 
         if (WiFi.status() == WL_CONNECTED)
         {
-            inf("%s Connected to:%s, IPaddress:%s", MODULE_NAME,
+            utils::inf("%s Connected to:%s, IPaddress:%s", MODULE_NAME,
                 WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
             xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
         }

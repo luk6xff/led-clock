@@ -14,7 +14,7 @@ void utils::init()
     Debug.setDebugOutputStream(&Serial);
     Debug.setDebugLevel(DBG_VERBOSITY_LEVEL);
     Debug.timestampOff();
-    inf(">>> LED-CLOCK by luk6xff 2020 <<<\r\n");
+    utils::inf(">>> LED-CLOCK by luk6xff 2020 <<<\r\n");
 }
 
 //------------------------------------------------------------------------------
