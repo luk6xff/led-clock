@@ -1,6 +1,7 @@
 #include "webserver_task.h"
 #include <FS.h>
 #include <SPIFFS.h>
+#include <Update.h>
 #include <ESPmDNS.h>
 #include "App/rtos_common.h"
 #include "App/wifi_task.h"
@@ -12,6 +13,7 @@
 #define WEBSERVER_TASK_PRIORITY      (2)
 
 #define MODULE_NAME "[WEBS]"
+#define U_PART U_SPIFFS
 
 //------------------------------------------------------------------------------
 //WebServerTask::WebServerTask(const WebServerSettings& webServerCfg)
@@ -22,6 +24,44 @@ WebServerTask::WebServerTask()
 
 }
 
+size_t content_len;
+
+// Based on: https://github.com/lbernstone/asyncUpdate/blob/master/AsyncUpdate.ino
+void handleDoUpdate(AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final)
+{
+  if (!index){
+    utils::inf("Update starting...");
+    content_len = request->contentLength();
+    // if filename includes spiffs, update the spiffs partition
+    int cmd = (filename.indexOf("spiffs") > -1) ? U_PART : U_FLASH;
+    if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd)) {
+      Update.printError(Serial);
+    }
+  }
+
+  if (Update.write(data, len) != len) {
+    Update.printError(Serial);
+  }
+
+  if (final) {
+    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "Please wait while the device reboots");
+    response->addHeader("Refresh", "20");
+    response->addHeader("Location", "/");
+    request->send(response);
+    if (!Update.end(true)){
+      Update.printError(Serial);
+    } else {
+      utils::inf("Update complete");
+      ESP.restart();
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+void printProgress(size_t prg, size_t sz)
+{
+    utils::inf("Progress: %d%%\n", (prg*100)/content_len);
+}
 
 //------------------------------------------------------------------------------
 void WebServerTask::run()
@@ -38,6 +78,7 @@ void WebServerTask::run()
 
 
     m_server.begin();
+    Update.onProgress(printProgress);
 
     if (!MDNS.begin("ledclock"))
     {
@@ -86,10 +127,19 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
         request->send(200, "text/plain", String(ESP.getFreeHeap()));
     });
 
+
+    server.on("/update", HTTP_POST,
+        [](AsyncWebServerRequest *request) {},
+        [](AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data,
+                    size_t len, bool final) {handleDoUpdate(request, filename, index, data, len, final);}
+    );
+
+
     server.onNotFound([](AsyncWebServerRequest *request)
     {
         request->send(404, "text/plain", "Not found");
     });
+
 
     server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
 }

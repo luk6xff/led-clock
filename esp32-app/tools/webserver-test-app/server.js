@@ -26,7 +26,7 @@ app.get('/devinfo', function (req, res) {
 
 
 // POST
-app.post('/dev-*', function (req, res) {
+app.post('/dev-cfg-*', function (req, res) {
     console.log("Got a POST request for: " + req.baseUrl);
     res.send('Hello POST');
 })

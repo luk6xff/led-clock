@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html charset="UTF-8">
+  <head>
+    <meta name="viewport">
+    <!-- <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script> -->
+    <script src="js/jquery.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script> -->
+    <script src="js/popper.min.js"></script>
+    <!-- <script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js'></script> -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- <script src="https://unpkg.com/bootstrap-table@1.18.0/dist/bootstrap-table.min.js"></script> -->
+    <script src="js/bootstrap-table.min.js"></script>
+    <!-- <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.0/dist/bootstrap-table.min.css"> -->
+
+    <link rel="stylesheet" href="css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="css/default.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/4.5.2/cyborg/bootstrap.min.css" rel="stylesheet" title="main">
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
+    <!-- <link rel="stylesheet" href="css/bootstrap.min.css">  NOT USED-READ FROM CDN!-->
+    <link href="/img/baca_favicon.ico" rel="icon" type="image/x-icon"/>
+
+  <title>LedClock</title>
+  </head>
+  <body>
+    <div class="container-fluid">
+
+        <a class="navbar-brand">
+          <div class="row">
+            <div class="col-xs-2 col-md-2">
+                <img src="img/baca_logo.jpg" width="60" height="60">
+            </div>
+            <div class="col-xs-6 col-md-6">
+                <h1>LedClock</h1>
+            </div>
+          </div>
+        </a>
+      <ul class="nav nav-tabs nav-justified" id="tab">
+        <li><a class="nav-link active" href="#tab_devinfo" data-toggle="tab">Device Status</a></li>
+        <li><a class="nav-link" href="#tab_devcfg" data-toggle="tab">Configuration</a></li>
+        <li><a class="nav-link" href="#tab_devota" data-toggle="tab">OTA update</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="tab_devinfo">
+          <h2>Device Status</h2>
+          <div class="container light-style flex-grow-1 container-p-y">
+            <div class="card overflow-hidden">
+              <div class="row no-gutters row-bordered row-border-light">
+                <div class="col-md-3 pt-0">
+                  <div class="list-group list-group-flush account-settings-links">
+                    <a class="list-group-item list-group-item-action list-group-hover active" data-toggle="list" href="#dev-info-data">Data</a>
+                    <a class="list-group-item list-group-item-action list-group-hover" data-toggle="list" href="#dev-info-system">System</a>
+                  </div>
+                </div>
+                <div class="col-md-9">
+                  <div class="tab-content">
+                    <div class="tab-pane fade active show" id="dev-info-data">
+                      <hr class="border-light m-0">
+                      <div class="card-body">
+                        <div class="form-group">
+                          <label class="form-label">Time</label>
+                          <input type="text" class="form-control mb-1" placeholder="12:00:00">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Date</label>
+                          <input type="text" class="form-control" placeholder="20-11-2020">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="dev-info-system">
+                      <div class="card-body pb-2">
+                        <table id="table_devinfo" data-toggle="table" data-show-colunns="true">
+                          <thead>
+                            <tr>
+                              <th data-field="name" data-align="left" data-sortable="true" data-formatter="nameFormatter">Name</th>
+                              <th data-field="value" data-align="left" data-sortable="true" data-formatter="valueFormatter">Value</th>
+                            </tr>
+                          </thead>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="tab_devcfg">
+          <h2>Device Configuration</h2>
+          <div class="container light-style flex-grow-1 container-p-y">
+            <div class="card overflow-hidden">
+              <div class="row no-gutters row-bordered row-border-light">
+                <div class="col-md-3 pt-0">
+                  <div class="list-group list-group-flush account-settings-links">
+                    <a class="list-group-item list-group-item-action active" data-toggle="list" href="#dev-cfg-wifi">WIFI</a>
+                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-time">Time</a>
+                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-radio">Radio</a>
+                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-display">Display</a>
+                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-other">Other</a>
+                  </div>
+                </div>
+                <div class="col-md-9">
+                  <div class="tab-content">
+                    <div class="tab-pane fade active show" id="dev-cfg-wifi">
+
+                      <div class="card-body media align-items-center">
+                        <img src="img/baca_logo.jpg" alt="" class="d-block ui-w-80">
+                      </div>
+                      <hr class="border-light m-0">
+
+                      <div class="card-body">
+                        <div class="form-group">
+                          <label class="form-label">WIFI ssid</label>
+                          <input type="text" class="form-control mb-1" id="wifi-ssid" value="INTEHNExx">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">WIFI passwd</label>
+                          <input type="text" class="form-control" id="wifi-pass" value="Faza19xxxx">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">WIFI AP passwd</label>
+                          <input type="password" class="form-control mb-1" id="wifi-ap-pass" value="admin123">
+                          <div class="alert alert-warning mt-3">
+                            Cannot be empty.<br>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                    <div class="tab-pane fade" id="dev-cfg-time">
+                      <div class="card-body pb-2">
+
+                        <div class="form-group">
+                          <label class="form-label">Date</label>
+                          <input class="form-control" type="date" id="time-date" value="2020-11-20">
+                        </div>
+
+                        <div class="form-group">
+                          <label class="form-label">Time</label>
+                          <input class="form-control" type="time" id="time-clock" value="12:00:00">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="tab-pane fade" id="dev-cfg-radio">
+                      <div class="card-body pb-2">
+
+                        <div class="form-group">
+                          <label class="form-label">Update interval [min]</label>
+                          <input type="text" class="form-control" id="radio-update-interval" value="15">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Critical Vbatt [mV]</label>
+                          <input type="text" class="form-control" id="radio-critt-vbat" value="3300">
+                        </div>
+                      </div>
+                      <hr class="border-light m-0">
+                    </div>
+
+                    <div class="tab-pane fade" id="dev-cfg-display">
+                      <div class="card-body pb-2">
+                        <h6 class="mb-4">Display intensity</h6>
+                        <div class="form-group">
+                          <label class="switcher">
+                            <input type="checkbox" class="switcher-input" id="display-auto-intensity" checked="">
+                            <span class="switcher-indicator">
+                              <span class="switcher-yes"></span>
+                              <span class="switcher-no"></span>
+                            </span>
+                            <span class="switcher-label">Enable display auto-intenisty</span>
+                          </label>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Intensity value</label>
+                          <input type="text" class="form-control" id="display-intensity-val" value="0" min="0" max="15">
+                        </div>
+                        <hr class="border-light m-0">
+                        <div class="form-group">
+                          <label class="form-label">Animation speed</label>
+                          <input type="text" class="form-control" id="display-anim-speed" value="70">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Time display format</label>
+                          <select class="custom-select" id="display-time-format">
+                            <option>HH:MM</option>
+                            <option selected="">HH:MM:ss</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="dev-cfg-other">
+                        <div class="card-body pb-2">
+                          <h6 class="mb-4">Activity</h6>
+                          <div class="form-group">
+                            <label class="switcher">
+                              <input type="checkbox" class="switcher-input" checked="">
+                              <span class="switcher-indicator">
+                                <span class="switcher-yes"></span>
+                                <span class="switcher-no"></span>
+                              </span>
+                              <span class="switcher-label">Email me when someone comments on my article</span>
+                            </label>
+                          </div>
+                        </div>
+                        <hr class="border-light m-0">
+                        <div class="card-body pb-2">
+
+                          <h6 class="mb-4">Application</h6>
+
+                          <div class="form-group">
+                            <label class="switcher">
+                              <input type="checkbox" class="switcher-input" checked="">
+                              <span class="switcher-indicator">
+                                <span class="switcher-yes"></span>
+                                <span class="switcher-no"></span>
+                              </span>
+                              <span class="switcher-label">News and announcements</span>
+                            </label>
+                          </div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-right mt-3">
+              <button type="button" id="save_button" class="btn btn-primary btn-success">Save changes</button>
+              <button type="button" id="refresh_button" class="btn btn-default">Refresh</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade show" id="tab_devota">
+          <h2>Device OTA Update</h2>
+          <div class="container light-style flex-grow-1 container-p-y">
+            <div class="card overflow-hidden">
+              <div class="row no-gutters row-bordered row-border-light">
+                <form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>
+                <div id='prg'>progress: 0%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- Footer -->
+    <footer class="page-footer font-small blue pt-4">
+      <!-- Copyright -->
+      <div class="footer-copyright text-center">(C) 2020 luk6xff Copyright:
+        <a href="https://www.github.com/luk6xff/led-clock">Project details on my github!</a>
+      </div>
+      <!-- Copyright -->
+    </footer>
+    <!-- Footer -->
+
+    <!--script(src='js/script.js')-->
+    <script src="js/main.js"></script>
+  </body>
+</html>
