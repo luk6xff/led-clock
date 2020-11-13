@@ -48,6 +48,17 @@ function valueFormatter(value, row) {
 
 
 /* Configuration TAB */
+// $(document).ready(function() {
+//   $('selector').click(function() {
+//       $('selector.active').removeClass("active");
+//       $(this).addClass("active");
+//   });
+// })
+
+// $(function(){
+//   $('#dev-cfg-wifi').addClass('active');
+// })
+
 var activConfigTabPane = null;
 
 $('.tab-pane a').on('shown.bs.tab', function(event){
@@ -62,7 +73,8 @@ $('#save_button').click(function() {
 
     var target = $(activConfigTabPane).attr("href")
     console.log('TARGET: href:' + target);
-    jsonObj = [];
+    dataJson = [];
+    // Input form
     $(target+" :input[class*='form-control']").each(function() {
 
         var id = $(this).attr("id");
@@ -72,13 +84,40 @@ $('#save_button').click(function() {
         item ["id"] = id;
         item ["value"] = value;
 
-        jsonObj.push(item);
+        dataJson.push(item);
     });
-    console.log(jsonObj);
+
+    // Checkbox
+    $(target+" :input[class*='switcher-input']").each(function() {
+
+      var id = $(this).attr("id");
+      var value = $(this).is(':checked');
+
+      item = {}
+      item ["id"] = id;
+      item ["value"] = value;
+
+      dataJson.push(item);
+    });
+
+    // Select
+    $(target+" :input[class*='custom-select']").each(function() {
+
+      var id = $(this).attr("id");
+      var value = $(this).val();
+
+      item = {}
+      item ["id"] = id;
+      item ["value"] = value;
+
+      dataJson.push(item);
+    });
+
+    console.log(dataJson);
 
     // Send post request
     const cfgName = target.replace("#", "");
-    $.post(cfgName, jsonObj).done(function(data) {
+    $.post(cfgName, JSON.stringify(dataJson)).done(function(data) {
         console.log("save_button " + JSON.stringify(data));
       }).fail(function(err) {
         console.log("err save_button " + JSON.stringify(err));
@@ -86,14 +125,76 @@ $('#save_button').click(function() {
 
 });
 
-
 $('#refresh_button').click(function() {
-
     console.log('#refresh_button CLICKED')
 });
 
 
+// Time cfg utils
+function changeTimeTimezoneView() {
+  var elem = $('#time-timezone-num').find('option:selected');
+  if (elem.val() == '2') {
+    $('#div-time-timezone-2').show();
+  } else {
+    $('#div-time-timezone-2').hide();
+  }
+  console.log(elem.val());
+}
 
+$(changeTimeTimezoneView()); // Called on document.ready
+
+$('#time-timezone-num').change(function() {
+  changeTimeTimezoneView();
+});
+
+
+// Weather cfg utils
+function changeCfgWeatherView() {
+  if ($('#weather-update-enable').is(':checked')) {
+    $(".cfg-weather-settings").show();
+  } else {
+    $(".cfg-weather-settings").hide();
+  }
+}
+
+$(changeCfgWeatherView()); // Called on document.ready
+
+$('#weather-update-enable').change(function() {
+  changeCfgWeatherView();
+});
+
+
+// Display cfg utils
+function changeDisplayIntensityView() {
+  if ($('#display-auto-intensity').is(':checked')) {
+    $("#display-intensity-val").prop("disabled", true);
+  } else {
+    $("#display-intensity-val").prop("disabled", false);
+  }
+}
+
+$(changeDisplayIntensityView()); // Called on document.ready
+
+$('#display-auto-intensity').change(function() {
+  changeDisplayIntensityView();
+});
+
+
+
+$(document).ready(function() {
+  $("#show_hide_password a").on('click', function(event) {
+      event.preventDefault();
+      if($('#show_hide_password input').attr("type") == "text"){
+          $('#show_hide_password input').attr('type', 'password');
+          $('#show_hide_password i').addClass( "glyphicon-eye-close" );
+          $('#show_hide_password i').removeClass( "glyphicon-eye-open" );
+      }else if($('#show_hide_password input').attr("type") == "password"){
+          $('#show_hide_password input').attr('type', 'text');
+          $('#show_hide_password i').removeClass( "glyphicon-eye-close" );
+          $('#show_hide_password i').addClass( "glyphicon-eye-open" );
+      }
+  });
+});
 
 /* OTA TAB */
 

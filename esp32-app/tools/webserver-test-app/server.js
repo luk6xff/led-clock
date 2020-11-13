@@ -27,10 +27,15 @@ app.get('/devinfo', function (req, res) {
 
 // POST
 app.post('/dev-cfg-*', function (req, res) {
-    console.log("Got a POST request for: " + req.baseUrl);
+    console.log("Got a POST request for: " + req.body);
     res.send('Hello POST');
 })
 
+
+app.post('/update', function (req, res) {
+   console.log("Got a POST request for: " + req.baseUrl);
+   res.send('OTA started...');
+})
 
 
 // SERVER
