@@ -9,8 +9,6 @@ struct WebServerSettings
 {
     #define HOST_NAME_LEN       16
 
-
-
     WebServerSettings()
     {
 

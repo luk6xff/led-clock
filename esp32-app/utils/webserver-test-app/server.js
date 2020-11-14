@@ -26,8 +26,8 @@ app.get('/devinfo', function (req, res) {
 
 
 // POST
-app.post('/dev-cfg-*', function (req, res) {
-    console.log("Got a POST request for: " + req.body);
+app.post('/dev-cfg-save', function (req, res) {
+    console.log("Got a POST dev-cfg-save request for: " + req.body);
     res.send('Hello POST');
 })
 

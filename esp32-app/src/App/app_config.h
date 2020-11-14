@@ -50,8 +50,12 @@ public:
     const Settings& getDefaults();
     Settings& getCurrent();
 
-    // Settings options
-    bool storeWifiData(const WifiSettings& ws);
+    // Settings options savers
+    bool saveWifiSettings(const WifiSettings& cfg);
+    bool saveSystemTimeSettings(const SystemTimeSettings& cfg);
+    bool saveNtpSettings(const NtpSettings& cfg);
+    bool saveWeatherSettings(const WeatherSettings& cfg);
+    bool saveRadioSensorSettings(const RadioSensorSettings& cfg);
 
 private:
     bool saveSettings(const Settings &settings);

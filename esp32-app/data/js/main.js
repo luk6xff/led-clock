@@ -45,8 +45,6 @@ function valueFormatter(value, row) {
 }
 
 
-
-
 /* Configuration TAB */
 // $(document).ready(function() {
 //   $('selector').click(function() {
@@ -66,9 +64,9 @@ $('.tab-pane a').on('shown.bs.tab', function(event){
     console.log("Active_ConfigTab: " + activConfigTabPane)
 });
 
-$('#save_button').click(function() {
+$('#cfg_save_button').click(function() {
 
-    console.log('#save_button CLICKED')
+    console.log('#cfg_save_button CLICKED')
     console.log("CurrentActiveTab: " + activConfigTabPane)
 
     var target = $(activConfigTabPane).attr("href")
@@ -117,12 +115,26 @@ $('#save_button').click(function() {
 
     // Send post request
     const cfgName = target.replace("#", "");
-    $.post(cfgName, JSON.stringify(dataJson)).done(function(data) {
-        console.log("save_button " + JSON.stringify(data));
-      }).fail(function(err) {
-        console.log("err save_button " + JSON.stringify(err));
-      });
+    const cfgData = { [cfgName] : dataJson }
+    $.ajax({
+      url:"dev-cfg-save",
+      type:"POST",
+      data: JSON.stringify(cfgData),
+      contentType:"application/json",
+      dataType:"json",
+      success: function(data){
+        console.log("cfg_save_button - success" + JSON.stringify(data));
+      },
+      error: function(data){
+          console.log("cfg_save_button - failure" + JSON.stringify(data));
+      }
+    });
 
+    // $.post(cfgName, JSON.stringify(dataJson)).done(function(data) {
+    //     console.log("cfg_save_button " + JSON.stringify(data));
+    //   }).fail(function(err) {
+    //     console.log("err cfg_save_button " + JSON.stringify(err));
+    //   });
 });
 
 $('#refresh_button').click(function() {

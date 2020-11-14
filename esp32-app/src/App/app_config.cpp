@@ -76,13 +76,43 @@ AppConfig::Settings& AppConfig::getCurrent()
 }
 
 //------------------------------------------------------------------------------
-bool AppConfig::storeWifiData(const WifiSettings& ws)
+bool AppConfig::saveWifiSettings(const WifiSettings& cfg)
 {
-    bool ret = true;
     Settings newSettings = getCurrent();
-    newSettings.wifi = ws;
-    ret = saveSettings(newSettings);
-    return ret;
+    newSettings.wifi = cfg;
+    return saveSettings(newSettings);
+}
+
+//------------------------------------------------------------------------------
+bool AppConfig::saveSystemTimeSettings(const SystemTimeSettings& cfg)
+{
+    Settings newSettings = getCurrent();
+    newSettings.time = cfg;
+    return saveSettings(newSettings);
+}
+
+//------------------------------------------------------------------------------
+bool AppConfig::saveNtpSettings(const NtpSettings& cfg)
+{
+    Settings newSettings = getCurrent();
+    newSettings.ntp = cfg;
+    return saveSettings(newSettings);
+}
+
+//------------------------------------------------------------------------------
+bool AppConfig::saveWeatherSettings(const WeatherSettings& cfg)
+{
+    Settings newSettings = getCurrent();
+    newSettings.weather = cfg;
+    return saveSettings(newSettings);
+}
+
+//------------------------------------------------------------------------------
+bool AppConfig::saveRadioSensorSettings(const RadioSensorSettings& cfg)
+{
+    Settings newSettings = getCurrent();
+    newSettings.radioSensor = cfg;
+    return saveSettings(newSettings);
 }
 
 //------------------------------------------------------------------------------
