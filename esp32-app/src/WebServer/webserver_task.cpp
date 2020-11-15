@@ -4,11 +4,12 @@
 #include <Update.h>
 #include <ESPmDNS.h>
 #include "App/rtos_common.h"
-#include "App/wifi_task.h"
+#include "Wifi/wifi_task.h"
 #include "App/utils.h"
 #include "App/devinfo.h"
 #include "AsyncJson.h"
 #include <functional>
+#include "App/app_config.h"
 
 //------------------------------------------------------------------------------
 #define WEBSERVER_TASK_STACK_SIZE (8192*4)
@@ -63,10 +64,6 @@ void WebServerTask::run()
         vTaskDelay(sleepTime);
     }
 }
-
-//------------------------------------------------------------------------------
-//m_cfgSaveHandleMap =
-
 
 //------------------------------------------------------------------------------
 void WebServerTask::registerHandlers(AsyncWebServer& server)
@@ -127,8 +124,6 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
 //------------------------------------------------------------------------------
 void WebServerTask::setCfgSaveHandlers()
 {
-    const char *cfgAppKey = "dev-cfg-app"; // TODO
-    const char *cfgWifiKey = "dev-cfg-wifi";
     const char *cfgTimeKey = "dev-cfg-time";
     const char *cfgWeatherKey = "dev-cfg-weather";
     const char *cfgRadioKey = "dev-cfg-radio";
@@ -137,23 +132,18 @@ void WebServerTask::setCfgSaveHandlers()
 
     m_cfgSaveHandleMap = {
 
-        {cfgWifiKey, [this, cfgWifiKey](const JsonObject& json)
+        {WIFI_CFG_KEY, [this](const JsonObject& json)
             {
-                // Extract values and print values.
-                JsonArray arr = json[cfgWifiKey].as<JsonArray>();
-                for (const auto& v : arr)
-                {
-                    String id = v["id"];
-                    String val = v["value"];
-                    utils::inf("[%s]  id:%s, value:%s", cfgWifiKey, id.c_str(), val.c_str());
-                }
+                WifiSettings cfg = AppCfg.getCurrent().wifi;
+                cfg.fromJson(json);
+                utils::inf("%s", cfg.toJson().c_str());
+                // LU_TODO save
                 return true;
             }
         },
 
         {cfgTimeKey , [this, cfgTimeKey](const JsonObject& json)
             {
-                // Extract values and print values.
                 JsonArray arr = json[cfgTimeKey].as<JsonArray>();
                 for (const auto& v : arr)
                 {
@@ -167,7 +157,6 @@ void WebServerTask::setCfgSaveHandlers()
 
         {cfgWeatherKey, [this, cfgWeatherKey](const JsonObject& json)
             {
-                // Extract values and print values.
                 JsonArray arr = json[cfgWeatherKey].as<JsonArray>();
                 for (const auto& v : arr)
                 {
@@ -181,7 +170,6 @@ void WebServerTask::setCfgSaveHandlers()
 
         {cfgRadioKey, [this, cfgRadioKey](const JsonObject& json)
             {
-                // Extract values and print values.
                 JsonArray arr = json[cfgRadioKey].as<JsonArray>();
                 for (const auto& v : arr)
                 {
@@ -195,7 +183,6 @@ void WebServerTask::setCfgSaveHandlers()
 
         {cfgDisplayKey, [this, cfgDisplayKey](const JsonObject& json)
             {
-                // Extract values and print values.
                 JsonArray arr = json[cfgDisplayKey].as<JsonArray>();
                 for (const auto& v : arr)
                 {
@@ -209,7 +196,6 @@ void WebServerTask::setCfgSaveHandlers()
 
         {cfgOtherKey, [this, cfgOtherKey](const JsonObject& json)
             {
-                // Extract values and print values.
                 JsonArray arr = json[cfgOtherKey].as<JsonArray>();
                 for (const auto& v : arr)
                 {

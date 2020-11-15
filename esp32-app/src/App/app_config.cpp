@@ -151,7 +151,7 @@ void AppConfig::setDefaults()
     defaultSettings =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000000,
+        .version = 0x00000001,
     };
 
     // WIFI
@@ -195,7 +195,7 @@ void AppConfig::printCurrentSettings()
     utils::inf("AppCfg size: %d bytes", sizeof(getCurrent()));
     utils::inf("magic: 0x%08x", getCurrent().magic);
     utils::inf("version: 0x%08x", getCurrent().version);
-    utils::inf("wifi: %s %s", getCurrent().wifi.ssid, getCurrent().wifi.pass);
+    utils::inf("wifi: %s, %s, %s", getCurrent().wifi.ssid, getCurrent().wifi.pass, getCurrent().wifi.ap_pass);
     utils::inf("systime: %s", getCurrent().time.toStr().c_str());
     utils::inf("ntp: %s", getCurrent().ntp.toStr().c_str());
     utils::inf("weather: %s", getCurrent().weather.toStr().c_str());

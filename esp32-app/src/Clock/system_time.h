@@ -2,18 +2,8 @@
 #define __SYSTEM_TIME_H__
 
 #include <RTClib.h>
-#include <Timezone.h>
+#include "system_time_settings.h"
 
-
-struct SystemTimeSettings
-{
-    TimeChangeRule dstStart; // CEST
-    TimeChangeRule stdStart; // CET
-    String toStr()
-    {
-        return String("dstStart:" + dstStart.toStr() + " stdStart:" + stdStart.toStr());
-    }
-};
 
 
 class SystemTime final

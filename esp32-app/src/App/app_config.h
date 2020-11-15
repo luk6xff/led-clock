@@ -7,11 +7,11 @@
  * @date   2020-10-18
  */
 #include <Preferences.h>
+#include "Wifi/wifi_task.h"
 #include "Clock/system_time.h"
 #include "Clock/ntp.h"
 #include "Weather/weather_settings.h"
 #include "Radio/radio_sensor_task.h"
-#include "wifi_task.h"
 #include "rtos_common.h"
 
 

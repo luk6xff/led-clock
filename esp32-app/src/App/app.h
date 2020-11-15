@@ -10,7 +10,7 @@
 #include "Clock/clock_task.h"
 #include "Clock/ntp_task.h"
 #include "Radio/radio_sensor_task.h"
-#include "App/wifi_task.h"
+#include "Wifi/wifi_task.h"
 #include "Weather/weather_task.h"
 #include "WebServer/webserver_task.h"
 

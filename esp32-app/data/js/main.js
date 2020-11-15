@@ -78,10 +78,7 @@ $('#cfg_save_button').click(function() {
         var id = $(this).attr("id");
         var value = $(this).val();
 
-        item = {}
-        item ["id"] = id;
-        item ["value"] = value;
-
+        var item = {[id] : value}
         dataJson.push(item);
     });
 
@@ -91,10 +88,7 @@ $('#cfg_save_button').click(function() {
       var id = $(this).attr("id");
       var value = $(this).is(':checked');
 
-      item = {}
-      item ["id"] = id;
-      item ["value"] = value;
-
+      var item = {[id] : value}
       dataJson.push(item);
     });
 
@@ -104,10 +98,7 @@ $('#cfg_save_button').click(function() {
       var id = $(this).attr("id");
       var value = $(this).val();
 
-      item = {}
-      item ["id"] = id;
-      item ["value"] = value;
-
+      var item = {[id] : value}
       dataJson.push(item);
     });
 

@@ -1,6 +1,6 @@
 #include "weather_task.h"
 #include "App/rtos_common.h"
-#include "App/wifi_task.h"
+#include "Wifi/wifi_task.h"
 #include "App/utils.h"
 
 //------------------------------------------------------------------------------

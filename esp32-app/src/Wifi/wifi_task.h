@@ -1,24 +1,8 @@
 #pragma once
 #include "App/task.h"
+#include "wifi_settings.h"
 #include <WiFiMulti.h>
 #include <WiFi.h>
-
-struct WifiSettings
-{
-    #define WIFI_SETTINGS_LEN 32
-    #define WIFI_SETTINGS_CH_NUM 3
-
-    WifiSettings()
-    {
-        const char *admin = "admin";
-        memset(this, 0, sizeof(*this));
-        memcpy(ssid, admin, WIFI_SETTINGS_LEN);
-        memcpy(pass, admin, WIFI_SETTINGS_LEN);
-    }
-
-    char ssid[WIFI_SETTINGS_LEN];
-    char pass[WIFI_SETTINGS_LEN];
-};
 
 class WifiTask : public Task
 {
