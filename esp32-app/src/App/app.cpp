@@ -62,7 +62,7 @@ void App::createTasks()
 {
     // Create all the tasks
     m_wifiTask = std::unique_ptr<WifiTask>(new WifiTask(AppCfg.getCurrent().wifi));
-    m_ntpTask = std::unique_ptr<NtpTask>(new NtpTask(AppCfg.getCurrent().ntp,
+    m_ntpTask = std::unique_ptr<NtpTask>(new NtpTask(AppCfg.getCurrent().time.ntp,
                                             m_wifiTask->getWifiEvtHandle()));
     m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(AppCfg.getCurrent().time,
                                                 m_ntpTask->getNtpTimeQ()));

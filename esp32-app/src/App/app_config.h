@@ -36,7 +36,6 @@ public:
         uint32_t version;
         WifiSettings wifi;
         SystemTimeSettings time;
-        NtpSettings ntp;
         WeatherSettings weather;
         RadioSensorSettings radioSensor;
     } Settings;
@@ -53,7 +52,6 @@ public:
     // Settings options savers
     bool saveWifiSettings(const WifiSettings& cfg);
     bool saveSystemTimeSettings(const SystemTimeSettings& cfg);
-    bool saveNtpSettings(const NtpSettings& cfg);
     bool saveWeatherSettings(const WeatherSettings& cfg);
     bool saveRadioSensorSettings(const RadioSensorSettings& cfg);
 

@@ -21,7 +21,8 @@
 //------------------------------------------------------------------------------
 //WebServerTask::WebServerTask(const WebServerSettings& webServerCfg)
 WebServerTask::WebServerTask()
-    : Task("WebServerTask", WEBSERVER_TASK_STACK_SIZE, WEBSERVER_TASK_PRIORITY, CONFIG_ARDUINO_RUNNING_CORE)
+    : Task("WebServerTask", WEBSERVER_TASK_STACK_SIZE, WEBSERVER_TASK_PRIORITY,
+            CONFIG_ARDUINO_RUNNING_CORE)
     //, m_webServerCfg(webServerCfg)
 {
 
@@ -124,11 +125,10 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
 //------------------------------------------------------------------------------
 void WebServerTask::setCfgSaveHandlers()
 {
-    const char *cfgTimeKey = "dev-cfg-time";
     const char *cfgWeatherKey = "dev-cfg-weather";
     const char *cfgRadioKey = "dev-cfg-radio";
     const char *cfgDisplayKey = "dev-cfg-wifi";
-    const char *cfgOtherKey = "dev-cfg-other";
+    const char *cfgAppKey = "dev-cfg-app";
 
     m_cfgSaveHandleMap = {
 
@@ -137,21 +137,16 @@ void WebServerTask::setCfgSaveHandlers()
                 WifiSettings cfg = AppCfg.getCurrent().wifi;
                 cfg.fromJson(json);
                 utils::inf("%s", cfg.toJson().c_str());
-                // LU_TODO save
-                return true;
+                return AppCfg.saveWifiSettings(cfg);
             }
         },
 
-        {cfgTimeKey , [this, cfgTimeKey](const JsonObject& json)
+        {TIME_CFG_KEY , [this](const JsonObject& json)
             {
-                JsonArray arr = json[cfgTimeKey].as<JsonArray>();
-                for (const auto& v : arr)
-                {
-                    String id = v["id"];
-                    String val = v["value"];
-                    utils::inf("[%s]  id:%s, value:%s", cfgTimeKey, id.c_str(), val.c_str());
-                }
-                return true;
+                SystemTimeSettings cfg = AppCfg.getCurrent().time;
+                cfg.fromJson(json);
+                utils::inf("%s", cfg.toJson().c_str());
+                return AppCfg.saveSystemTimeSettings(cfg);
             }
         },
 
@@ -189,19 +184,6 @@ void WebServerTask::setCfgSaveHandlers()
                     String id = v["id"];
                     String val = v["value"];
                     utils::inf("[%s]  id:%s, value:%s", cfgDisplayKey, id.c_str(), val.c_str());
-                }
-                return true;
-            }
-        },
-
-        {cfgOtherKey, [this, cfgOtherKey](const JsonObject& json)
-            {
-                JsonArray arr = json[cfgOtherKey].as<JsonArray>();
-                for (const auto& v : arr)
-                {
-                    String id = v["id"];
-                    String val = v["value"];
-                    utils::inf("[%s]  id:%s, value:%s", cfgOtherKey,  id.c_str(), val.c_str());
                 }
                 return true;
             }

@@ -92,14 +92,6 @@ bool AppConfig::saveSystemTimeSettings(const SystemTimeSettings& cfg)
 }
 
 //------------------------------------------------------------------------------
-bool AppConfig::saveNtpSettings(const NtpSettings& cfg)
-{
-    Settings newSettings = getCurrent();
-    newSettings.ntp = cfg;
-    return saveSettings(newSettings);
-}
-
-//------------------------------------------------------------------------------
 bool AppConfig::saveWeatherSettings(const WeatherSettings& cfg)
 {
     Settings newSettings = getCurrent();
@@ -151,7 +143,7 @@ void AppConfig::setDefaults()
     defaultSettings =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000001,
+        .version = 0x00000000,
     };
 
     // WIFI
@@ -164,14 +156,12 @@ void AppConfig::setDefaults()
 
     // SYSTEM TIME
     SystemTimeSettings timeCfg = {
-        {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
+        2,
         {"CET ", Last, Sun, Oct, 3, 60},  // Central European Standard Time
+        {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
+        {true, 0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org"}
     };
     defaultSettings.time = timeCfg;
-
-    // NTP
-    NtpSettings ntpCfg(0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org");
-    defaultSettings.ntp = ntpCfg;
 
     // WEATHER
     WeatherSettings weatherCfg;
@@ -197,7 +187,6 @@ void AppConfig::printCurrentSettings()
     utils::inf("version: 0x%08x", getCurrent().version);
     utils::inf("wifi: %s, %s, %s", getCurrent().wifi.ssid, getCurrent().wifi.pass, getCurrent().wifi.ap_pass);
     utils::inf("systime: %s", getCurrent().time.toStr().c_str());
-    utils::inf("ntp: %s", getCurrent().ntp.toStr().c_str());
     utils::inf("weather: %s", getCurrent().weather.toStr().c_str());
     utils::inf("radio_sensor: %s", getCurrent().radioSensor.toStr().c_str());
     utils::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
