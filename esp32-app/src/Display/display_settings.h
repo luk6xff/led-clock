@@ -77,11 +77,13 @@ struct DisplaySettings
 
     String toStr()
     {
-        return DISPLAY_CFG_KEY+String(": ") + \
-                DISPLAY_CFG_VAL_AUTO_INTENSITY+String(":"+enableAutoIntenisty) + \
-                DISPLAY_CFG_VAL_INTENSITY_VALUE+String(":"+intensityValue) + \
-                DISPLAY_CFG_VAL_ANIM_SPEED+String(":"+animSpeed) + \
-                DISPLAY_CFG_VAL_TIME_FORMAT+String(":"+timeFormat);
+        const String colon = ":";
+        const String comma =", ";
+        return String(DISPLAY_CFG_KEY)+colon+comma + \
+                String(DISPLAY_CFG_VAL_AUTO_INTENSITY)+colon+String(enableAutoIntenisty)+comma + \
+                String(DISPLAY_CFG_VAL_INTENSITY_VALUE)+colon+String(intensityValue)+comma  + \
+                String(DISPLAY_CFG_VAL_ANIM_SPEED)+colon+String(animSpeed)+comma  + \
+                String(DISPLAY_CFG_VAL_TIME_FORMAT)+colon+String(timeFormat);
     }
 
 

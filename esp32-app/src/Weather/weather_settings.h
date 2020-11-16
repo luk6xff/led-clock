@@ -32,9 +32,15 @@ struct WeatherSettings
         float latitude;
         float longitude;
         char cityName[CITY_NAME_MAXLEN];
+
         String toStr()
         {
-            return "cityName:" + String(String(cityName) + " latitude:" + String(latitude) + " longitude:" + String(longitude));
+            const String colon = ":";
+            const String comma =", ";
+            return String(WEATHER_CFG_VAL_OWM_CITY)+colon+comma + \
+                    String("cityName")+colon+String(cityName)+comma + \
+                    String("latitude")+colon+String(latitude)+comma + \
+                    String("longitude")+colon+String(longitude);
         }
     };
 
@@ -194,11 +200,14 @@ struct WeatherSettings
 
     String toStr()
     {
-        return WEATHER_CFG_VAL_ENABLE+String(":"+enable) + \
-                WEATHER_CFG_VAL_SYNC_INTERVAL+String(":"+updateInterval) + \
-                WEATHER_CFG_VAL_OWM_APIKEY+String(String(":")+owmAppid) + \
-                WEATHER_CFG_VAL_OWM_LANG+String(language) + \
-                WEATHER_CFG_VAL_OWM_CITY + String(city.toStr());
+        const String colon = ":";
+        const String comma =", ";
+        return String(WEATHER_CFG_KEY)+colon+comma + \
+                String(WEATHER_CFG_VAL_ENABLE)+colon+String(enable)+comma + \
+                String(WEATHER_CFG_VAL_SYNC_INTERVAL)+colon+String(updateInterval)+comma + \
+                String(WEATHER_CFG_VAL_OWM_APIKEY)+colon+String(owmAppid)+comma + \
+                String(WEATHER_CFG_VAL_OWM_LANG)+colon+String(language)+comma + \
+                city.toStr();
     }
 
 

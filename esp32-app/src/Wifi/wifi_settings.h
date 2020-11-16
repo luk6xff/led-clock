@@ -29,8 +29,13 @@ struct WifiSettings
 
     String toStr()
     {
-        return "ssid:" + String(String(ssid) + " pass:" + String(pass) + \
-               " ap-hostname:" + String(ap_hostname) + " ap-pass:" + String(ap_pass));
+        const String colon = ":";
+        const String comma =", ";
+        return String(WIFI_CFG_KEY)+colon+comma + \
+                String(WIFI_CFG_VAL_SSID)+colon+String(ssid)+comma + \
+                String(WIFI_CFG_VAL_PASS)+colon+String(pass)+comma  + \
+                String(WIFI_CFG_VAL_AP_HOSTNAME)+colon+String(ap_hostname)+comma  + \
+                String(WIFI_CFG_VAL_AP_PASS)+colon+String(ap_pass);
     }
 
     std::string toJson()

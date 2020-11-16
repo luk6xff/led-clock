@@ -13,7 +13,7 @@
 //------------------------------------------------------------------------------
 NtpTask::NtpTask(NtpSettings& ntpCfg, const EventGroupHandle_t& wifiEvtHandle)
     : Task("NtpTask", NTP_TASK_STACK_SIZE, NTP_TASK_PRIORITY, CONFIG_ARDUINO_RUNNING_CORE)
-    , m_ntpCfg(m_ntpCfg)
+    , m_ntpCfg(ntpCfg)
     , m_wifiEvtHandle(wifiEvtHandle)
 {
     m_ntpTimeQ = xQueueCreate(1, sizeof(DateTime));
@@ -34,8 +34,7 @@ void NtpTask::run()
 {
     TickType_t sleepTime = (10000 / portTICK_PERIOD_MS);
     WifiTask::WifiEvent lastWifiState = WifiTask::WIFI_INVALID;
-    //Ntp ntp(m_ntpCfg); // LU_TODO
-    Ntp ntp(NtpSettings(true, 0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org"));
+    Ntp ntp(m_ntpCfg);
     DateTime dt;
 
     if (!m_wifiEvtHandle)

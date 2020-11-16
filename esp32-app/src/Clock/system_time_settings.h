@@ -17,7 +17,9 @@
 #define TIME_CFG_VAL_NTP_ON             "time-ntp-enable"
 #define TIME_CFG_VAL_NTP_TIME_OFFSET    "time-ntp-time-offset"
 #define TIME_CFG_VAL_NTP_SYNC_INT       "time-ntp-sync-interval"
-
+#define TIME_CFG_VAL_NTP_SERVER_1       "time-ntp-server-1"
+#define TIME_CFG_VAL_NTP_SERVER_2       "time-ntp-server-2"
+#define TIME_CFG_VAL_NTP_SERVER_3       "time-ntp-server-3"
 
 struct NtpSettings
 {
@@ -78,12 +80,15 @@ struct NtpSettings
 
     String toStr()
     {
-        return TIME_CFG_VAL_NTP_ON+String(":"+ntpEnabled) + \
-                TIME_CFG_VAL_NTP_TIME_OFFSET+String(":"+timeOffset) + \
-                TIME_CFG_VAL_NTP_SYNC_INT+String(":"+updateInterval) + \
-                "pSN0:" + String(poolServerNames[0]) + \
-                "pSN1:" + String(poolServerNames[1]) + \
-                "pSN2:" + String(poolServerNames[2]);
+        const String colon = ":";
+        const String comma =", ";
+        return String("NtpCfg")+colon+comma + \
+                String(TIME_CFG_VAL_NTP_ON)+colon+String(ntpEnabled)+comma + \
+                String(TIME_CFG_VAL_NTP_TIME_OFFSET)+colon+String(timeOffset)+comma  + \
+                String(TIME_CFG_VAL_NTP_SYNC_INT)+colon+String(updateInterval)+comma  + \
+                String(TIME_CFG_VAL_NTP_SERVER_1)+colon+String(poolServerNames[0])+comma + \
+                String(TIME_CFG_VAL_NTP_SERVER_2)+colon+String(poolServerNames[1])+comma + \
+                String(TIME_CFG_VAL_NTP_SERVER_3)+colon+String(poolServerNames[2]);
     }
 
     uint32_t ntpEnabled;
@@ -265,10 +270,13 @@ struct SystemTimeSettings
 
     String toStr()
     {
-        return TIME_CFG_VAL_TZ_NUM+String(timezoneNum) + \
-                TIME_CFG_VAL_TZ_1+String(stdStart.toStr()) + \
-                TIME_CFG_VAL_TZ_1+String(dstStart.toStr()) + \
-                "NtpCfg:";// + ntp.toStr();
+        const String colon = ":";
+        const String comma =", ";
+        return String(TIME_CFG_KEY)+colon+comma + \
+                String(TIME_CFG_VAL_TZ_NUM)+colon+String(timezoneNum)+comma + \
+                String(TIME_CFG_VAL_TZ_1)+colon+String(stdStart.toStr())+comma  + \
+                String(TIME_CFG_VAL_TZ_2)+colon+String(dstStart.toStr())+comma  + \
+                ntp.toStr();
     }
 
 

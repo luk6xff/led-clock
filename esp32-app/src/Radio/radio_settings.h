@@ -46,8 +46,11 @@ struct RadioSensorSettings
 
     String toStr()
     {
-        return RADIO_CFG_VAL_UPDATE_INTERVAL+String(":"+update_data_interval) + \
-                RADIO_CFG_VAL_UPDATE_INTERVAL+String(":"+crit_vbatt_level);
+        const String colon = ":";
+        const String comma =", ";
+        return String(RADIO_CFG_KEY)+colon+comma + \
+                String(RADIO_CFG_VAL_UPDATE_INTERVAL)+colon+String(update_data_interval)+comma + \
+                String(RADIO_CFG_VAL_CRIT_VBATT)+colon+String(crit_vbatt_level);
     }
 
 
