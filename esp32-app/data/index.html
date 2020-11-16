@@ -147,8 +147,8 @@
                         <div class="form-group">
                           <label class="form-label">Timezones number</label>
                           <select class="custom-select" id="time-timezone-num">
-                            <option selected="">1</option>
-                            <option>2</option>
+                            <option value='1' selected="">1</option>
+                            <option value='2'>2</option>
                           </select>
                         </div>
                         <div class="form-group">
@@ -221,7 +221,7 @@
                         </div>
                         <div class="form-group">
                           <label class="form-label">Critical Vbatt [mV]</label>
-                          <input type="text" class="form-control" id="radio-critt-vbat" value="3300">
+                          <input type="text" class="form-control" id="radio-crit-vbatt" value="3300">
                         </div>
                       </div>
                       <hr class="border-light m-0">
@@ -252,43 +252,15 @@
                         <div class="form-group">
                           <label class="form-label">Time display format</label>
                           <select class="custom-select" id="display-time-format">
-                            <option>HH:MM</option>
-                            <option selected="">HH:MM:ss</option>
+                            <option value='0'>HH:MM</option>
+                            <option value='1'selected="">HH:MM:ss</option>
                           </select>
                         </div>
                       </div>
                     </div>
 
                     <div class="tab-pane fade" id="dev-cfg-app">
-                        <div class="card-body pb-2">
-                          <h6 class="mb-4">Activity</h6>
-                          <div class="form-group">
-                            <label class="switcher">
-                              <input type="checkbox" class="switcher-input" checked="">
-                              <span class="switcher-indicator">
-                                <span class="switcher-yes"></span>
-                                <span class="switcher-no"></span>
-                              </span>
-                              <span class="switcher-label">Email me when someone comments on my article</span>
-                            </label>
-                          </div>
-                        </div>
-                        <hr class="border-light m-0">
-                        <div class="card-body pb-2">
 
-                          <h6 class="mb-4">Application</h6>
-
-                          <div class="form-group">
-                            <label class="switcher">
-                              <input type="checkbox" class="switcher-input" checked="">
-                              <span class="switcher-indicator">
-                                <span class="switcher-yes"></span>
-                                <span class="switcher-no"></span>
-                              </span>
-                              <span class="switcher-label">News and announcements</span>
-                            </label>
-                          </div>
-                        </div>
                     </div>
                   </div>
                 </div>
@@ -313,7 +285,6 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
     <!-- Footer -->

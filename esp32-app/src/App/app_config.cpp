@@ -108,6 +108,14 @@ bool AppConfig::saveRadioSensorSettings(const RadioSensorSettings& cfg)
 }
 
 //------------------------------------------------------------------------------
+bool AppConfig::saveDisplaySettings(const DisplaySettings& cfg)
+{
+    Settings newSettings = getCurrent();
+    newSettings.display = cfg;
+    return saveSettings(newSettings);
+}
+
+//------------------------------------------------------------------------------
 bool AppConfig::saveSettings(const Settings& settings)
 {
     rtos::LockGuard<rtos::Mutex> lk(settingsMtx);
@@ -143,7 +151,7 @@ void AppConfig::setDefaults()
     defaultSettings =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000000,
+        .version = 0x00000001,
     };
 
     // WIFI
@@ -171,11 +179,12 @@ void AppConfig::setDefaults()
     defaultSettings.weather = weatherCfg;
 
     // RADIO_SENSOR
-    RadioSensorSettings radioSensorCfg = {
-        .crit_vbatt_level = 3000,
-        .update_data_interval = 60,
-    };
+    RadioSensorSettings radioSensorCfg = {60, 3000};
     defaultSettings.radioSensor = radioSensorCfg;
+
+    // DISPLAY
+    DisplaySettings displayCfg = {true, 0, 70, 1};
+    defaultSettings.display = displayCfg;
 }
 
 //------------------------------------------------------------------------------
@@ -185,10 +194,11 @@ void AppConfig::printCurrentSettings()
     utils::inf("AppCfg size: %d bytes", sizeof(getCurrent()));
     utils::inf("magic: 0x%08x", getCurrent().magic);
     utils::inf("version: 0x%08x", getCurrent().version);
-    utils::inf("wifi: %s, %s, %s", getCurrent().wifi.ssid, getCurrent().wifi.pass, getCurrent().wifi.ap_pass);
+    utils::inf("wifi: %s", getCurrent().wifi.toStr().c_str());
     utils::inf("systime: %s", getCurrent().time.toStr().c_str());
     utils::inf("weather: %s", getCurrent().weather.toStr().c_str());
     utils::inf("radio_sensor: %s", getCurrent().radioSensor.toStr().c_str());
+    utils::inf("display: %s", getCurrent().display.toStr().c_str());
     utils::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
 }
 

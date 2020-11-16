@@ -32,10 +32,10 @@ const QueueHandle_t& NtpTask::getNtpTimeQ()
 //------------------------------------------------------------------------------
 void NtpTask::run()
 {
-    const TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
+    TickType_t sleepTime = (10000 / portTICK_PERIOD_MS);
     WifiTask::WifiEvent lastWifiState = WifiTask::WIFI_INVALID;
     //Ntp ntp(m_ntpCfg); // LU_TODO
-    Ntp ntp(NtpSettings(0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org"));
+    Ntp ntp(NtpSettings(true, 0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org"));
     DateTime dt;
 
     if (!m_wifiEvtHandle)
@@ -69,7 +69,7 @@ void NtpTask::run()
         //     continue;
         // }
 
-        if (lastWifiState == WifiTask::WIFI_CONNECTED)
+        if (m_ntpCfg.ntpEnabled && lastWifiState == WifiTask::WIFI_CONNECTED)
         {
             if (ntp.updateTime())
             {
@@ -80,6 +80,7 @@ void NtpTask::run()
                 {
                     xQueueOverwrite(m_ntpTimeQ, &dt);
                 }
+                sleepTime = (m_ntpCfg.updateInterval / portTICK_PERIOD_MS);
             }
         }
 

@@ -66,10 +66,8 @@ void App::createTasks()
                                             m_wifiTask->getWifiEvtHandle()));
     m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(AppCfg.getCurrent().time,
                                                 m_ntpTask->getNtpTimeQ()));
-    m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask(m_clockTask->getTimeQ()));
+    m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask(AppCfg.getCurrent().display, m_clockTask->getTimeQ()));
     m_weatherTask = std::unique_ptr<WeatherTask>(new WeatherTask(AppCfg.getCurrent().weather));
-    m_radioSensorTask = std::unique_ptr<RadioSensorTask>(new RadioSensorTask(AppCfg.getCurrent().radioSensor));
-    //m_webServerTask = std::unique_ptr<WebServerTask>(new WebServerTask(AppCfg.getCurrent().webServer));
     m_webServerTask = std::unique_ptr<WebServerTask>(new WebServerTask());
 }
 

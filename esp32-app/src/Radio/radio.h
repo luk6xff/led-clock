@@ -1,21 +1,8 @@
 #ifndef __RADIO_H__
 #define __RADIO_H__
 
+#include "radio_settings.h"
 #include "../SX1278/platform/arduino/sx1278-arduino.h"
-
-/**
- * @brief RadiSensor global settings structure
- */
-struct RadioSensorSettings
-{
-	uint32_t crit_vbatt_level;     //[mV]
-	uint32_t update_data_interval; //[s] in seconds
-
-    String toStr()
-    {
-        return String("crit_vbatt_level: " + String(crit_vbatt_level) + " update_data_interval:" + String(update_data_interval));
-    }
-};
 
 
 /**

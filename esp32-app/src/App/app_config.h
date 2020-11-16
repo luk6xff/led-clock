@@ -7,12 +7,13 @@
  * @date   2020-10-18
  */
 #include <Preferences.h>
-#include "Wifi/wifi_task.h"
-#include "Clock/system_time.h"
-#include "Clock/ntp.h"
+#include "Wifi/wifi_settings.h"
+#include "Clock/system_time_settings.h"
 #include "Weather/weather_settings.h"
-#include "Radio/radio_sensor_task.h"
+#include "Radio/radio_settings.h"
+#include "Display/display_settings.h"
 #include "rtos_common.h"
+
 
 
 // Define the version number, also used for webserver as Last-Modified header and to check version for update.
@@ -38,6 +39,7 @@ public:
         SystemTimeSettings time;
         WeatherSettings weather;
         RadioSensorSettings radioSensor;
+        DisplaySettings display;
     } Settings;
 
 public:
@@ -54,6 +56,7 @@ public:
     bool saveSystemTimeSettings(const SystemTimeSettings& cfg);
     bool saveWeatherSettings(const WeatherSettings& cfg);
     bool saveRadioSensorSettings(const RadioSensorSettings& cfg);
+    bool saveDisplaySettings(const DisplaySettings& cfg);
 
 private:
     bool saveSettings(const Settings &settings);

@@ -38,6 +38,12 @@ void WeatherTask::run()
     oneCallClient.setLanguage(m_weatherCfg.language);
     for(;;)
     {
+        if (!m_weatherCfg.enable)
+        {
+            vTaskDelay((10000 / portTICK_PERIOD_MS));
+            continue;
+        }
+
         if (!WiFi.isConnected())
         {
             vTaskDelay(sleepTime);

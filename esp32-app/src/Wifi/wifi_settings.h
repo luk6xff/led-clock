@@ -4,13 +4,16 @@
 #include <cstdint>
 #include <string>
 
+
+#define WIFI_CFG_KEY                "dev-cfg-wifi"
+#define WIFI_CFG_VAL_SSID           "wifi-ssid"
+#define WIFI_CFG_VAL_PASS           "wifi-pass"
+#define WIFI_CFG_VAL_AP_HOSTNAME    "wifi-ap-hostname"
+#define WIFI_CFG_VAL_AP_PASS        "wifi-ap-pass"
+
+
 struct WifiSettings
 {
-    #define WIFI_CFG_KEY                "dev-cfg-wifi"
-    #define WIFI_CFG_VAL_SSID           "wifi-ssid"
-    #define WIFI_CFG_VAL_PASS           "wifi-pass"
-    #define WIFI_CFG_VAL_AP_HOSTNAME    "wifi-ap-hostname"
-    #define WIFI_CFG_VAL_AP_PASS        "wifi-ap-pass"
 
     #define WIFI_SETTINGS_LEN 32
 
@@ -24,10 +27,10 @@ struct WifiSettings
         memcpy(ap_pass, admin, WIFI_SETTINGS_LEN);
     }
 
-    std::string toStr()
+    String toStr()
     {
-        return "ssid:" + std::string(std::string(ssid) + " pass:" + std::string(pass) + \
-               " ap-hostname:" + std::string(ap_hostname) + " ap-pass:" + std::string(ap_pass));
+        return "ssid:" + String(String(ssid) + " pass:" + String(pass) + \
+               " ap-hostname:" + String(ap_hostname) + " ap-pass:" + String(ap_pass));
     }
 
     std::string toJson()

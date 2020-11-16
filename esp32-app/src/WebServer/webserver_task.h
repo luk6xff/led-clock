@@ -1,7 +1,6 @@
 #pragma once
 
 #include "App/task.h"
-#include "webserver_settings.h"
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 
@@ -11,7 +10,6 @@
 class WebServerTask : public Task
 {
 public:
-    //explicit WebServerTask(const WebServerSettings& webServerCfg);
     explicit WebServerTask();
 
 private:

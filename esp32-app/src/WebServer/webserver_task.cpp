@@ -19,11 +19,9 @@
 #define U_PART U_SPIFFS
 
 //------------------------------------------------------------------------------
-//WebServerTask::WebServerTask(const WebServerSettings& webServerCfg)
 WebServerTask::WebServerTask()
     : Task("WebServerTask", WEBSERVER_TASK_STACK_SIZE, WEBSERVER_TASK_PRIORITY,
             CONFIG_ARDUINO_RUNNING_CORE)
-    //, m_webServerCfg(webServerCfg)
 {
 
 }
@@ -125,11 +123,6 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
 //------------------------------------------------------------------------------
 void WebServerTask::setCfgSaveHandlers()
 {
-    const char *cfgWeatherKey = "dev-cfg-weather";
-    const char *cfgRadioKey = "dev-cfg-radio";
-    const char *cfgDisplayKey = "dev-cfg-wifi";
-    const char *cfgAppKey = "dev-cfg-app";
-
     m_cfgSaveHandleMap = {
 
         {WIFI_CFG_KEY, [this](const JsonObject& json)
@@ -150,42 +143,30 @@ void WebServerTask::setCfgSaveHandlers()
             }
         },
 
-        {cfgWeatherKey, [this, cfgWeatherKey](const JsonObject& json)
+        {WEATHER_CFG_KEY, [this](const JsonObject& json)
             {
-                JsonArray arr = json[cfgWeatherKey].as<JsonArray>();
-                for (const auto& v : arr)
-                {
-                    String id = v["id"];
-                    String val = v["value"];
-                    utils::inf("[%s]  id:%s, value:%s", cfgWeatherKey, id.c_str(), val.c_str());
-                }
-                return true;
+                WeatherSettings cfg = AppCfg.getCurrent().weather;
+                cfg.fromJson(json);
+                utils::inf("%s", cfg.toJson().c_str());
+                return AppCfg.saveWeatherSettings(cfg);
             }
         },
 
-        {cfgRadioKey, [this, cfgRadioKey](const JsonObject& json)
+        {RADIO_CFG_KEY, [this](const JsonObject& json)
             {
-                JsonArray arr = json[cfgRadioKey].as<JsonArray>();
-                for (const auto& v : arr)
-                {
-                    String id = v["id"];
-                    String val = v["value"];
-                    utils::inf("[%s]  id:%s, value:%s", cfgRadioKey, id.c_str(), val.c_str());
-                }
-                return true;
+                RadioSensorSettings cfg = AppCfg.getCurrent().radioSensor;
+                cfg.fromJson(json);
+                utils::inf("%s", cfg.toJson().c_str());
+                return AppCfg.saveRadioSensorSettings(cfg);
             }
         },
 
-        {cfgDisplayKey, [this, cfgDisplayKey](const JsonObject& json)
+        {DISPLAY_CFG_KEY, [this](const JsonObject& json)
             {
-                JsonArray arr = json[cfgDisplayKey].as<JsonArray>();
-                for (const auto& v : arr)
-                {
-                    String id = v["id"];
-                    String val = v["value"];
-                    utils::inf("[%s]  id:%s, value:%s", cfgDisplayKey, id.c_str(), val.c_str());
-                }
-                return true;
+                DisplaySettings cfg = AppCfg.getCurrent().display;
+                cfg.fromJson(json);
+                utils::inf("%s", cfg.toJson().c_str());
+                return AppCfg.saveDisplaySettings(cfg);
             }
         },
     };

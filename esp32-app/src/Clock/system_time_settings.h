@@ -8,6 +8,17 @@
 #include <stdexcept>
 
 
+#define TIME_CFG_KEY                    "dev-cfg-time"
+#define TIME_CFG_VAL_DATE               "time-date"
+#define TIME_CFG_VAL_CLK                "time-clock"
+#define TIME_CFG_VAL_TZ_NUM             "time-timezone-num"
+#define TIME_CFG_VAL_TZ_1               "time-timezone-1"
+#define TIME_CFG_VAL_TZ_2               "time-timezone-2"
+#define TIME_CFG_VAL_NTP_ON             "time-ntp-enable"
+#define TIME_CFG_VAL_NTP_TIME_OFFSET    "time-ntp-time-offset"
+#define TIME_CFG_VAL_NTP_SYNC_INT       "time-ntp-sync-interval"
+
+
 struct NtpSettings
 {
     #define NTP_SERVER_NAME_MAXLEN 32
@@ -67,8 +78,12 @@ struct NtpSettings
 
     String toStr()
     {
-        return "ntpEnabled:" + String(ntpEnabled) + " tO:" + String(String(timeOffset) + " uI:" + String(updateInterval) + " pSN0:" + String(poolServerNames[0]) + \
-                      " pSN1:" + String(poolServerNames[1]) + " pSN2:" + String(poolServerNames[2]));
+        return TIME_CFG_VAL_NTP_ON+String(":"+ntpEnabled) + \
+                TIME_CFG_VAL_NTP_TIME_OFFSET+String(":"+timeOffset) + \
+                TIME_CFG_VAL_NTP_SYNC_INT+String(":"+updateInterval) + \
+                "pSN0:" + String(poolServerNames[0]) + \
+                "pSN1:" + String(poolServerNames[1]) + \
+                "pSN2:" + String(poolServerNames[2]);
     }
 
     uint32_t ntpEnabled;
@@ -83,17 +98,6 @@ struct NtpSettings
  */
 struct SystemTimeSettings
 {
-    #define TIME_CFG_KEY                    "dev-cfg-time"
-    #define TIME_CFG_VAL_DATE               "time-date"
-    #define TIME_CFG_VAL_CLK                "time-clock"
-    #define TIME_CFG_VAL_TZ_NUM             "time-timezone-num"
-    #define TIME_CFG_VAL_TZ_1               "time-timezone-1"
-    #define TIME_CFG_VAL_TZ_2               "time-timezone-2"
-    #define TIME_CFG_VAL_NTP_ON             "time-ntp-enable"
-    #define TIME_CFG_VAL_NTP_TIME_OFFSET    "time-ntp-time-offset"
-    #define TIME_CFG_VAL_NTP_SYNC_INT       "time-ntp-sync-interval"
-
-
     std::string toJson()
     {
         StaticJsonDocument<256> doc;
@@ -203,10 +207,10 @@ struct SystemTimeSettings
             utils::err("Not enough data in TZ cfg");
             return false;
         }
-        utils::inf("TZ cfg: ");
+        utils::dbg("TZ cfg:");
         for (auto& d : data)
         {
-            utils::inf("%s", d.c_str());
+            utils::dbg("%s", d.c_str());
         }
 
         // Check values
@@ -261,8 +265,10 @@ struct SystemTimeSettings
 
     String toStr()
     {
-        return "timezoneNum:" + String(timezoneNum) + " stdTimezoneStart:" + stdStart.toStr() + \
-                String(" dstTimezoneStart:" + dstStart.toStr() + "NtpCfg:" + ntp.toStr());
+        return TIME_CFG_VAL_TZ_NUM+String(timezoneNum) + \
+                TIME_CFG_VAL_TZ_1+String(stdStart.toStr()) + \
+                TIME_CFG_VAL_TZ_1+String(dstStart.toStr()) + \
+                "NtpCfg:";// + ntp.toStr();
     }
 
 

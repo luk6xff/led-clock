@@ -10,7 +10,8 @@
 #define MODULE_NAME "[DISP]"
 
 //------------------------------------------------------------------------------
-DisplayTask::DisplayTask(const QueueHandle_t& timeQ)
+DisplayTask::DisplayTask(const DisplaySettings& displayCfg,
+                            const QueueHandle_t& timeQ)
     : Task("DisplayTask", DISPLAY_TASK_STACK_SIZE, DISPLAY_TASK_PRIORITY, 0)
     , m_dispCfg {   DISPLAY_MAX72XX_HW_TYPE,
                     DISPLAY_MAX72XX_MODULES_NUM,
@@ -18,6 +19,7 @@ DisplayTask::DisplayTask(const QueueHandle_t& timeQ)
                     DISPLAY_CLK_PIN,
                     DISPLAY_CS_PIN }
     , m_timeDispMode(Display::THMS)
+    , m_displayCfg(displayCfg)
     , m_timeQ(timeQ)
 {
 
@@ -30,6 +32,7 @@ void DisplayTask::run()
     bool timeDots;
     DateTime dt;
     Display m_disp(m_dispCfg);
+    m_disp.enableAutoIntensityLevelControl(m_displayCfg.enableAutoIntenisty);
     for(;;)
     {
         m_disp.update();
@@ -47,7 +50,7 @@ void DisplayTask::run()
                 {
                     timeDots = true;
                 }
-                m_disp.printTime(dt, m_timeDispMode, timeDots);
+                m_disp.printTime(dt, (Display::DateTimePrintMode)m_displayCfg.timeFormat, timeDots);
                 utils::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
             }
         }
