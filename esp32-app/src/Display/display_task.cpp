@@ -51,6 +51,7 @@ void DisplayTask::run()
                     timeDots = true;
                 }
                 m_disp.printTime(dt, (Display::DateTimePrintMode)m_displayCfg.timeFormat, timeDots);
+                utils::dbg("%s DTTYPE:%d", MODULE_NAME, m_displayCfg.timeFormat);
                 utils::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
             }
         }

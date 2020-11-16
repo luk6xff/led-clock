@@ -38,19 +38,19 @@ void AppConfig::init()
     if (getCurrent().magic == getDefaults().magic && \
         getCurrent().version == getDefaults().version)
     {
-        utils::inf("AppCfg settings read succesfully\r\n");
+        utils::inf("AppCfg read succesfully\r\n");
     }
     else
     {
-        utils::inf("AppCfg settings read failed, updating with defaults..\r\n");
+        utils::inf("AppCfg read failed, updating with defaults..\r\n");
         if (!saveSettings(getDefaults()))
         {
-            utils::inf("Updating AppCfg settings with defaults failed!, setting current as defaults\r\n");
+            utils::inf("Updating AppCfg with defaults failed!, setting current as defaults\r\n");
             currentSettings = defaultSettings;
         }
         else
         {
-            utils::inf("Updating AppCfg settings with defaults succeed!\r\n");
+            utils::inf("Updating AppCfg with defaults succeed!\r\n");
         }
     }
 }
@@ -119,12 +119,21 @@ bool AppConfig::saveDisplaySettings(const DisplaySettings& cfg)
 bool AppConfig::saveSettings(const Settings& settings)
 {
     rtos::LockGuard<rtos::Mutex> lk(settingsMtx);
+    // Check if settings are upto date, do not write them
+    if (memcmp(&settings, &currentSettings, sizeof(Settings)) == 0)
+    {
+        utils::inf("AppCfg is equal to provided settings, NVS save skipped!\r\n");
+        currentSettings = settings;
+        return false;
+    }
     // Set the NVS data ready for writing
     size_t ret = prefs.putBytes("settings", (const void*)&settings, sizeof(settings));
 
     // Write the data to NVS
     if (ret == sizeof(settings))
     {
+        utils::inf("AppCfg saved in NVS succesfully\r\n");
+        currentSettings = settings;
         return true;
     }
     return false;
@@ -137,6 +146,7 @@ bool AppConfig::readSettings()
     size_t ret = prefs.getBytes("settings", &currentSettings, sizeof(currentSettings));
     if (ret == sizeof(currentSettings))
     {
+        utils::inf("AppCfg read from NVS succesfully\r\n");
         return true;
     }
     return false;
