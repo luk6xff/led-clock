@@ -97,6 +97,14 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
     });
     server.addHandler(cfgSaveHandler);
 
+    // Configuration read handler
+    server.on("/dev-cfg-read", HTTP_GET, [](AsyncWebServerRequest *request)
+    {
+        std::string cfg =
+        request->send(200, "application/json", String(ESP.getFreeHeap()));
+    });
+
+    // Free Heap size
     server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send(200, "text/plain", String(ESP.getFreeHeap()));
     });

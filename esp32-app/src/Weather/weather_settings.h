@@ -73,13 +73,13 @@ struct WeatherSettings
 
     std::string toJson()
     {
-        StaticJsonDocument<256> doc;
+        StaticJsonDocument<512> doc;
         std::string json;
         JsonArray arr = doc.createNestedArray(WEATHER_CFG_KEY);
         JsonObject obj = arr.createNestedObject();
         obj[WEATHER_CFG_VAL_ENABLE] = enable;
         obj = arr.createNestedObject();
-        obj[WEATHER_CFG_VAL_SYNC_INTERVAL] = updateInterval;
+        obj[WEATHER_CFG_VAL_SYNC_INTERVAL] = updateInterval / 60; //Convert from seconds to minutes on server.
         obj = arr.createNestedObject();
         obj[WEATHER_CFG_VAL_OWM_APIKEY] = owmAppid;
         obj = arr.createNestedObject();
@@ -102,6 +102,8 @@ struct WeatherSettings
             else if (v[WEATHER_CFG_VAL_SYNC_INTERVAL])
             {
                 updateInterval = v[WEATHER_CFG_VAL_SYNC_INTERVAL].as<uint32_t>();
+                // Convert from minutes on server to seconds
+                updateInterval = updateInterval * 60;
             }
             else if (v[WEATHER_CFG_VAL_OWM_APIKEY])
             {

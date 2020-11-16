@@ -2,16 +2,23 @@
 /* Device Status TAB */
 var timer_updateDevInfo;
 
+// $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+
+//   alert(e.target.href);
+// })
+
 $('a[data-toggle=\"tab\"]').on('shown.bs.tab', function (e) {
   clearTimeout(timer_updateDevInfo);
   var target = $(e.target).attr("href")
-  console.log('activated ' + target );
-
+  console.log('activated ' + target);
   // IE10, Firefox, Chrome, etc.
-  if (history.pushState)
-    window.history.pushState(null, null, target);
-  else
-    window.location.hash = target;
+  // if (history.pushState) {
+  //   window.history.pushState(null, null, target);
+  // }
+  // else {
+  //   window.location.hash = target;
+  // }
+  localStorage.setItem('activeTab', $(e.target).attr('href'));
 
   if (target=='#tab_devinfo')  {
     $('#table_devinfo').bootstrapTable('refresh',{silent:true, url:'/devinfo'});
@@ -45,25 +52,38 @@ function valueFormatter(value, row) {
 }
 
 
+/* TABs */
+$(document).ready(function() {
+
+  var activeTab = localStorage.getItem('activeTab');
+  if (activeTab) {
+    $('#tab a[href="' + activeTab + '"]').tab('show');
+  }
+
+  $('.nav-tabs a').click(function(){
+    $(this).tab('show');
+  });
+
+  if (activConfigTabPane == null) {
+    $('.cfg-buttons').find('button').attr("disabled", true);
+  }
+})
+
 /* Configuration TAB */
-// $(document).ready(function() {
-//   $('selector').click(function() {
-//       $('selector.active').removeClass("active");
-//       $(this).addClass("active");
-//   });
-// })
-
-// $(function(){
-//   $('#dev-cfg-wifi').addClass('active');
-// })
-
 var activConfigTabPane = null;
 
-$('.tab-pane a').on('shown.bs.tab', function(event){
+$('.tab-pane a').on('shown.bs.tab', function(event) {
     activConfigTabPane = $(event.target);         // active tab
     console.log("Active_ConfigTab: " + activConfigTabPane)
+    if (activConfigTabPane != null) {
+      $('.cfg-buttons').find('button').attr("disabled", false);
+    }
+    // Refresh data on config page
+    $('#cfg_refresh_button').trigger('click');
 });
 
+
+// CFG_SAVE_BUTTON
 $('#cfg_save_button').click(function() {
 
     console.log('#cfg_save_button CLICKED')
@@ -120,20 +140,62 @@ $('#cfg_save_button').click(function() {
           console.log("cfg_save_button - failure" + JSON.stringify(data));
       }
     });
-
-    // $.post(cfgName, JSON.stringify(dataJson)).done(function(data) {
-    //     console.log("cfg_save_button " + JSON.stringify(data));
-    //   }).fail(function(err) {
-    //     console.log("err cfg_save_button " + JSON.stringify(err));
-    //   });
-});
-
-$('#refresh_button').click(function() {
-    console.log('#refresh_button CLICKED')
 });
 
 
-// Time cfg utils
+// CFG_REFRESH_BUTTON
+$('#cfg_refresh_button').click(function() {
+    console.log('#cfg_refresh_button CLICKED')
+    var target = $(activConfigTabPane).attr("href")
+    const cfgName = target.replace("#", "");
+
+    $.getJSON("dev-cfg-read", { cfg: cfgName }, function(data) {
+      var items = [];
+      const json = JSON.parse(data);
+      console.log(json);
+      if (json) {
+        if (json.hasOwnProperty(cfgName)) {
+          console.log("It contains "+cfgName);
+          $.each(json[cfgName], function(i, item) {
+            //console.log(item);
+            var keys = Object.keys(item);
+            for(var i=0; i<keys.length; i++){
+              var key = keys[i];
+              //console.log(key, item[key]);
+
+              // Is checkbox
+              if ($('#'+key).hasClass("switcher-input")) {
+                $('#'+key).prop('checked', item[key]).trigger('change');
+                //console.log("Checkbox:")
+              }
+              // Is select
+              else if ($('#'+key).hasClass("custom-select")) {
+                $('#'+key).val(item[key]).trigger('change');
+              }
+              // Is Input form
+              else {
+                $('#'+key).val(item[key]).trigger('change');
+              }
+            }
+          });
+        }
+      }
+    })
+    .done(function(data) {
+      console.log("success: "+cfgName+" - "+data);
+    })
+    .fail(function(data) {
+      console.log("error: "+cfgName+" - "+data);
+    })
+    .always(function(data) {
+      console.log("finished: "+cfgName+" - "+data);
+    });
+});
+
+
+
+///> Time cfg utils
+// Timezone
 function changeTimeTimezoneView() {
   var elem = $('#time-timezone-num').find('option:selected');
   if (elem.val() == '2') {
@@ -144,14 +206,30 @@ function changeTimeTimezoneView() {
   console.log(elem.val());
 }
 
-$(changeTimeTimezoneView()); // Called on document.ready
-
 $('#time-timezone-num').change(function() {
   changeTimeTimezoneView();
 });
 
+$(changeTimeTimezoneView()); // Called on document.ready
 
-// Weather cfg utils
+
+// Ntp synchronization
+function changeCfgTimeNtpView() {
+    if ($('#time-ntp-enable').is(':checked')) {
+    $('.cfg-time-ntp-settings').show();
+  } else {
+    $('.cfg-time-ntp-settings').hide();
+  }
+}
+
+$('#time-ntp-enable').change(function() {
+  changeCfgTimeNtpView();
+});
+
+$(changeCfgTimeNtpView()); // Called on document.ready
+
+
+///> Weather cfg utils
 function changeCfgWeatherView() {
   if ($('#weather-update-enable').is(':checked')) {
     $(".cfg-weather-settings").show();
@@ -160,14 +238,14 @@ function changeCfgWeatherView() {
   }
 }
 
-$(changeCfgWeatherView()); // Called on document.ready
-
 $('#weather-update-enable').change(function() {
   changeCfgWeatherView();
 });
 
+$(changeCfgWeatherView()); // Called on document.ready
 
-// Display cfg utils
+
+///> Display cfg utils
 function changeDisplayIntensityView() {
   if ($('#display-auto-intensity').is(':checked')) {
     $("#display-intensity-val").prop("disabled", true);
@@ -176,12 +254,11 @@ function changeDisplayIntensityView() {
   }
 }
 
-$(changeDisplayIntensityView()); // Called on document.ready
-
 $('#display-auto-intensity').change(function() {
   changeDisplayIntensityView();
 });
 
+$(changeDisplayIntensityView()); // Called on document.ready
 
 
 $(document).ready(function() {

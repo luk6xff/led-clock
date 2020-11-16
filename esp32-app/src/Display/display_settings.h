@@ -36,7 +36,7 @@ struct DisplaySettings
 
     std::string toJson()
     {
-        StaticJsonDocument<256> doc;
+        StaticJsonDocument<512> doc;
         std::string json;
         JsonArray arr = doc.createNestedArray(DISPLAY_CFG_KEY);
         JsonObject obj = arr.createNestedObject();

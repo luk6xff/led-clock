@@ -21,9 +21,9 @@ struct RadioSensorSettings
         std::string json;
         JsonArray arr = doc.createNestedArray(RADIO_CFG_KEY);
         JsonObject obj = arr.createNestedObject();
-        obj[RADIO_CFG_VAL_UPDATE_INTERVAL] = crit_vbatt_level;
+        obj[RADIO_CFG_VAL_UPDATE_INTERVAL] = update_data_interval / 60; // Convert from seconds to minutes on server.
         obj = arr.createNestedObject();
-        obj[RADIO_CFG_VAL_CRIT_VBATT] = update_data_interval;
+        obj[RADIO_CFG_VAL_CRIT_VBATT] = crit_vbatt_level;
         serializeJson(doc, json);
         return json;
     }
@@ -36,6 +36,8 @@ struct RadioSensorSettings
             if (v[RADIO_CFG_VAL_UPDATE_INTERVAL])
             {
                 update_data_interval = v[RADIO_CFG_VAL_UPDATE_INTERVAL].as<uint32_t>();
+                // Convert from minutes on server to seconds
+                update_data_interval = update_data_interval * 60;
             }
             else if (v[RADIO_CFG_VAL_CRIT_VBATT])
             {

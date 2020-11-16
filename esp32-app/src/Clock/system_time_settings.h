@@ -92,8 +92,8 @@ struct NtpSettings
     }
 
     uint32_t ntpEnabled;
-    int32_t timeOffset;
-    uint32_t updateInterval;
+    int32_t timeOffset;      // in [min]
+    uint32_t updateInterval; // in [ms]
     char poolServerNames[3][NTP_SERVER_NAME_MAXLEN];
 };
 
@@ -105,7 +105,7 @@ struct SystemTimeSettings
 {
     std::string toJson()
     {
-        StaticJsonDocument<256> doc;
+        StaticJsonDocument<512+128> doc;
         std::string json;
         JsonArray arr = doc.createNestedArray(TIME_CFG_KEY);
         JsonObject obj = arr.createNestedObject();
@@ -115,15 +115,18 @@ struct SystemTimeSettings
         obj = arr.createNestedObject();
         obj[TIME_CFG_VAL_TZ_NUM] = timezoneNum;
         obj = arr.createNestedObject();
-        obj[TIME_CFG_VAL_TZ_1] = timeChangeRuleToServerStr(stdStart);
+        std::cout<< timeChangeRuleToServerStr(stdStart);
+        const std::string tz1 = timeChangeRuleToServerStr(stdStart);
+        obj[TIME_CFG_VAL_TZ_1] = tz1.c_str();
         obj = arr.createNestedObject();
-        obj[TIME_CFG_VAL_TZ_2] = timeChangeRuleToServerStr(dstStart);
+        const std::string tz2 = timeChangeRuleToServerStr(dstStart);
+        obj[TIME_CFG_VAL_TZ_2] = tz2.c_str();
         obj = arr.createNestedObject();
         obj[TIME_CFG_VAL_NTP_ON] = ntp.ntpEnabled;
         obj = arr.createNestedObject();
         obj[TIME_CFG_VAL_NTP_TIME_OFFSET] = ntp.timeOffset;
         obj = arr.createNestedObject();
-        obj[TIME_CFG_VAL_NTP_SYNC_INT] = ntp.updateInterval;
+        obj[TIME_CFG_VAL_NTP_SYNC_INT] = ntp.updateInterval / 1000 / 60; // Convert from ms to minutes on server
         serializeJson(doc, json);
         return json;
     }
@@ -162,7 +165,7 @@ struct SystemTimeSettings
                 }
                 else
                 {
-                    utils::err("Invalid settings for Timezone1");
+                    utils::err("Invalid settings for Timezone2");
                 }
             }
             else if (v[TIME_CFG_VAL_NTP_ON])
@@ -176,6 +179,8 @@ struct SystemTimeSettings
             else if (v[TIME_CFG_VAL_NTP_SYNC_INT])
             {
                 ntp.updateInterval = v[TIME_CFG_VAL_NTP_SYNC_INT].as<uint32_t>();
+                // Convert from minutes on server to ms
+                ntp.updateInterval = ntp.updateInterval * 60 * 1000;
             }
         }
     }
@@ -259,12 +264,12 @@ struct SystemTimeSettings
     {
         std::string s;
         s += '[';
-        s += tz.abbrev + '|';
-        s += tz.week + '|';
-        s += tz.dow + '|';
-        s += tz.month + '|';
-        s += tz.hour + '|';
-        s += tz.offset + ']';
+        s += std::string(tz.abbrev) + '|';
+        s += std::to_string(tz.week) + '|';
+        s += std::to_string(tz.dow) + '|';
+        s += std::to_string(tz.month) + '|';
+        s += std::to_string(tz.hour) + '|';
+        s += std::to_string(tz.offset) + ']';
         return s;
     }
 

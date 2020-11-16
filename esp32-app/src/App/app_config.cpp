@@ -175,7 +175,7 @@ void AppConfig::setDefaults()
     // SYSTEM TIME
     SystemTimeSettings timeCfg = {
         2,
-        {"CET ", Last, Sun, Oct, 3, 60},  // Central European Standard Time
+        {"CET", Last, Sun, Oct, 3, 60},  // Central European Standard Time
         {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
         {true, 0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org"}
     };
