@@ -115,11 +115,10 @@ struct SystemTimeSettings
         obj = arr.createNestedObject();
         obj[TIME_CFG_VAL_TZ_NUM] = timezoneNum;
         obj = arr.createNestedObject();
-        std::cout<< timeChangeRuleToServerStr(stdStart);
-        const std::string tz1 = timeChangeRuleToServerStr(stdStart);
+        const String tz1 = timeChangeRuleToServerStr(stdStart);
         obj[TIME_CFG_VAL_TZ_1] = tz1.c_str();
         obj = arr.createNestedObject();
-        const std::string tz2 = timeChangeRuleToServerStr(dstStart);
+        const String tz2 = timeChangeRuleToServerStr(dstStart);
         obj[TIME_CFG_VAL_TZ_2] = tz2.c_str();
         obj = arr.createNestedObject();
         obj[TIME_CFG_VAL_NTP_ON] = ntp.ntpEnabled;
@@ -210,17 +209,16 @@ struct SystemTimeSettings
             start = end + delim.length();
             end = str.find(delim, start);
         }
-        data.push_back(str.substr(start, end));
 
         if (data.size() != 6)
         {
-            utils::err("Not enough data in TZ cfg");
+            utils::err("Not enough data in TZ cfg: %d", data.size());
+            utils::dbg("TZ cfg:");
+            for (auto& d : data)
+            {
+                utils::dbg("%s", d.c_str());
+            }
             return false;
-        }
-        utils::dbg("TZ cfg:");
-        for (auto& d : data)
-        {
-            utils::dbg("%s", d.c_str());
         }
 
         // Check values
@@ -245,7 +243,7 @@ struct SystemTimeSettings
             return false;
         }
         const int offset = String(data[5].c_str()).toInt();
-        if (offset < 0 || offset > 23)
+        if (offset < -720 || offset > 720)
         {
             return false;
         }
@@ -255,21 +253,21 @@ struct SystemTimeSettings
         tz.week = week;
         tz.dow = dow;
         tz.month = month;
-        tz.hour = tz.hour;
+        tz.hour = hour;
         tz.offset = offset;
         return true;
     }
 
-    std::string timeChangeRuleToServerStr(const TimeChangeRule& tz)
+    String timeChangeRuleToServerStr(const TimeChangeRule& tz)
     {
-        std::string s;
+        String s;
         s += '[';
-        s += std::string(tz.abbrev) + '|';
-        s += std::to_string(tz.week) + '|';
-        s += std::to_string(tz.dow) + '|';
-        s += std::to_string(tz.month) + '|';
-        s += std::to_string(tz.hour) + '|';
-        s += std::to_string(tz.offset) + ']';
+        s += String(tz.abbrev) + '|';
+        s += String(tz.week) + '|';
+        s += String(tz.dow) + '|';
+        s += String(tz.month) + '|';
+        s += String(tz.hour) + '|';
+        s += String(tz.offset) + ']';
         return s;
     }
 

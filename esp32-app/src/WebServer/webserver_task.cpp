@@ -97,12 +97,28 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
     });
     server.addHandler(cfgSaveHandler);
 
+
     // Configuration read handler
-    server.on("/dev-cfg-read", HTTP_GET, [](AsyncWebServerRequest *request)
+    setCfgReadHandlers();
+    server.on("/dev-cfg-read", HTTP_GET, [this](AsyncWebServerRequest *request)
     {
-        std::string cfg =
-        request->send(200, "application/json", String(ESP.getFreeHeap()));
+        const int paramsNum = request->params();
+        std::string response = "{\"status\":\"failure\"}";
+        if (paramsNum == 1)
+        {
+            AsyncWebParameter* p = request->getParam(0);
+            for (const auto& h : m_cfgReadHandleMap)
+            {
+                if (p->value() == (String(h.first)))
+                {
+                    response = h.second();
+                }
+            }
+            request->send(200, "application/json", response.c_str());
+            utils::inf("/dev-cfg-read response: %s", response.c_str());
+        }
     });
+
 
     // Free Heap size
     server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -175,6 +191,43 @@ void WebServerTask::setCfgSaveHandlers()
                 cfg.fromJson(json);
                 utils::inf("%s", cfg.toJson().c_str());
                 return AppCfg.saveDisplaySettings(cfg);
+            }
+        },
+    };
+}
+
+//------------------------------------------------------------------------------
+void WebServerTask::setCfgReadHandlers()
+{
+    m_cfgReadHandleMap = {
+
+        {WIFI_CFG_KEY, [this]()
+            {
+                return AppCfg.getCurrent().wifi.toJson();
+            }
+        },
+
+        {TIME_CFG_KEY , [this]()
+            {
+                return AppCfg.getCurrent().time.toJson();
+            }
+        },
+
+        {WEATHER_CFG_KEY, [this]()
+            {
+                return AppCfg.getCurrent().weather.toJson();
+            }
+        },
+
+        {RADIO_CFG_KEY, [this]()
+            {
+                return AppCfg.getCurrent().radioSensor.toJson();
+            }
+        },
+
+        {DISPLAY_CFG_KEY, [this]()
+            {
+                return AppCfg.getCurrent().display.toJson();
             }
         },
     };

@@ -151,7 +151,7 @@ $('#cfg_refresh_button').click(function() {
 
     $.getJSON("dev-cfg-read", { cfg: cfgName }, function(data) {
       var items = [];
-      const json = JSON.parse(data);
+      const json = data;
       console.log(json);
       if (json) {
         if (json.hasOwnProperty(cfgName)) {

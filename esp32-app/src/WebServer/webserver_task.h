@@ -17,6 +17,7 @@ private:
 
     void registerHandlers(AsyncWebServer& server);
     void setCfgSaveHandlers();
+    void setCfgReadHandlers();
 
     /**
      * @brief OTA update handler
@@ -31,5 +32,6 @@ private:
     //const WebServerSettings& m_webServerCfg;
 
     std::map<String, std::function<bool(const JsonObject&)>> m_cfgSaveHandleMap;
+    std::map<String, std::function<std::string(void)>> m_cfgReadHandleMap;
     size_t m_otaFileContentLen;
 };

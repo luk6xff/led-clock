@@ -85,7 +85,8 @@ struct WeatherSettings
         obj = arr.createNestedObject();
         obj[WEATHER_CFG_VAL_OWM_LANG] = language;
         obj = arr.createNestedObject();
-        obj[WEATHER_CFG_VAL_OWM_CITY] = cityToServerStr(city);
+        const String c = cityToServerStr(city);
+        obj[WEATHER_CFG_VAL_OWM_CITY] = c.c_str();
         serializeJson(doc, json);
         return json;
     }
@@ -157,17 +158,16 @@ struct WeatherSettings
             start = end + delim.length();
             end = str.find(delim, start);
         }
-        data.push_back(str.substr(start, end));
 
         if (data.size() != 3)
         {
-            utils::err("Not enough data in Weather city cfg");
+            utils::err("Not enough data in Weather city cfg: %d", data.size());
+            utils::dbg("City cfg:");
+            for (auto& d : data)
+            {
+                utils::dbg("%s", d.c_str());
+            }
             return false;
-        }
-        utils::dbg("City cfg:");
-        for (auto& d : data)
-        {
-            utils::dbg("%s", d.c_str());
         }
 
         // Check values
@@ -190,13 +190,13 @@ struct WeatherSettings
     }
 
 
-    std::string cityToServerStr(const City& city)
+    String cityToServerStr(const City& city)
     {
-        std::string s;
-        s += '[';
-        s += city.cityName + '|';
-        s += city.latitude + '|';
-        s += city.longitude + ']';
+        String s;
+        s += String('[');
+        s += String(city.cityName) + '|';
+        s += String(city.latitude) + '|';
+        s += String(city.longitude) + ']';
         return s;
     }
 

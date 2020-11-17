@@ -517,6 +517,7 @@ static void test6()
             obj[TIME_CFG_VAL_TZ_NUM] = timezoneNum;
             obj = arr.createNestedObject();
             const std::string tz1 = timeChangeRuleToServerStr(stdStart);
+            std::cout << ">>>>TZ1: " << tz1 << std::endl;
             obj[TIME_CFG_VAL_TZ_1] = tz1.c_str();
             obj = arr.createNestedObject();
             const std::string tz2 = timeChangeRuleToServerStr(dstStart);
@@ -610,43 +611,47 @@ static void test6()
                 start = end + delim.length();
                 end = str.find(delim, start);
             }
-            data.push_back(str.substr(start, end));
 
             if (data.size() != 6)
             {
-                std::cout << ("Not enough data in TZ cfg");
+                std::cout << ("Not enough data in TZ cfg") << data.size();
+                std::cout <<("TZ cfg:") << std::endl;
+                for (auto& d : data)
+                {
+                    std::cout <<(d.c_str()) << std::endl;
+                }
                 return false;
-            }
-            std::cout <<("TZ cfg:");
-            for (auto& d : data)
-            {
-                std::cout <<(d.c_str());
             }
 
             // Check values
             const int week = std::stoi(std::string(data[1].c_str()));
             if (week < Last || week > Fourth)
             {
+                std::cout << ">>> 1111"<< std::endl;
                 return false;
             }
             const int dow = std::stoi(std::string(data[2].c_str()));
             if (dow < Sun || dow > Sat)
             {
+                std::cout << ">>> 2222"<< std::endl;
                 return false;
             }
             const int month = std::stoi(std::string(data[3].c_str()));
             if (month < Jan || month > Dec)
             {
+                std::cout << ">>> 3333"<< std::endl;
                 return false;
             }
             const int hour = std::stoi(std::string(data[4].c_str()));
             if (hour < 0 || hour > 23)
             {
+                std::cout << ">>> 4444"<< std::endl;
                 return false;
             }
             const int offset = std::stoi(std::string(data[5].c_str()));
-            if (offset < 0 || offset > 23)
+            if (offset < -720 || offset > 720)
             {
+                std::cout << ">>> 5555"<< std::endl;
                 return false;
             }
 
@@ -655,7 +660,7 @@ static void test6()
             tz.week = week;
             tz.dow = dow;
             tz.month = month;
-            tz.hour = tz.hour;
+            tz.hour = hour;
             tz.offset = offset;
             return true;
         }
@@ -693,35 +698,55 @@ static void test6()
 
 
 ///> TEST - START
-    WifiSettings wifi;
-    RadioSensorSettings radio = {60, 3000};
-    SystemTimeSettings time = {
-        2,
-        {"CET ", Last, Sun, Oct, 3, 60},  // Central European Standard Time
-        {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
-        {true, 0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org"}
-    };;
+    // WifiSettings wifi;
+    // RadioSensorSettings radio = {60, 3000};
+    // SystemTimeSettings time = {
+    //     2,
+    //     {"CET ", Last, Sun, Oct, 3, 60},  // Central European Standard Time
+    //     {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
+    //     {true, 0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org"}
+    // };;
 
-    std::cout << "wifi.toJson(): "<< wifi.toJson() << std::endl;
-    std::cout << "radio.toJson(): "<< radio.toJson() << std::endl;
-    std::cout << "time.toJson(): "<< time.toJson() << std::endl;
+    // std::cout << "wifi.toJson(): "<< wifi.toJson() << std::endl;
+    // std::cout << "radio.toJson(): "<< radio.toJson() << std::endl;
+    // std::cout << "time.toJson(): "<< time.toJson() << std::endl;
 
 /// MERGE JSONS
-    std::function<void(JsonObject, JsonObjectConst)> mergeJson = [](JsonObject dest, JsonObjectConst src)
+    // std::function<void(JsonObject, JsonObjectConst)> mergeJson = [](JsonObject dest, JsonObjectConst src)
+    // {
+    //     for (auto kvp : src) {
+    //         dest[kvp.key()] = kvp.value();
+    //     }
+    // };
+    // StaticJsonDocument<1024> appCfg, dw, dr, dt;
+    // //char json[] = "{\"dev-cfg-wifi\":[{\"wifi-ssid\":\"INTEHNExx\"},{\"wifi-pass\":\"Faza19xxxx\"},{\"wifi-ap-pass\":\"admin123\"}]}";
+    // deserializeJson(dw, wifi.toJson().c_str());
+    // deserializeJson(dr, radio.toJson().c_str());
+    // deserializeJson(dt, time.toJson().c_str());
+    // mergeJson(appCfg.as<JsonObject>(), dw.as<JsonObject>());
+    // mergeJson(appCfg.as<JsonObject>(), dr.as<JsonObject>());
+    // mergeJson(appCfg.as<JsonObject>(), dt.as<JsonObject>());
+    // serializeJsonPretty(appCfg, std::cout);
+
+/// PARSE JSON STRING TO JSON OBJ
+    const char *json = "{\"dev-cfg-time\":[{\"time-date\":\"2020-11-20\"},{\"time-clock\":\"18:00:00\"},{\"time-timezone-1\":\"[CET|0|1|10|3|60]\"},{\"time-timezone-2\":\"[CEST|0|1|3|2|120]\"},{\"time-ntp-time-offset\":\"0\"},{\"time-ntp-sync-interval\":\"60\"},{\"time-ntp-enable\":0},{\"time-timezone-num\":\"2\"}]}";
+    SystemTimeSettings cfg;
+    //std::cout << "toJson(): "<< cfg.toJson() << std::endl;
+    StaticJsonDocument<1024> doc;
+    DeserializationError error = deserializeJson(doc, json);
+    if (error)
     {
-        for (auto kvp : src) {
-            dest[kvp.key()] = kvp.value();
-        }
-    };
-    StaticJsonDocument<1024> appCfg, dw, dr, dt;
-    //char json[] = "{\"dev-cfg-wifi\":[{\"wifi-ssid\":\"INTEHNExx\"},{\"wifi-pass\":\"Faza19xxxx\"},{\"wifi-ap-pass\":\"admin123\"}]}";
-    deserializeJson(dw, wifi.toJson().c_str());
-    deserializeJson(dr, radio.toJson().c_str());
-    deserializeJson(dt, time.toJson().c_str());
-    mergeJson(appCfg.as<JsonObject>(), dw.as<JsonObject>());
-    mergeJson(appCfg.as<JsonObject>(), dr.as<JsonObject>());
-    mergeJson(appCfg.as<JsonObject>(), dt.as<JsonObject>());
-    serializeJsonPretty(appCfg, std::cout);
+        std::cerr << "deserializeJson() failed: " << error.c_str() << std::endl;
+        return;
+    }
+
+    std::cout << "SystemTimeSettings BEFORE fromJson(): "<< cfg.toJson() << std::endl << std::endl;
+    cfg.fromJson(doc.as<JsonObject>());
+    std::cout << "SystemTimeSettings AFTER fromJson(): "<< cfg.toJson() << std::endl;
+
+
+
+/// TEST END
     std::cout << std::endl;
 }
 
