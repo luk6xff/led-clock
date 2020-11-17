@@ -44,7 +44,7 @@ void WebServerTask::run()
     m_server.begin();
     Update.onProgress(std::bind(&WebServerTask::printOtaUpdateProgress, this, _1, _2));
 
-    if (!MDNS.begin("ledclock"))
+    if (!MDNS.begin(AppCfg.getCurrent().wifi.ap_hostname))
     {
         utils::err("Error setting up MDNS responder!");
     }
@@ -68,7 +68,7 @@ void WebServerTask::run()
 void WebServerTask::registerHandlers(AsyncWebServer& server)
 {
     // Update Device info tab
-    server.on("/devinfo", HTTP_GET, [] (AsyncWebServerRequest *request)
+    server.on("/dev-app-sysinfo", HTTP_GET, [] (AsyncWebServerRequest *request)
     {
         DeviceInfo devInfo;
         request->send(200, "application/json", devInfo.createDevInfoTable());
@@ -125,6 +125,35 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
         request->send(errorCode, "application/json", response.c_str());
         utils::inf("/dev-cfg-read response: %s", response.c_str());
     });
+
+
+    // App reset
+    server.on("/dev-app-reset", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(200, "text/plain", "success");
+        utils::inf("App is being restarted...");
+        ESP.restart();
+    });
+
+
+    // App print some text
+    AsyncCallbackJsonWebHandler *appPrintTextHandler = new AsyncCallbackJsonWebHandler("/dev-app-print-text",
+                                                [this](AsyncWebServerRequest *request, JsonVariant &json)
+    {
+        JsonObject jsonObj = json.as<JsonObject>();
+        String response = "{\"status\":\"error\"}";
+        uint16_t errorCode = 400;
+        if (jsonObj.containsKey("txt"))
+        {
+            String txt = jsonObj["txt"];
+
+            response = "{\"status\":\"success\"}";
+            errorCode = 200;
+            utils::inf("/dev-app-print-text TXT: %s", txt.c_str());
+        }
+        request->send(errorCode, "application/json", response);
+        utils::inf("/dev-app-print-text response: %s", response.c_str());
+    });
+    server.addHandler(appPrintTextHandler);
 
 
     // Free Heap size

@@ -35,41 +35,73 @@
           </div>
         </a>
       <ul class="nav nav-tabs nav-justified" id="tab">
-        <li><a class="nav-link active" href="#tab_devinfo" data-toggle="tab">Device Status</a></li>
+        <li><a class="nav-link active" href="#tab_devapp" data-toggle="tab">App</a></li>
         <li><a class="nav-link" href="#tab_devcfg" data-toggle="tab">Configuration</a></li>
         <li><a class="nav-link" href="#tab_devota" data-toggle="tab">OTA update</a></li>
       </ul>
       <div class="tab-content">
-        <div class="tab-pane fade show active" id="tab_devinfo">
-          <h2>Device Status</h2>
+
+        <div class="tab-pane fade show active" id="tab_devapp">
+          <h2>App</h2>
           <div class="container light-style flex-grow-1 container-p-y">
             <div class="card overflow-hidden">
               <div class="row no-gutters row-bordered row-border-light">
                 <div class="col-md-3 pt-0">
                   <div class="list-group list-group-flush account-settings-links">
-                    <a class="list-group-item list-group-item-action list-group-hover active" data-toggle="list" href="#dev-info-data">Data</a>
-                    <a class="list-group-item list-group-item-action list-group-hover" data-toggle="list" href="#dev-info-system">System</a>
+                    <a class="list-group-item list-group-item-action list-group-hover active" data-toggle="list" href="#dev-app-utils">Utils</a>
+                    <a class="list-group-item list-group-item-action list-group-hover" data-toggle="list" href="#dev-app-data">Data</a>
+                    <a class="list-group-item list-group-item-action list-group-hover" data-toggle="list" href="#dev-app-sysinfo">System</a>
                   </div>
                 </div>
                 <div class="col-md-9">
                   <div class="tab-content">
-                    <div class="tab-pane fade dev-tab-pane active show" id="dev-info-data">
-                      <hr class="border-light m-0">
-                      <div class="card-body">
+
+                    <div class="tab-pane fade dev-tab-pane active show" id="dev-app-utils">
+                      <div class="card-body pb-2">
                         <div class="form-group">
-                          <label class="form-label">Time</label>
-                          <input type="text" class="form-control mb-1" placeholder="12:00:00">
+                          <h5 class="mb-4">Set date and time</h5>
+                          <label for="app-date">Date</label>
+                          <input class="form-control" type="date" id="app-date" value="2020-11-20">
+                          <label for="app-time">Time</label>
+                          <input class="form-control" type="time" id="app-time" value="12:00:00">
+                          <div class="text-right mt-4">
+                            <button type="button" id="app-date-time-button" class="btn btn-primary btn-default">Set date and time</button>
+                          </div>
                         </div>
                         <div class="form-group">
-                          <label class="form-label">Date</label>
-                          <input type="text" class="form-control" placeholder="20-11-2020">
+                          <h5 for="app-print-text" class="mb-4">Display text</h5>
+                          <label for="app-print-text">Print some text on the display</label>
+                          <textarea class="form-control" id="app-print-text" rows="3" maxlength="512"></textarea>
+                          <div class="text-right mt-4">
+                            <button type="button" id="app-print-text-button" class="btn btn-primary btn-default">Print!</button>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <h5 class="mb-4">Reset device</h5>
+                          <div class="text-left mt-4">
+                            <button type="button" id="app-reset-button" class="btn btn-large btn-primary btn-default">Send reset request</button>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div class="tab-pane fade dev-tab-pane" id="dev-info-system">
+                    <div class="tab-pane fade dev-tab-pane" id="dev-app-data">
+                      <hr class="border-light m-0">
+                      <div class="card-body">
+                        <div class="form-group">
+                          <label class="form-label">Time</label>
+                          <input type="text" class="form-control mb-1" placeholder="12:00:00" readonly='true'>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Date</label>
+                          <input type="text" class="form-control" placeholder="20-11-2020" readonly='true'>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="tab-pane fade dev-tab-pane" id="dev-app-sysinfo">
                       <div class="card-body pb-2">
-                        <table id="table_devinfo" data-toggle="table" data-show-colunns="true">
+                        <table id="app-sysinfo-table" data-toggle="table" data-show-colunns="true">
                           <thead>
                             <tr>
                               <th data-field="name" data-align="left" data-sortable="true" data-formatter="nameFormatter">Name</th>
@@ -79,12 +111,14 @@
                         </table>
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
         <div class="tab-pane fade" id="tab_devcfg">
           <h2>Device Configuration</h2>
           <div class="container light-style flex-grow-1 container-p-y">
@@ -97,7 +131,6 @@
                     <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-weather">Weather</a>
                     <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-radio">Radio</a>
                     <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-display">Display</a>
-                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-app">App</a>
                   </div>
                 </div>
                 <div class="col-md-9">
@@ -135,15 +168,6 @@
                     </div>
                     <div class="tab-pane fade" id="dev-cfg-time">
                       <div class="card-body pb-2">
-                        <div class="form-group">
-                          <label class="form-label">Date</label>
-                          <input class="form-control" type="date" id="time-date" value="2020-11-20">
-                        </div>
-                        <div class="form-group">
-                          <label class="form-label">Time</label>
-                          <input class="form-control" type="time" id="time-clock" value="12:00:00">
-                        </div>
-                        <hr class="border-primary m-0">
                         <div class="form-group">
                           <label class="form-label">Timezones number</label>
                           <select class="custom-select" id="time-timezone-num">
@@ -258,10 +282,6 @@
                         </div>
                       </div>
                     </div>
-
-                    <div class="tab-pane fade" id="dev-cfg-app">
-
-                    </div>
                   </div>
                 </div>
               </div>
@@ -274,7 +294,7 @@
             </div>
             <div class="text-right mt-3 cfg-buttons">
               <button type="button" id="cfg_save_button" class="btn btn-primary btn-success">Save changes</button>
-              <button type="button" id="cfg_refresh_button" class="btn btn-default">Refresh</button>
+              <button type="button" id="cfg_refresh_button" class="btn btn-secondary btn-default">Refresh</button>
             </div>
           </div>
         </div>

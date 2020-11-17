@@ -9,8 +9,6 @@
 
 
 #define TIME_CFG_KEY                    "dev-cfg-time"
-#define TIME_CFG_VAL_DATE               "time-date"
-#define TIME_CFG_VAL_CLK                "time-clock"
 #define TIME_CFG_VAL_TZ_NUM             "time-timezone-num"
 #define TIME_CFG_VAL_TZ_1               "time-timezone-1"
 #define TIME_CFG_VAL_TZ_2               "time-timezone-2"
@@ -108,10 +106,6 @@ struct SystemTimeSettings
         StaticJsonDocument<512+128> doc;
         std::string json;
         JsonArray arr = doc.createNestedArray(TIME_CFG_KEY);
-        JsonObject obj = arr.createNestedObject();
-        obj[TIME_CFG_VAL_DATE] = "2020-11-20";
-        obj = arr.createNestedObject();
-        obj[TIME_CFG_VAL_CLK] = "11:20";
         obj = arr.createNestedObject();
         obj[TIME_CFG_VAL_TZ_NUM] = timezoneNum;
         obj = arr.createNestedObject();

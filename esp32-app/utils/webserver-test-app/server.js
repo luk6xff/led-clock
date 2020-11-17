@@ -1,7 +1,8 @@
-var express = require('express');
-var app = express();
+const express = require('express');
+const app = express();
 const PORT = 8081;
 
+app.use(express.json())
 app.use(express.static('../../data'));
 
 
@@ -11,7 +12,7 @@ app.get('/', function (req, res) {
 
 
 // GET
-app.get('/devinfo', function (req, res) {
+app.get('/dev-app-sysinfo', function (req, res) {
     res.json([{"name":"TEST SERVER APP","value":"TEST_SERVER","unit":"","glyph":"glyphicon-scale"},
                 {"name":"Build author","value":"luk6xff","unit":"","glyph":"glyphicon-scale"},
                 {"name":"Build date","value":"Nov 11 2020","unit":"","glyph":"glyphicon-scale"},
@@ -25,14 +26,14 @@ app.get('/devinfo', function (req, res) {
  })
 
 
-// POST
+// Cfg save
 app.post('/dev-cfg-save', function (req, res) {
     console.log("Got a POST dev-cfg-save request for: " + req);
     const resp = "{\"status\":\"error\"}";
-    res.status(400).send(resp);
-})
+    res.status(200).send(resp);
+});
 
-// GET
+// Cfg read
 app.get('/dev-cfg-read', function (req, res) {
    console.log("Got a dev-cfg-read request: " + req.query.cfg);
    if (req.query.cfg == "dev-cfg-wifi") {
@@ -58,16 +59,38 @@ app.get('/dev-cfg-read', function (req, res) {
    else {
       res.status(404).send('{"dev-cfg-wifi": "failure"}');
    }
-})
+});
+
+// App restart
+app.get('/dev-app-reset', function (req, res) {
+   res.status(200).send("App is being restarted success");
+});
+
+// App print some text
+app.post('/dev-app-print-text', function (req, res) {
+   console.log("Got a dev-app-print-text request for: " + JSON.stringify(req.body));
+   const resp = "{\"status\":\"success\"}";
+   res.status(200).send(resp);
+});
+
+// App set date and time
+app.post('/dev-app-set-dt', function (req, res) {
+   console.log("Got a dev-app-set-dt request for: " + req.query.dt);
+   const resp = "{\"dev-app-set-dt\":\"success\"}";
+   res.status(200).send(resp);
+});
 
 
+// Ota update
 app.post('/update', function (req, res) {
    console.log("Got a POST request for: " + req.baseUrl);
    res.status(200).send('OTA started...');
 })
 
 
-// SERVER
+
+
+// SERVER start
 var server = app.listen(PORT, function () {
    var host = server.address().address
    var port = server.address().port

@@ -13,7 +13,7 @@ var timer_updateDevInfo;
 $('a[data-toggle=\"tab\"]').on('shown.bs.tab', function (e) {
   clearTimeout(timer_updateDevInfo);
   var target = $(e.target).attr("href")
-  console.log('activated ' + target);
+  console.log('activeTab: ' + target);
   // IE10, Firefox, Chrome, etc.
   // if (history.pushState) {
   //   window.history.pushState(null, null, target);
@@ -23,18 +23,30 @@ $('a[data-toggle=\"tab\"]').on('shown.bs.tab', function (e) {
   // }
   localStorage.setItem('activeTab', $(e.target).attr('href'));
 
-  if (target=='#tab_devinfo')  {
-    $('#table_devinfo').bootstrapTable('refresh',{silent:true, url:'/devinfo'});
+  // Update Sysinfo
+  if (target=='#tab_devapp') {
+    getAppSystemInfo();
   }
 });
 
-// Create a timer to update device info data every n secondes
-$('#tab_devinfo').on('load-success.bs.table',function (e,data) {
-  console.log("tab_devinfo loaded");
+/**
+ * @summary Create a timer to update system info data every n secondes
+ */
+$('#tab_devapp').on('load-success.bs.table',function (e,data) {
+  console.log("tab_devapp loaded");
   timer_updateDevInfo = setTimeout(function() {
-    $('#table_devinfo').bootstrapTable('refresh',{silent: true, showLoading: false, url: '/devinfo'});
+    getAppSystemInfo();
   }, 5000);
 });
+
+
+/**
+ * @summary Get info from system
+ */
+function getAppSystemInfo() {
+  clearTimeout(timer_updateDevInfo);
+  $('#app-sysinfo-table').bootstrapTable('refresh',{silent:true, url:'/dev-app-sysinfo'});
+}
 
 function nameFormatter(value, row) {
   //console.log("nameFormatter");
@@ -103,12 +115,22 @@ var activConfigTabPane = null;
 
 $('.tab-pane a').on('shown.bs.tab', function(event) {
     activConfigTabPane = $(event.target);         // active tab
-    console.log("Active_ConfigTab: " + activConfigTabPane)
+    console.log("Active_ConfigTab: " + activConfigTabPane.attr("href"))
     if (activConfigTabPane != null) {
       $('.cfg-buttons').find('button').attr("disabled", false);
     }
-    // Refresh data on config page
-    $('#cfg_refresh_button').trigger('click');
+
+    // Refresh data only on cfg tabs
+    if (activConfigTabPane.attr("href").includes("dev-cfg"))
+    {
+      $('#cfg_refresh_button').trigger('click');
+    }
+
+    // // Refresh system info data only on app system tab
+    if (activConfigTabPane.attr("href").includes("dev-app-sysinfo"))
+    {
+      getAppSystemInfo();
+    }
 });
 
 
@@ -292,7 +314,7 @@ $('#display-auto-intensity').change(function() {
 
 $(changeDisplayIntensityView()); // Called on document.ready
 
-
+// LU_TODO show passwords
 $(document).ready(function() {
   $("#show_hide_password a").on('click', function(event) {
       event.preventDefault();
@@ -307,6 +329,67 @@ $(document).ready(function() {
       }
   });
 });
+
+
+///> APP TAB
+// App restart button
+$('#app-reset-button').click(function() {
+  console.log('#app-reset-button CLICKED')
+
+  $.get("dev-app-reset", function(data) {
+    console.log(data);
+  })
+  .done(function(data) {
+    console.log("App successfully restarted "+data);
+  })
+  .fail(function(data) {
+    console.log("error: "+data);
+    showAlert('error', "App cannot be restarted " + data);
+  });
+});
+
+// App print some text button
+$('#app-print-text-button').click(function() {
+  console.log('#app-print-text-button CLICKED')
+
+  const text = {'txt' : $('#app-print-text').val() }
+  console.log(text)
+  $.ajax({
+    url:"dev-app-print-text",
+    type:"POST",
+    data: JSON.stringify(text),
+    contentType:"application/json",
+    dataType:"json",
+    success: function(data) {
+      console.log("app-print-text-button - success" + JSON.stringify(data));
+      showAlert('success', JSON.stringify(data));
+    },
+    error: function(data){
+        console.log("app-print-text-button - failure" + JSON.stringify(data));
+        showAlert('error', JSON.stringify(data));
+    }
+  });
+});
+
+// App set date and time
+$('#app-date-time-button').click(function() {
+  console.log('#app-date-time-button CLICKED')
+
+  var dt = new Date($('#app-date').val()+'T'+$('#app-time').val());
+  console.log(dt);
+
+  console.log(dt.getTime());
+  $.post("dev-app-set-dt", {'dt' : dt.getTime()}, function() {
+    console.log("app-datetime set succesfully: "+ dt.toString());
+  })
+  .done(function(data) {
+    showAlert('success',"app-datetime set succesfully! "+ JSON.stringify(data));
+  })
+  .fail(function(data) {
+    showAlert('error',"app-datetime has not been set! "+ JSON.stringify(data));
+  });
+});
+
 
 /* OTA TAB */
 
