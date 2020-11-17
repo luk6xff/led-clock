@@ -1,11 +1,14 @@
+/**
+ * Copyright (c) 2020 luk6xff
+ *
+ * @summary LedClock webserver client scripts
+ * @author luk6xff <lukasz.uszko@gmail.com>
+ *
+ * Created at: 2020-11-20
+ */
 
 /* Device Status TAB */
 var timer_updateDevInfo;
-
-// $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
-
-//   alert(e.target.href);
-// })
 
 $('a[data-toggle=\"tab\"]').on('shown.bs.tab', function (e) {
   clearTimeout(timer_updateDevInfo);
@@ -67,7 +70,33 @@ $(document).ready(function() {
   if (activConfigTabPane == null) {
     $('.cfg-buttons').find('button').attr("disabled", true);
   }
+
+  hideAlerts();
 })
+
+/* Succes, Error Alerts */
+function hideAlerts() {
+  $("#success-alert").hide();
+  $("#error-alert").hide();
+}
+
+function showAlert(alertType, text) {
+  if (alertType == 'success') {
+    $("#success-alert").text(text);
+    $("#success-alert").fadeTo(2000, 500).slideUp(500, function() {
+      $("#success-alert").slideUp(500);
+    });
+  }
+  else if (alertType == 'error') {
+    $("#error-alert").text(text);
+    $("#error-alert").fadeTo(2000, 500).slideUp(500, function() {
+      $("#error-alert").slideUp(500);
+    });
+  }
+  else {
+    console.log("Invalid Alert type: " + alertType);
+  }
+}
 
 /* Configuration TAB */
 var activConfigTabPane = null;
@@ -133,11 +162,14 @@ $('#cfg_save_button').click(function() {
       data: JSON.stringify(cfgData),
       contentType:"application/json",
       dataType:"json",
-      success: function(data){
+      success: function(data) {
         console.log("cfg_save_button - success" + JSON.stringify(data));
+        showAlert('success', JSON.stringify(data));
       },
       error: function(data){
           console.log("cfg_save_button - failure" + JSON.stringify(data));
+          showAlert('error', JSON.stringify(data));
+          $('#cfg_refresh_button').trigger('click');
       }
     });
 });
@@ -150,7 +182,6 @@ $('#cfg_refresh_button').click(function() {
     const cfgName = target.replace("#", "");
 
     $.getJSON("dev-cfg-read", { cfg: cfgName }, function(data) {
-      var items = [];
       const json = data;
       console.log(json);
       if (json) {
@@ -186,6 +217,7 @@ $('#cfg_refresh_button').click(function() {
     })
     .fail(function(data) {
       console.log("error: "+cfgName+" - "+data);
+      showAlert('error', "Refresh config data failed! " + JSON.stringify(data));
     })
     .always(function(data) {
       console.log("finished: "+cfgName+" - "+data);

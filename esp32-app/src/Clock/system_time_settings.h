@@ -46,7 +46,7 @@ struct NtpSettings
         memset(poolServerNames[2], 0, NTP_SERVER_NAME_MAXLEN);
         if (server0Name)
         {
-            memcpy(poolServerNames[0], server0Name, strlen(server0Name));
+            memcpy(poolServerNames[0], server0Name, NTP_SERVER_NAME_MAXLEN);
         }
         if (server1Name)
         {

@@ -80,7 +80,8 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
                                                 [this](AsyncWebServerRequest *request, JsonVariant &json)
     {
         JsonObject jsonObj = json.as<JsonObject>();
-        String response = "{\"status\":\"failure\"}";
+        String response = "{\"status\":\"error\"}";
+        uint16_t errorCode = 400;
         for (const auto& h : m_cfgSaveHandleMap)
         {
             if (jsonObj.containsKey(h.first))
@@ -88,11 +89,12 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
                 if (h.second(jsonObj))
                 {
                     response = "{\"status\":\"success\"}";
+                    errorCode = 200;
                 }
                 break;
             }
         }
-        request->send(200, "application/json", response);
+        request->send(errorCode, "application/json", response);
         utils::inf("/dev-cfg-save response: %s", response.c_str());
     });
     server.addHandler(cfgSaveHandler);
@@ -103,7 +105,8 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
     server.on("/dev-cfg-read", HTTP_GET, [this](AsyncWebServerRequest *request)
     {
         const int paramsNum = request->params();
-        std::string response = "{\"status\":\"failure\"}";
+        uint16_t errorCode = 400;
+        std::string response = "{\"status\":\"error\"}";
         if (paramsNum == 1)
         {
             AsyncWebParameter* p = request->getParam(0);
@@ -112,11 +115,15 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
                 if (p->value() == (String(h.first)))
                 {
                     response = h.second();
+                    errorCode = 200;
+                    break;
                 }
             }
-            request->send(200, "application/json", response.c_str());
-            utils::inf("/dev-cfg-read response: %s", response.c_str());
+
         }
+
+        request->send(errorCode, "application/json", response.c_str());
+        utils::inf("/dev-cfg-read response: %s", response.c_str());
     });
 
 
@@ -137,7 +144,7 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
 
     server.onNotFound([](AsyncWebServerRequest *request)
     {
-        request->send(404, "text/plain", "Not found");
+        request->send(404, "text/plain", " <<< Not found >>> ");
     });
 
 
@@ -152,6 +159,7 @@ void WebServerTask::setCfgSaveHandlers()
         {WIFI_CFG_KEY, [this](const JsonObject& json)
             {
                 WifiSettings cfg = AppCfg.getCurrent().wifi;
+                // LU_TODO add return value from parser
                 cfg.fromJson(json);
                 utils::inf("%s", cfg.toJson().c_str());
                 return AppCfg.saveWifiSettings(cfg);
