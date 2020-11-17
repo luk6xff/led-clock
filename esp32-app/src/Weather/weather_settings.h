@@ -103,6 +103,10 @@ struct WeatherSettings
             else if (v[WEATHER_CFG_VAL_SYNC_INTERVAL])
             {
                 updateInterval = v[WEATHER_CFG_VAL_SYNC_INTERVAL].as<uint32_t>();
+                if (updateInterval == 0)
+                {
+                    updateInterval = 1;
+                }
                 // Convert from minutes on server to seconds
                 updateInterval = updateInterval * 60;
             }

@@ -106,6 +106,7 @@ struct SystemTimeSettings
         StaticJsonDocument<512+128> doc;
         std::string json;
         JsonArray arr = doc.createNestedArray(TIME_CFG_KEY);
+        JsonObject obj = arr.createNestedObject();
         obj = arr.createNestedObject();
         obj[TIME_CFG_VAL_TZ_NUM] = timezoneNum;
         obj = arr.createNestedObject();
@@ -131,7 +132,11 @@ struct SystemTimeSettings
         {
             if (v[TIME_CFG_VAL_TZ_NUM])
             {
-                timezoneNum =  v[TIME_CFG_VAL_TZ_NUM].as<uint32_t>();
+                timezoneNum = v[TIME_CFG_VAL_TZ_NUM].as<uint32_t>();
+                if (timezoneNum == 0 || timezoneNum > 2)
+                {
+                    timezoneNum = 1;
+                }
             }
             else if (v[TIME_CFG_VAL_TZ_1])
             {
@@ -168,10 +173,18 @@ struct SystemTimeSettings
             else if (v[TIME_CFG_VAL_NTP_TIME_OFFSET])
             {
                 ntp.timeOffset = v[TIME_CFG_VAL_NTP_TIME_OFFSET].as<int32_t>();
+                if (ntp.timeOffset < -720 || ntp.timeOffset > 720)
+                {
+                    ntp.timeOffset = 0;
+                }
             }
             else if (v[TIME_CFG_VAL_NTP_SYNC_INT])
             {
                 ntp.updateInterval = v[TIME_CFG_VAL_NTP_SYNC_INT].as<uint32_t>();
+                if (ntp.updateInterval == 0)
+                {
+                    ntp.updateInterval = 1;
+                }
                 // Convert from minutes on server to ms
                 ntp.updateInterval = ntp.updateInterval * 60 * 1000;
             }

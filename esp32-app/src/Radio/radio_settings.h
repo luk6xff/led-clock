@@ -36,6 +36,10 @@ struct RadioSensorSettings
             if (v[RADIO_CFG_VAL_UPDATE_INTERVAL])
             {
                 update_data_interval = v[RADIO_CFG_VAL_UPDATE_INTERVAL].as<uint32_t>();
+                if (update_data_interval == 0)
+                {
+                    update_data_interval = 1;
+                }
                 // Convert from minutes on server to seconds
                 update_data_interval = update_data_interval * 60;
             }

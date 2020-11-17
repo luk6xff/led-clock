@@ -697,6 +697,85 @@ static void test6()
     };
 
 
+//DISPLAY_SETTINGS
+    #define DISPLAY_CFG_KEY                 "dev-cfg-display"
+    #define DISPLAY_CFG_VAL_AUTO_INTENSITY  "display-auto-intensity"
+    #define DISPLAY_CFG_VAL_INTENSITY_VALUE "display-intensity-val"
+    #define DISPLAY_CFG_VAL_ANIM_SPEED      "display-anim-speed"
+    #define DISPLAY_CFG_VAL_TIME_FORMAT     "display-time-format"
+
+
+    struct DisplaySettings
+    {
+        DisplaySettings()
+            : enableAutoIntenisty(true)
+            , intensityValue(0)
+            , animSpeed(70)
+            , timeFormat(1)
+        {
+
+        }
+
+        DisplaySettings(bool enableOnOff, uint8_t intensityValue,
+                        uint8_t animSpeed,  uint8_t timeFormat)
+            : enableAutoIntenisty(enableOnOff)
+            , intensityValue(intensityValue)
+            , animSpeed(animSpeed)
+            , timeFormat(timeFormat)
+        {
+
+        }
+
+        std::string toJson()
+        {
+            StaticJsonDocument<512> doc;
+            std::string json;
+            JsonArray arr = doc.createNestedArray(DISPLAY_CFG_KEY);
+            JsonObject obj = arr.createNestedObject();
+            obj[DISPLAY_CFG_VAL_AUTO_INTENSITY] = enableAutoIntenisty;
+            obj = arr.createNestedObject();
+            obj[DISPLAY_CFG_VAL_INTENSITY_VALUE] = intensityValue;
+            obj = arr.createNestedObject();
+            obj[DISPLAY_CFG_VAL_ANIM_SPEED] = animSpeed;
+            obj = arr.createNestedObject();
+            obj[DISPLAY_CFG_VAL_TIME_FORMAT] = timeFormat;
+            serializeJson(doc, json);
+            return json;
+        }
+
+        void fromJson(const JsonObject& json)
+        {
+            JsonArray arr = json[DISPLAY_CFG_KEY].as<JsonArray>();
+            for (const auto& v : arr)
+            {
+                if (v[DISPLAY_CFG_VAL_AUTO_INTENSITY])
+                {
+                    enableAutoIntenisty = v[DISPLAY_CFG_VAL_AUTO_INTENSITY].as<uint8_t>();
+                }
+                else if (v[DISPLAY_CFG_VAL_INTENSITY_VALUE])
+                {
+                    intensityValue = v[DISPLAY_CFG_VAL_INTENSITY_VALUE].as<uint8_t>();
+                }
+                else if (v[DISPLAY_CFG_VAL_ANIM_SPEED])
+                {
+                    animSpeed = v[DISPLAY_CFG_VAL_ANIM_SPEED].as<uint8_t>();
+                }
+                else if (v[DISPLAY_CFG_VAL_TIME_FORMAT])
+                {
+                    timeFormat = v[DISPLAY_CFG_VAL_TIME_FORMAT].as<uint8_t>();
+                }
+            }
+        }
+
+        uint8_t enableAutoIntenisty;
+        uint8_t intensityValue;
+        uint8_t animSpeed;
+        uint8_t timeFormat; // [s] in seconds
+
+    };
+
+
+
 ///> TEST - START
     // WifiSettings wifi;
     // RadioSensorSettings radio = {60, 3000};
@@ -729,8 +808,10 @@ static void test6()
     // serializeJsonPretty(appCfg, std::cout);
 
 /// PARSE JSON STRING TO JSON OBJ
-    const char *json = "{\"dev-cfg-time\":[{\"time-date\":\"2020-11-20\"},{\"time-clock\":\"18:00:00\"},{\"time-timezone-1\":\"[CET|0|1|10|3|60]\"},{\"time-timezone-2\":\"[CEST|0|1|3|2|120]\"},{\"time-ntp-time-offset\":\"0\"},{\"time-ntp-sync-interval\":\"60\"},{\"time-ntp-enable\":0},{\"time-timezone-num\":\"2\"}]}";
-    SystemTimeSettings cfg;
+    //const char *json = "{\"dev-cfg-time\":[{\"time-date\":\"2020-11-20\"},{\"time-clock\":\"18:00:00\"},{\"time-timezone-1\":\"[CET|0|1|10|3|60]\"},{\"time-timezone-2\":\"[CEST|0|1|3|2|120]\"},{\"time-ntp-time-offset\":\"0\"},{\"time-ntp-sync-interval\":\"60\"},{\"time-ntp-enable\":0},{\"time-timezone-num\":\"2\"}]}";
+    //SystemTimeSettings cfg;
+    const char *json = "{\"dev-cfg-display\":[{\"display-intensity-val\":\"99asdasdasdas\"},{\"display-anim-speed\":\"70\"},{\"display-auto-intensity\":false},{\"display-time-format\":\"0\"}]}";
+    DisplaySettings cfg;
     //std::cout << "toJson(): "<< cfg.toJson() << std::endl;
     StaticJsonDocument<1024> doc;
     DeserializationError error = deserializeJson(doc, json);

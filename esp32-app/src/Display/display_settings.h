@@ -67,6 +67,10 @@ struct DisplaySettings
             else if (v[DISPLAY_CFG_VAL_ANIM_SPEED])
             {
                 animSpeed = v[DISPLAY_CFG_VAL_ANIM_SPEED].as<uint8_t>();
+                if (animSpeed < 1 || animSpeed > 100)
+                {
+                    animSpeed = 70;
+                }
             }
             else if (v[DISPLAY_CFG_VAL_TIME_FORMAT])
             {
