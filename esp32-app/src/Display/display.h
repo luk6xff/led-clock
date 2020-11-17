@@ -64,6 +64,11 @@ public:
     void printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots=false);
 
     /**
+     * @brief Print user message on the display
+     */
+    void printMsg(const char *msg, const size_t msgSize);
+
+    /**
      * @brief In place conversion UTF-8 string to Extended ASCII (+ some polish chars from Latin Extended-A)
      *        The extended ASCII string is always shorter.
      */

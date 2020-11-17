@@ -2,6 +2,7 @@
 #include "hw_config.h"
 #include "App/rtos_common.h"
 #include "App/utils.h"
+#include "App/app_shared.h"
 
 //------------------------------------------------------------------------------
 #define DISPLAY_TASK_STACK_SIZE (8192)
@@ -32,6 +33,7 @@ void DisplayTask::run()
     bool timeDots;
     DateTime dt;
     Display m_disp(m_dispCfg);
+    AppDisplayMsg dispMsg;
     m_disp.enableAutoIntensityLevelControl(m_displayCfg.enableAutoIntenisty);
     for(;;)
     {
@@ -52,6 +54,16 @@ void DisplayTask::run()
                 }
                 m_disp.printTime(dt, (Display::DateTimePrintMode)m_displayCfg.timeFormat, timeDots);
                 utils::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
+            }
+        }
+
+        if (AppSh.getDisplayQHandle())
+        {
+            const BaseType_t rc = xQueueReceive(AppSh.getDisplayQHandle(), &dispMsg, 0);
+            if (rc == pdPASS)
+            {
+                utils::dbg("%s MSG:%s", MODULE_NAME, dispMsg.msg);
+                m_disp.printMsg(dispMsg.msg, dispMsg.msgLen);
             }
         }
         vTaskDelay(dispRefreshTime);

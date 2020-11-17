@@ -10,6 +10,7 @@
 #include "AsyncJson.h"
 #include <functional>
 #include "App/app_config.h"
+#include "App/app_shared.h"
 
 //------------------------------------------------------------------------------
 #define WEBSERVER_TASK_STACK_SIZE (8192*4)
@@ -148,6 +149,7 @@ void WebServerTask::registerHandlers(AsyncWebServer& server)
 
             response = "{\"status\":\"success\"}";
             errorCode = 200;
+            AppSh.putDisplayMsg(txt.c_str(), txt.length());
             utils::inf("/dev-app-print-text TXT: %s", txt.c_str());
         }
         request->send(errorCode, "application/json", response);
