@@ -92,14 +92,25 @@ app.get('/dev-app-reset', function (req, res) {
 // App print some text
 app.post('/dev-app-print-text', function (req, res) {
    console.log("Got a dev-app-print-text request for: " + JSON.stringify(req.body));
-   const resp = "{\"status\":\"success\"}";
+   const resp = '{"status":"success"}';
    res.status(200).send(resp);
 });
 
 // App set date and time
 app.post('/dev-app-set-dt', function (req, res) {
    console.log("Got a dev-app-set-dt request for: " + JSON.stringify(req.body));
-   const resp = "{\"dev-app-set-dt\":\"success\"}";
+   const resp = '{"dev-app-set-dt":"success"}';
+   res.status(200).send(resp);
+});
+
+// App set date and time
+app.get('/dev-app-get-dt', function (req, res) {
+   console.log("Got a dev-app-get-dt request");
+   var dt = new Date();
+   dt = Math.floor(dt.valueOf() / 1000);
+   console.log(dt);
+   res.type('application/json') // => 'application/json'
+   const resp = '{"dt":"' + dt + '"}';
    res.status(200).send(resp);
 });
 

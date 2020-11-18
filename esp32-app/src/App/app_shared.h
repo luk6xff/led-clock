@@ -35,6 +35,12 @@ public:
     bool putDateTimeMsg(const DateTime& dt);
     const QueueHandle_t& getTimeQHandle();
 
+    /**
+     * @brief Contains current system time, used (updated) inly in Clock task
+     */
+    void setAppDt(const DateTime& dt);
+    const DateTime& getAppDt();
+
 private:
     // Global display message queue
     QueueHandle_t m_displayMsgQ;
@@ -45,6 +51,11 @@ private:
 
     // Global time queue
     QueueHandle_t m_timeDataQ;
-    // Display data mutex
+    // Global time data mutex
     rtos::Mutex m_timeDataMtx;
+
+    // App system time
+    DateTime m_appDt;
+    // App system time mutex
+    rtos::Mutex m_appDtMtx;
 };

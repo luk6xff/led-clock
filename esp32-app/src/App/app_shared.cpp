@@ -72,3 +72,17 @@ const QueueHandle_t& AppShared::getTimeQHandle()
 }
 
 //------------------------------------------------------------------------------
+void AppShared::setAppDt(const DateTime& dt)
+{
+    rtos::LockGuard<rtos::Mutex> lock(m_appDtMtx);
+    m_appDt = dt;
+}
+
+//------------------------------------------------------------------------------
+const DateTime& AppShared::getAppDt()
+{
+    rtos::LockGuard<rtos::Mutex> lock(m_appDtMtx);
+    return m_appDt;
+}
+
+//------------------------------------------------------------------------------

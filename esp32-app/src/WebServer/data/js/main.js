@@ -84,6 +84,7 @@ $(document).ready(function() {
   }
 
   hideAlerts();
+  updateAppTime();
 })
 
 /* Succes, Error Alerts */
@@ -339,7 +340,7 @@ $('#app-date-time-button').click(function() {
   var dtRead = new Date($('#app-date').val()+'T'+$('#app-time').val());
   var tzDiff = new Date(1970, 0, 1).getTime();
   console.log(tzDiff);
-  var dt = (dtRead.valueOf() - tzDiff) / 1000; // time since Epoch to current now in seconds
+  var dt = Math.floor((dtRead.valueOf() - tzDiff) / 1000); // time since Epoch to current now in seconds
   console.log(dt);
   $.post("dev-app-set-dt", {'dt' : dt.valueOf()}, function() {
     console.log("app-datetime set succesfully: "+ dt.toString());
@@ -391,6 +392,28 @@ $('#app-print-text-button').click(function() {
   });
 });
 
+// App get system time
+function updateAppTime() {
+  var dt = new Date();
+  $.get("dev-app-get-dt", function(data) {
+    console.log("app-datetime get succesfully: "+ data);
+    epoch = data['dt'] * 1000;
+    dt.setTime(epoch);
+    console.log(dt, epoch);
+  })
+  .done(function(data) {
+
+  })
+  .fail(function(data) {
+    showAlert('error',"app-datetime has not been read! "+ data);
+  });
+
+  // Update UI
+
+  $('#app-date').val(dt.getFullYear() + '-' + ('0' + (dt.getMonth()+1)).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2));
+  $('#app-time').val(('0'+dt.getHours()).slice(-2) +':'+ ('0'+dt.getMinutes()).slice(-2) +':'+ ('0'+dt.getSeconds()).slice(-2));
+  $('#app-date-time').val(dt.toString());
+}
 
 /* OTA TAB */
 

@@ -1,5 +1,6 @@
 #include "clock_task.h"
 #include "App/utils.h"
+#include "App/app_shared.h"
 
 //------------------------------------------------------------------------------
 #define CLOCK_TASK_STACK_SIZE (8192)
@@ -46,6 +47,8 @@ void ClockTask::run()
                 if (pushTimeMsg(dt))
                 {
                     utils::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
+                    // Update System time
+                    AppSh.setAppDt(dt);
                 }
             }
             lastDt = dt;

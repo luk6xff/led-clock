@@ -166,6 +166,27 @@ void WebServer::registerHandlers(AsyncWebServer& server)
     });
 
 
+    // App get date and time
+    server.on("/dev-app-get-dt", HTTP_GET, [this](AsyncWebServerRequest *request)
+    {
+        const size_t capacity = JSON_OBJECT_SIZE(1) + 10;
+        DynamicJsonDocument doc(capacity);
+        doc["dt"] = "0";
+        uint16_t errorCode = 400;
+        DateTime dt = AppSh.getAppDt();
+        if (dt.isValid())
+        {
+            errorCode = 200;
+            doc["dt"] = String(dt.unixtime());
+        }
+
+        String resp;
+        serializeJson(doc, resp);
+        request->send(errorCode, "application/json", resp.c_str());
+        utils::inf("/dev-app-get-dt response: %s", resp.c_str());
+    });
+
+
     // App print some text
     AsyncCallbackJsonWebHandler *appPrintTextHandler = new AsyncCallbackJsonWebHandler("/dev-app-print-text",
                                                 [this](AsyncWebServerRequest *request, JsonVariant &json)
