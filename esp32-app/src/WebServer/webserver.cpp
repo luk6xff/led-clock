@@ -18,6 +18,7 @@
 #include <functional>
 #include "App/app_config.h"
 #include "App/app_shared.h"
+#include "esp_wifi.h"
 
 //------------------------------------------------------------------------------
 #define WEBSERVER_TASK_STACK_SIZE (8192*4)
@@ -40,7 +41,6 @@ bool WebServer::start()
 {
     int attempt = 0;
     bool success = false;
-    // LU_TODO
     int wifiConnectAttempts = 5;
 
     while (attempt < wifiConnectAttempts && !success)
@@ -237,8 +237,8 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         request->send(404, "text/plain", " <<< Not found >>> ");
     });
 
-
-    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+    // Set serve static files and cache responses for 10 minutes (600 seconds)
+    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html").setCacheControl("max-age=600");
 }
 
 //------------------------------------------------------------------------------
@@ -406,7 +406,6 @@ bool WebServer::wifiConnect(const char* ssid, const char* password)
         }
         else
         {
-            // LU_TODO
             int wifiConnectInterval = 500;
             delay(wifiConnectInterval);
         }
@@ -425,14 +424,13 @@ void WebServer::startAP()
     utils::inf("Starting Access Point");
     WiFi.mode(WIFI_OFF);
     WiFi.softAPdisconnect(true);
-    delay(5000);
     WiFi.disconnect(true);
     WiFi.mode(WIFI_AP);
     String apHostname = k_apHostname;
     String apPass = AppCfg.getCurrent().wifi.ap_pass;
     if (apHostname == "")
     {
-        apHostname = "ledclock-ap";
+        apHostname = "ledclock";
     }
     if (apPass == "" || apPass.length() < 8 || apPass.length() > 63)
     {

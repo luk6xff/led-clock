@@ -10,6 +10,7 @@
 
 #include "rtos_common.h"
 #include "Clock/system_time.h" // For DateTime structure
+#include "i18n.h"
 
 #define AppSh  AppShared::instance()
 
@@ -41,7 +42,14 @@ public:
     void setAppDt(const DateTime& dt);
     const DateTime& getAppDt();
 
+    void setAppLang(i18n_lang lang);
+    std::string translate(i18n_msg_id);
+
 private:
+
+    // I18N map
+    I18N m_i18n;
+
     // Global display message queue
     QueueHandle_t m_displayMsgQ;
     // Global display message queue buffer

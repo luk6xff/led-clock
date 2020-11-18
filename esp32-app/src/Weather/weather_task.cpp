@@ -2,6 +2,7 @@
 #include "App/rtos_common.h"
 #include "Wifi/wifi_task.h"
 #include "App/utils.h"
+#include "App/app_shared.h"
 
 //------------------------------------------------------------------------------
 #define WEATHER_TASK_STACK_SIZE (8192*2)
@@ -57,21 +58,31 @@ void WeatherTask::run()
         }
 
         // Update interval passed, run next measurement
-        oneCallClient.update(&openWeatherMapOneCallData, m_weatherCfg.owmAppid, m_weatherCfg.city.latitude, m_weatherCfg.city.longitude);
-        utils::dbg("Current Weather: ");
-        utils::dbg("%s %s", String(openWeatherMapOneCallData.current.temp, 1).c_str(), (true ? "°C" : "°F") );
-        utils::dbg("%s", openWeatherMapOneCallData.current.weatherDescription.c_str());
-        utils::dbg("Forecasts: ");
-
-        for (int i = 0; i < 2; i++)
+        if (oneCallClient.update(&openWeatherMapOneCallData, m_weatherCfg.owmAppid, m_weatherCfg.city.latitude, m_weatherCfg.city.longitude))
         {
-            if (openWeatherMapOneCallData.daily[i].dt > 0)
+            String msg;
+
+            utils::dbg("Current Weather: ");
+            utils::dbg("%s %s", String(openWeatherMapOneCallData.current.temp, 1).c_str(), (true ? "°C" : "°F") );
+            utils::dbg("%s", openWeatherMapOneCallData.current.weatherDescription.c_str());
+            utils::dbg("Forecasts: ");
+
+            for (int i = 0; i < 2; i++)
             {
-                utils::dbg("dt: %s", String(openWeatherMapOneCallData.daily[i].dt).c_str());
-                utils::dbg("temp: %s %s",String(openWeatherMapOneCallData.daily[i].tempDay, 1).c_str(), (true ? "°C" : "°F") );
-                utils::dbg("desc: %s",  openWeatherMapOneCallData.daily[i].weatherDescription.c_str());
+                if (openWeatherMapOneCallData.daily[i].dt > 0)
+                {
+                    utils::dbg("dt: %s", String(openWeatherMapOneCallData.daily[i].dt).c_str());
+                    utils::dbg("temp: %s %s",String(openWeatherMapOneCallData.daily[i].tempDay, 1).c_str(), (true ? "°C" : "°F") );
+                    utils::dbg("desc: %s",  openWeatherMapOneCallData.daily[i].weatherDescription.c_str());
+                }
             }
         }
+        else
+        {
+            utils::err("Weather forecasts read failed!");
+        }
+
+
         // Reset time to next measurement
         updateIntervalSeconds = 0;
     }

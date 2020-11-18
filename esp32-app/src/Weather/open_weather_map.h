@@ -1,21 +1,21 @@
 #pragma once
 
 /**The MIT License (MIT)
- 
- Copyright (c) 2020 by Chris Klinger at: 
+
+ Copyright (c) 2020 by Chris Klinger at:
  https://github.com/ThingPulse/esp8266-weather-station/blob/master/src/OpenWeatherMapOneCall.h
- Modified by Lukasz Uszko aka luk6xff 
- 
+ Modified by Lukasz Uszko aka luk6xff
+
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -188,18 +188,18 @@ class OpenWeatherMapOneCall: public JsonListener {
     uint8_t allowedHoursCount = 0;
     uint8_t currentForecast;
 
-    void doUpdate(OpenWeatherMapOneCallData *data, String path);
+    bool doUpdate(OpenWeatherMapOneCallData *data, String path);
     String buildPath(String appId, float lat, float lon);
 
   public:
     OpenWeatherMapOneCall();
-    void update(OpenWeatherMapOneCallData *data, String appId, float lat, float lon);
+    bool update(OpenWeatherMapOneCallData *data, String appId, float lat, float lon);
 
     void setMetric(boolean metric) {this->metric = metric;}
     boolean isMetric() { return metric; }
     void setLanguage(String language) { this->language = language; }
     String getLanguage() { return language; }
-    
+
     String getMeteoconIcon(String icon);
 
     virtual void whitespace(char c);

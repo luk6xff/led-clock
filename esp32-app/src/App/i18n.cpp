@@ -1,24 +1,41 @@
 #include "i18n.h"
 #include "utils.h"
-// #include <ArduinoJson.h>
 
 
-// const char *I18N::translation =
-// {
-//     "{  \
-//         \"wd_mon\": {\"en\":\"Monday\",     \"pl\":\"Poniedziałek\"}   \
-//         \"wd_tue\": {\"en\":\"Tuesday\",    \"pl\":\"Wtorek\"}         \
-//         \"wd_wed\": {\"en\":\"Wednesday\",  \"pl\":\"Środa\"}   \
-//         \"wd_thu\": {\"en\":\"Thursday\",   \"pl\":\"Czwartek\"}         \
-//         \"wd_fri\": {\"en\":\"Friday\",     \"pl\":\"Piątek\"}   \
-//         \"wd_sat\": {\"en\":\"Saturday\",   \"pl\":\"Sobota\"}         \
-//         \"wd_sun\": {\"en\":\"Sunday\",     \"pl\":\"Niedziela\"}         \
-//     }"
-// };
-
+//------------------------------------------------------------------------------
 const i18n_map I18N::k_i18n =
 {
-    { "wd_mon", {{"en", "Monday"}, {"pl", "Poniedziałek"}} }
+    // App language symbol
+    { "en", "pl"},
+    // Days of week
+    { "Monday", "Poniedziałek" },
+    { "Tuesday", "Wtorek" },
+    { "Wednesday", "Środa" },
+    { "Thursday", "Czwartek" },
+    { "Friday", "Piątek" },
+    { "Saturday", "Sobota" },
+    { "Sunday", "Niedziela" },
+    // Months
+    { "January", "Styczeń" },
+    { "February", "Luty" },
+    { "March", "Marzec" },
+    { "April", "Kwiecień" },
+    { "May", "Maj" },
+    { "June", "Czerwiec" },
+    { "July", "Lipiec" },
+    { "August", "Sierpień" },
+    { "September", "Wrzesień" },
+    { "October", "Październik" },
+    { "November", "Listopad" },
+    { "December", "Grudzień" },
+    // Weather
+    { "Weather", "Pogoda" },
+    { "Temperature", "Temperatura" },
+    { "in", "wewn" },
+    { "out", "zewn" },
+    { "Today", "Dzisiaj" },
+    { "Tommorow", "Jutro" },
+    { "Now", "Teraz" },
 };
 
 //------------------------------------------------------------------------------
@@ -29,31 +46,24 @@ I18N::I18N(i18n_lang language)
 }
 
 //------------------------------------------------------------------------------
-std::string I18N::translate(std::string msgid)
+std::string I18N::translate(i18n_msg_id msg_id)
 {
-    // if (k_i18n.count(msgid))
-    // {
-    //     if (k_i18n[msgid][""].count())
-    //         return k_i18n[msgid][""];
-    // }
-
-    utils::err("Error can't find: %s msgid in language file!", msgid.c_str());
-    return "";
+    if (k_i18n.size() <= msg_id)
+    {
+        utils::err("Error can't find: %d msgid in language file!", msg_id);
+        return "";
+    }
+    return  k_i18n[msg_id][m_lang];
 }
 
 
 //------------------------------------------------------------------------------
-bool I18N::loadTranslation(i18n_lang language)
+void I18N::loadTranslation(i18n_lang language)
 {
-
-    // DynamicJsonDocument doc(1024);
-    // deserializeJson(doc, translation);
-    // if (!m_i18n.count(msgid))
-    // {
-    //     m_i18n.insert(std::make_pair(msgid, msgstr));
-    // }
-
-    return true;
+    if (language < I18N_LANGUAGES_NUM)
+    {
+        m_lang = language;
+    }
 }
 
 //------------------------------------------------------------------------------

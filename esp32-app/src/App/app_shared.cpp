@@ -5,6 +5,7 @@
 
 //------------------------------------------------------------------------------
 AppShared::AppShared()
+    : m_i18n(I18N_ENGLISH)
 {
     m_displayMsgQ = xQueueCreate(4, sizeof(AppDisplayMsg));
     m_timeDataQ = xQueueCreate(1, sizeof(DateTime));
@@ -83,6 +84,12 @@ const DateTime& AppShared::getAppDt()
 {
     rtos::LockGuard<rtos::Mutex> lock(m_appDtMtx);
     return m_appDt;
+}
+
+//------------------------------------------------------------------------------
+void AppShared::setAppLang(i18n_lang lang)
+{
+    m_i18n.loadTranslation(lang);
 }
 
 //------------------------------------------------------------------------------

@@ -35,27 +35,24 @@ const EventGroupHandle_t& WifiTask::getWifiEvtHandle()
 //------------------------------------------------------------------------------
 void WifiTask::run()
 {
-    const TickType_t sleepTime = (100 / portTICK_PERIOD_MS);
+    const TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
     uint8_t wifiConnectionFailureCnt = 0;
-    // WiFi.setAutoConnect(0);
-    // WiFi.softAPdisconnect();
+
     // WiFi.setAutoConnect(true);
     // WiFi.setAutoReconnect(true);
-    // WiFiManager wm;
-    // wm.setSaveConfigCallback([](String ssid, String pass)
-    // {
-    //     // LU_TODO Store new wifi settings
-    // });
-    // //wm.resetSettings();
+
     WebServer server(m_wifiCfg.ap_hostname);
-    server.start();
+    if (server.start())
+    {
+        xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
+    }
     for(;;)
     {
-        // if (WiFi.status() == WL_CONNECTED)
-        // {
-        //     vTaskDelay(10000 / portTICK_PERIOD_MS);
-        //     continue;
-        // }
+        if (WiFi.status() == WL_CONNECTED)
+        {
+            vTaskDelay(10000 / portTICK_PERIOD_MS);
+            continue;
+        }
 
         xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_DISCONNECTED);
         // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
@@ -92,12 +89,12 @@ void WifiTask::run()
         // }
         server.process();
 
-        // if (WiFi.status() == WL_CONNECTED)
-        // {
-        //     utils::inf("%s Connected to:%s, IPaddress:%s", MODULE_NAME,
-        //         WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
-        //     xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
-        // }
+        if (WiFi.status() == WL_CONNECTED)
+        {
+            utils::inf("%s Connected to:%s, IPaddress:%s", MODULE_NAME,
+                WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
+            xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
+        }
         vTaskDelay(sleepTime);
     }
 }
