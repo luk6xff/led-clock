@@ -332,6 +332,26 @@ $(document).ready(function() {
 
 
 ///> APP TAB
+// App set date and time
+$('#app-date-time-button').click(function() {
+  console.log('#app-date-time-button CLICKED')
+
+  var dtRead = new Date($('#app-date').val()+'T'+$('#app-time').val());
+  var tzDiff = new Date(1970, 0, 1).getTime();
+  console.log(tzDiff);
+  var dt = (dtRead.valueOf() - tzDiff) / 1000; // time since Epoch to current now in seconds
+  console.log(dt);
+  $.post("dev-app-set-dt", {'dt' : dt.valueOf()}, function() {
+    console.log("app-datetime set succesfully: "+ dt.toString());
+  })
+  .done(function(data) {
+    showAlert('success',"app-datetime set succesfully! "+ JSON.stringify(data));
+  })
+  .fail(function(data) {
+    showAlert('error',"app-datetime has not been set! "+ JSON.stringify(data));
+  });
+});
+
 // App restart button
 $('#app-reset-button').click(function() {
   console.log('#app-reset-button CLICKED')
@@ -368,25 +388,6 @@ $('#app-print-text-button').click(function() {
         console.log("app-print-text-button - failure" + JSON.stringify(data));
         showAlert('error', JSON.stringify(data));
     }
-  });
-});
-
-// App set date and time
-$('#app-date-time-button').click(function() {
-  console.log('#app-date-time-button CLICKED')
-
-  var dt = new Date($('#app-date').val()+'T'+$('#app-time').val());
-  console.log(dt);
-
-  console.log(dt.getTime());
-  $.post("dev-app-set-dt", {'dt' : dt.getTime()}, function() {
-    console.log("app-datetime set succesfully: "+ dt.toString());
-  })
-  .done(function(data) {
-    showAlert('success',"app-datetime set succesfully! "+ JSON.stringify(data));
-  })
-  .fail(function(data) {
-    showAlert('error',"app-datetime has not been set! "+ JSON.stringify(data));
   });
 });
 

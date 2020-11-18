@@ -8,10 +8,12 @@
 #define MODULE_NAME "[CLCK]"
 
 //------------------------------------------------------------------------------
-ClockTask::ClockTask(SystemTimeSettings& timeCfg, const QueueHandle_t& ntpTimeQ)
+ClockTask::ClockTask(SystemTimeSettings& timeCfg, const QueueHandle_t& ntpTimeQ,
+                        const QueueHandle_t& extTimeQ)
     : Task("ClockTask", CLOCK_TASK_STACK_SIZE, CLOCK_TASK_PRIORITY, 1)
     , m_timeCfg(timeCfg)
     , m_ntpTimeQ(ntpTimeQ)
+    , m_extTimeQ(extTimeQ)
     , m_timeQ(nullptr)
 {
     m_timeQ = xQueueCreate(16, sizeof(DateTime));
@@ -61,6 +63,17 @@ void ClockTask::run()
             {
                 utils::dbg("%s UTC:%s", MODULE_NAME, dt.timestamp().c_str());
                 time.setUtcTime(dt);
+            }
+        }
+
+        if (m_extTimeQ)
+        {
+            // Check if any external source wants to set time
+            const BaseType_t rc = xQueueReceive(m_extTimeQ, &dt, 0);
+            if (rc == pdPASS)
+            {
+                utils::dbg("%s EXT time src:%s", MODULE_NAME, dt.timestamp().c_str());
+                time.setTime(dt);
             }
         }
         vTaskDelay(timeMeasDelay);

@@ -6,7 +6,7 @@
 #include "WebServer/webserver.h"
 
 //------------------------------------------------------------------------------
-#define WIFI_TASK_STACK_SIZE (8192)
+#define WIFI_TASK_STACK_SIZE (8192*2)
 #define WIFI_TASK_PRIORITY      (4)
 
 #define WIFI_TIMEOUT_MS      10000 // 10 second WiFi connection timeout

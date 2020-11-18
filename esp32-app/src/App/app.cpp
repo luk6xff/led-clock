@@ -5,6 +5,7 @@
 // APP
 #include "utils.h"
 #include "app_config.h"
+#include "app_shared.h"
 
 // MISC
 #include <esp_task_wdt.h>
@@ -65,7 +66,8 @@ void App::createTasks()
     m_ntpTask = std::unique_ptr<NtpTask>(new NtpTask(AppCfg.getCurrent().time.ntp,
                                             m_wifiTask->getWifiEvtHandle()));
     m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(AppCfg.getCurrent().time,
-                                                m_ntpTask->getNtpTimeQ()));
+                                                m_ntpTask->getNtpTimeQ(),
+                                                AppSh.getTimeQHandle()));
     m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask(AppCfg.getCurrent().display, m_clockTask->getTimeQ()));
     m_weatherTask = std::unique_ptr<WeatherTask>(new WeatherTask(AppCfg.getCurrent().weather));
 }

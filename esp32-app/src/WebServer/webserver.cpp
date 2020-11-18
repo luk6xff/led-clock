@@ -124,7 +124,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         std::string response = "{\"status\":\"error\"}";
         if (paramsNum == 1)
         {
-            AsyncWebParameter* p = request->getParam(0);
+            AsyncWebParameter *p = request->getParam(0);
             for (const auto& h : m_cfgReadHandleMap)
             {
                 if (p->value() == (String(h.first)))
@@ -142,11 +142,27 @@ void WebServer::registerHandlers(AsyncWebServer& server)
     });
 
 
-    // App reset
-    server.on("/dev-app-reset", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(200, "text/plain", "success");
-        utils::inf("App is being restarted...");
-        ESP.restart();
+    // App set date and time
+    server.on("/dev-app-set-dt", HTTP_POST, [this](AsyncWebServerRequest *request)
+    {
+        uint16_t errorCode = 400;
+        std::string response = "{\"status\":\"error\"}";
+        if(request->hasParam("dt", true))
+        {
+            AsyncWebParameter *p = request->getParam("dt", true);
+            String val = p->value();
+            const uint32_t t = (uint32_t)val.toInt();
+            utils::dbg("Received DT value: %s, %d", val.c_str(), t);
+            DateTime dt(t);
+            if (AppSh.putDateTimeMsg(dt))
+            {
+                errorCode = 200;
+                response = "{\"status\":\"success\"}";
+            }
+        }
+
+        request->send(errorCode, "application/json", response.c_str());
+        utils::inf("/dev-app-set-dt response: %s", response.c_str());
     });
 
 
@@ -170,6 +186,14 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         utils::inf("/dev-app-print-text response: %s", response.c_str());
     });
     server.addHandler(appPrintTextHandler);
+
+
+    // App reset
+    server.on("/dev-app-reset", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(200, "text/plain", "success");
+        utils::inf("App is being restarted...");
+        ESP.restart();
+    });
 
 
     // Free Heap size
@@ -380,7 +404,7 @@ void WebServer::startAP()
     utils::inf("Starting Access Point");
     WiFi.mode(WIFI_OFF);
     WiFi.softAPdisconnect(true);
-    delay(1000);
+    delay(5000);
     WiFi.disconnect(true);
     WiFi.mode(WIFI_AP);
     String apHostname = k_apHostname;
