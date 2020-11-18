@@ -68,7 +68,6 @@ void App::createTasks()
                                                 m_ntpTask->getNtpTimeQ()));
     m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask(AppCfg.getCurrent().display, m_clockTask->getTimeQ()));
     m_weatherTask = std::unique_ptr<WeatherTask>(new WeatherTask(AppCfg.getCurrent().weather));
-    //m_webServerTask = std::unique_ptr<WebServerTask>(new WebServerTask());
 }
 
 //------------------------------------------------------------------------------
@@ -103,11 +102,6 @@ void App::runTasks()
     if (m_radioSensorTask)
     {
         m_radioSensorTask->start();
-    }
-
-    if (m_webServerTask)
-    {
-        //m_webServerTask->start();
     }
 }
 

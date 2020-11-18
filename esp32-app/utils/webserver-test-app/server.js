@@ -1,9 +1,32 @@
+/**
+ * @summary LedClock development web server
+ * @author luk6xff
+ * @date   2020-11-18
+ */
+
+const PORT = 8081;
+const GZIP_COMPRESSION_ENABLED = false;
+
+if (GZIP_COMPRESSION_ENABLED) {
+   const compression = require('compression');
+}
+
 const express = require('express');
 const app = express();
-const PORT = 8081;
+
 
 app.use(express.json())
-app.use(express.static('../../data'));
+
+if (GZIP_COMPRESSION_ENABLED) {
+   app.use(compression({ threshold: 0 }))
+   app.use(express.static('../../data'));
+}
+else {
+
+   app.use(express.static('../../src/WebServer/data'));
+}
+
+
 
 
 app.get('/', function (req, res) {
@@ -75,7 +98,7 @@ app.post('/dev-app-print-text', function (req, res) {
 
 // App set date and time
 app.post('/dev-app-set-dt', function (req, res) {
-   console.log("Got a dev-app-set-dt request for: " + req.query.dt);
+   console.log("Got a dev-app-set-dt request for: " + JSON.stringify(req.body));
    const resp = "{\"dev-app-set-dt\":\"success\"}";
    res.status(200).send(resp);
 });

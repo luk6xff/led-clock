@@ -3,6 +3,7 @@
 ## Instalation
 ```
 $ npm install express --save
+$ npm install compression --save
 ```
 
 
