@@ -24,7 +24,7 @@ struct WifiSettings
         memcpy(ssid, admin, WIFI_SETTINGS_LEN);
         memcpy(pass, admin, WIFI_SETTINGS_LEN);
         memcpy(ap_hostname, "ledclock", WIFI_SETTINGS_LEN);
-        memcpy(ap_pass, admin, WIFI_SETTINGS_LEN);
+        memcpy(ap_pass, "admin123", WIFI_SETTINGS_LEN);
     }
 
     String toStr()
@@ -72,13 +72,18 @@ struct WifiSettings
             }
             else if (v[WIFI_CFG_VAL_AP_HOSTNAME])
             {
-                memset(ap_pass, 0, WIFI_SETTINGS_LEN);
-                memcpy(ap_pass, v[WIFI_CFG_VAL_AP_HOSTNAME].as<const char*>(), WIFI_SETTINGS_LEN);
+                memset(ap_hostname, 0, WIFI_SETTINGS_LEN);
+                memcpy(ap_hostname, v[WIFI_CFG_VAL_AP_HOSTNAME].as<const char*>(), WIFI_SETTINGS_LEN);
             }
             else if (v[WIFI_CFG_VAL_AP_PASS])
             {
+                String pass = v[WIFI_CFG_VAL_AP_PASS].as<const char*>();
+                if (pass.length() < 8 || pass.length() > 63)
+                {
+                    pass = "admin123";
+                }
                 memset(ap_pass, 0, WIFI_SETTINGS_LEN);
-                memcpy(ap_pass, v[WIFI_CFG_VAL_AP_PASS].as<const char*>(), WIFI_SETTINGS_LEN);
+                memcpy(ap_pass, pass.c_str(), WIFI_SETTINGS_LEN);
             }
         }
     }

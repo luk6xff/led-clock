@@ -6,7 +6,6 @@
 src/App/app_dev_cfg.h
 lib/esp32_https_server/
 lib/ConfigManager/
-lib/ArduinoJson-6.x/
 utils/webserver-test-app/node_modules
 utils/webserver-test-app/package-lock.json
 utils/ArduinoJsonTestApp/build/
