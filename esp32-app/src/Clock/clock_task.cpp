@@ -37,6 +37,7 @@ void ClockTask::run()
     SystemTime time(m_timeCfg);
     DateTime dt;
     DateTime lastDt;
+    utils::dbg("%s ClockTask::run() 1", MODULE_NAME);
     for(;;)
     {
         dt = time.getTime();
@@ -44,11 +45,13 @@ void ClockTask::run()
         {
             if (lastDt != dt)
             {
+                utils::dbg("%s ClockTask::run() 3", MODULE_NAME);
                 if (pushTimeMsg(dt))
                 {
                     utils::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
                     // Update System time
                     AppSh.setAppDt(dt);
+                    utils::dbg("%s ClockTask::run() 4", MODULE_NAME);
                 }
             }
             lastDt = dt;

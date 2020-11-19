@@ -69,4 +69,5 @@ private:
     DNSServer m_dnsServer;
 
     WifiMode m_wifiMode;
+    bool m_webServerRunning;
 };

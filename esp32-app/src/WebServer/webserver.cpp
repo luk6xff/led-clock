@@ -442,36 +442,39 @@ bool WebServer::wifiConnect(const char* ssid, const char* password)
 //------------------------------------------------------------------------------
 bool WebServer::createWebServer()
 {
-    // Stop servers if running
-    m_server.end();
-    m_dnsServer.stop();
-    MDNS.end();
-
-    registerHandlers(m_server);
-
-    // Init filesystem
-    if (!SPIFFS.begin(true))
+    // Server is started only once
+    if (!m_webServerRunning)
     {
-        utils::err("Error on SPIFFS begin!");
-        return false;
+        registerHandlers(m_server);
+
+        // Init filesystem
+        if (!SPIFFS.begin(true))
+        {
+            utils::err("Error on SPIFFS begin!");
+            return false;
+        }
+
+        using namespace std::placeholders;
+        Update.onProgress(std::bind(&WebServer::printOtaUpdateProgress, this, _1, _2));
+
+        // Run the server
+        m_server.begin();
+
+        // Run mdns service
+        if (!MDNS.begin(k_apHostname))
+        {
+            utils::err("Error setting up MDNS responder!");
+            return false;
+        }
+        else
+        {
+            MDNS.addService("http", "tcp", 80);
+        }
+
+        m_webServerRunning = true;
     }
 
-    using namespace std::placeholders;
-    Update.onProgress(std::bind(&WebServer::printOtaUpdateProgress, this, _1, _2));
-
-    // Run the server
-    m_server.begin();
-
-    // Run mdns service
-    if (!MDNS.begin(k_apHostname))
-    {
-        utils::err("Error setting up MDNS responder!");
-        return false;
-    }
-
-    MDNS.addService("http", "tcp", 80);
-
-    return true;
+    return m_webServerRunning;
 }
 
 //------------------------------------------------------------------------------
@@ -531,6 +534,8 @@ bool WebServer::startAPApi()
 //------------------------------------------------------------------------------
 bool WebServer::startApi()
 {
+    // Stop dns server if running
+    m_dnsServer.stop();
     return createWebServer();
 }
 
