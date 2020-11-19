@@ -1,5 +1,6 @@
 #include "radio_sensor_task.h"
 #include "App/utils.h"
+#include "App/app_shared.h"
 
 //------------------------------------------------------------------------------
 #define RADIO_SENSOR_TASK_STACK_SIZE (8192*2)
@@ -57,12 +58,22 @@ void RadioSensorTask::run()
 //------------------------------------------------------------------------------
 bool RadioSensorTask::pushRadioSensorMsg(const RadioSensorData& data)
 {
-    BaseType_t status = pdFAIL;
-    if (m_radioSensorQ)
-    {
-        status = xQueueSendToBack(m_radioSensorQ, &data, 0);
-    }
-    return (status == pdPASS) ? true : false;
+    //Send directly to display instead of radio queue
+    // BaseType_t status = pdFAIL;
+    // if (m_radioSensorQ)
+    // {
+    //     status = xQueueSendToBack(m_radioSensorQ, &data, 0);
+    // }
+    // return (status == pdPASS) ? true : false;
+    String col(":");
+    String spc(" ");
+    String msg(tr(M_SENSOR_NAME) + col + spc + \
+                tr(M_SENSOR_TEMP) + col + String(data.temperature) + tr(M_COMMON_DEG_CELS) + spc + \
+                tr(M_SENSOR_PRESS) + col + String(uint32_t(data.pressure/100)) + tr(M_COMMON_PRESSURE_HPA) + spc + \
+                tr(M_SENSOR_HUMID) + col + String(uint8_t(data.humidity)) + tr(M_COMMON_PERCENT) + spc + \
+                tr(M_SENSOR_VBATT) + col + String(float(data.vbatt/1000.f)) + tr(M_COMMON_VOLTAGE));
+
+    return AppSh.putDisplayMsg(msg.c_str(), msg.length());
 }
 
 //------------------------------------------------------------------------------

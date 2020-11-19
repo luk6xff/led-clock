@@ -22,6 +22,7 @@ ClockTask::ClockTask(SystemTimeSettings& timeCfg, const QueueHandle_t& ntpTimeQ,
     {
         utils::err("%s m_timeQ has not been created!.", MODULE_NAME);
     }
+    utils::dbg("%s ClockTask::ClockTask created!", MODULE_NAME);
 }
 
 //------------------------------------------------------------------------------

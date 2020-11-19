@@ -12,11 +12,15 @@
 typedef enum
 {
     // Common
-    M_CM_EMPTY = 0,
-    M_CM_DEG_CELS,
-    M_CM_DEG_FAHR,
-    M_CM_SPACE,
-    M_CM_LAST = M_CM_SPACE,
+    M_COMMON_EMPTY = 0,
+    M_COMMON_DEG_CELS,
+    M_COMMON_DEG_FAHR,
+    M_COMMON_PRESSURE_PA,
+    M_COMMON_PRESSURE_HPA,
+    M_COMMON_PERCENT,
+    M_COMMON_VOLTAGE,
+    M_COMMON_SPACE,
+    M_COMMON_LAST = M_COMMON_SPACE,
     // App language symbol
     M_LANG,
     // Days of week
@@ -28,27 +32,34 @@ typedef enum
     M_DOW_SAT,
     M_DOW_SUN,
     // Months
-    M_MON_JAN,
-    M_MON_FEB,
-    M_MON_MAR,
-    M_MON_APR,
-    M_MON_MAY,
-    M_MON_JUN,
-    M_MON_JUL,
-    M_MON_AUG,
-    M_MON_SEP,
-    M_MON_OCT,
-    M_MON_NOV,
-    M_MON_DEC,
+    M_MONTH_JAN,
+    M_MONTH_FEB,
+    M_MONTH_MAR,
+    M_MONTH_APR,
+    M_MONTH_MAY,
+    M_MONTH_JUN,
+    M_MONTH_JUL,
+    M_MONTH_AUG,
+    M_MONTH_SEP,
+    M_MONTH_OCT,
+    M_MONTH_NOV,
+    M_MONTH_DEC,
     // Weather
-    M_W_NAME,
-    M_W_TEMP,
-    M_W_TEMP_SHORT,
-    M_W_IN,
-    M_W_OUT,
-    M_W_TODAY,
-    M_W_TOMM,
-    M_W_NOW,
+    M_WEATHER_NAME,
+    M_WEATHER_TEMP,
+    M_WEATHER_TEMP_SHORT,
+    M_WEATHER_TODAY,
+    M_WEATHER_TOMM,
+    M_WEATHER_NOW,
+    // Sensor
+    M_SENSOR_NAME,
+    M_SENSOR_TEMP,
+    M_SENSOR_PRESS,
+    M_SENSOR_HUMID,
+    M_SENSOR_VBATT,
+
+    // Last msg_id keep it always here
+    M_MSGID_LAST
 } i18n_msg_id;
 
 //------------------------------------------------------------------------------

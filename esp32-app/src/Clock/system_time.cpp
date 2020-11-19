@@ -2,6 +2,7 @@
 #include "hw_config.h"
 #include "App/rtos_common.h"
 #include "App/utils.h"
+#include "App/app_shared.h"
 
 //------------------------------------------------------------------------------
 SystemTime::SystemTime(SystemTimeSettings& timeSettings)
@@ -167,16 +168,16 @@ char *SystemTime::timeDateToStr(const DateTime& dt)
 const char* SystemTime::weekdayToStr(const DateTime& dt)
 {
     // TODO - i18n
-    static const char weekday[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-    static const char weekdayPL[7][14] = {"Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"};
-	return weekdayPL[dt.dayOfTheWeek()];
+    static const char *dow[7] = { tr(M_DOW_SUN), tr(M_DOW_MON), tr(M_DOW_TUE), tr(M_DOW_WED), tr(M_DOW_THU), tr(M_DOW_FRI), tr(M_DOW_SAT) };
+	return dow[dt.dayOfTheWeek()];
 }
 
 //------------------------------------------------------------------------------
 const char *SystemTime::monthToStr(const DateTime& dt)
 {
-	static const char months[12][15]  = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-	return months[dt.month() - 1];
+	static const char *months[12]  = { tr(M_MONTH_JAN), tr(M_MONTH_FEB), tr(M_MONTH_MAR), tr(M_MONTH_APR), tr(M_MONTH_MAY), tr(M_MONTH_JUN),
+                                       tr(M_MONTH_JUL), tr(M_MONTH_AUG), tr(M_MONTH_SEP), tr(M_MONTH_OCT), tr(M_MONTH_NOV), tr(M_MONTH_DEC) };
+	return months[dt.month()-1];
 }
 
 //------------------------------------------------------------------------------
