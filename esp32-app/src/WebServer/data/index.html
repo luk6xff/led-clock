@@ -129,6 +129,7 @@
                     <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-weather">Weather</a>
                     <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-radio">Radio</a>
                     <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-display">Display</a>
+                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-other">Other</a>
                   </div>
                 </div>
                 <div class="col-md-9">
@@ -147,7 +148,15 @@
                         </div>
                         <div class="form-group">
                           <label class="form-label">WIFI passwd</label>
-                          <input type="text" class="form-control" id="wifi-pass" value="Faza19xxxx">
+                          <div class="input-group pass-input" id="div-wifi-pass">
+                            <input type="password" class="form-control" id="wifi-pass" value="Faza19xxxx">
+                            <span class="input-group-addon">
+                              <a class="svg">
+                                <object data="img/eye-closed.svg" type="image/svg+xml">
+                                </object>
+                              </a>
+                            </span>
+                          </div>
                         </div>
                         <div class="form-group">
                           <label class="form-label">WIFI AP hostname</label>
@@ -155,11 +164,14 @@
                         </div>
                         <div class="form-group">
                           <label class="form-label">WIFI AP passwd</label>
-                          <div class="input-group" id="show_hide_password">
+                          <div class="input-group pass-input" id="div-wifi-ap-pass">
                             <input type="password" class="form-control mb-1" id="wifi-ap-pass" value="admin123">
-                            <div class="input-group-addon">
-                              <a href=""><i class="glyphicon glyphicon-eye-close" aria-hidden="true"></i></a>
-                            </div>
+                            <span class="input-group-addon">
+                              <a class="svg">
+                                <object data="img/eye-closed.svg" type="image/svg+xml">
+                                </object>
+                              </a>
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -280,6 +292,19 @@
                         </div>
                       </div>
                     </div>
+
+                    <div class="tab-pane fade" id="dev-cfg-other">
+                      <div class="card-body pb-2">
+                        <div class="form-group">
+                          <label class="form-label">App language</label>
+                          <select class="custom-select" id="other-applanguage">
+                            <option value='0'>English</option>
+                            <option value='1'selected="">Polski</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
               </div>

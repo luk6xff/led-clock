@@ -48,25 +48,6 @@ function getAppSystemInfo() {
   $('#app-sysinfo-table').bootstrapTable('refresh',{silent:true, url:'/dev-app-sysinfo'});
 }
 
-function nameFormatter(value, row) {
-  //console.log("nameFormatter");
-  //console.log(value);
-  //console.log(row);
-  var label = value + " " + "<span class='glyphicon " + row.glyph + " pull-left'></span>";
-  return label;
-}
-
-function valueFormatter(value, row) {
-  //console.log("valueFormatter");
-  var label = "";
-  if (row.unit != "") {
-    row.unit = "[" + row.unit + "]"
-  }
-  label = value + " " + row.unit;
-  return label;
-}
-
-
 /* TABs */
 $(document).ready(function() {
 
@@ -315,18 +296,18 @@ $('#display-auto-intensity').change(function() {
 
 $(changeDisplayIntensityView()); // Called on document.ready
 
-// LU_TODO show passwords
+// Hide/Show passwords
 $(document).ready(function() {
-  $("#show_hide_password a").on('click', function(event) {
-      event.preventDefault();
-      if($('#show_hide_password input').attr("type") == "text"){
-          $('#show_hide_password input').attr('type', 'password');
-          $('#show_hide_password i').addClass( "glyphicon-eye-close" );
-          $('#show_hide_password i').removeClass( "glyphicon-eye-open" );
-      }else if($('#show_hide_password input').attr("type") == "password"){
-          $('#show_hide_password input').attr('type', 'text');
-          $('#show_hide_password i').removeClass( "glyphicon-eye-close" );
-          $('#show_hide_password i').addClass( "glyphicon-eye-open" );
+  $(".pass-input a").on('click', function(event) {
+    parentId = '#'+$(this).parent().parent().attr('id');
+    console.log(parentId)
+      if($(parentId+' input').attr("type") == "text"){
+          $(parentId+' input').attr('type', 'password');
+          $(parentId+' object').attr('data', 'img/eye-closed.svg');
+      }
+      else if($(parentId+' input').attr("type") == "password"){
+          $(parentId+' input').attr('type', 'text');
+          $(parentId+' object').attr('data', 'img/eye.svg');
       }
   });
 });

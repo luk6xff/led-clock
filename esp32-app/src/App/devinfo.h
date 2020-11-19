@@ -5,17 +5,16 @@
 template<typename T>
 struct InfoValue
 {
-    InfoValue(const char *name, T value, const char *unit="", const char *icon="glyphicon-scale")
+    InfoValue(const char *name, T value, const char *unit="")
         : m_name(name)
         , m_value(String(value))
         , m_unit(unit)
-        , m_glyphIcon(icon)
     {
     }
 
     String toServerJson()
     {
-        String json = "{\"name\":\""+ m_name + "\",\"value\":\"" + m_value + "\",\"unit\":\"" + m_unit + "\",\"glyph\":\"" + m_glyphIcon + "\"}";
+        String json = "{\"name\":\""+ m_name + "\",\"value\":\"" + m_value + "\",\"unit\":\"" + m_unit + "\"}";
         return json;
     }
 
@@ -41,16 +40,10 @@ public:
         return m_unit;
     }
 
-    const String &icon()
-    {
-        return m_glyphIcon;
-    }
-
 private:
     String m_name;
     String m_value;
     String m_unit;
-    String m_glyphIcon;
 };
 
 

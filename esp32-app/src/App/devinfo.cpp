@@ -9,7 +9,7 @@ DeviceInfo::DeviceInfo()
     , cpuFreqMhz("CPU Freq", ESP.getCpuFreqMHz(), "MHz")
     , flashChipRealSize("Chip ID", ESP.getFlashChipSize())
     , appSize("Application size", ESP.getSketchSize(), "Bytes")
-    , freeHeap("Free Heap", ESP.getFreeHeap(), "Bytes", "glyphicon-indent-left")
+    , freeHeap("Free Heap", ESP.getFreeHeap(), "Bytes")
 {
 
 }

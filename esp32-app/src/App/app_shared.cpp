@@ -5,7 +5,7 @@
 
 //------------------------------------------------------------------------------
 AppShared::AppShared()
-    : m_i18n(I18N_ENGLISH)
+    : m_i18n(I18N_POLISH)
 {
     m_displayMsgQ = xQueueCreate(4, sizeof(AppDisplayMsg));
     m_timeDataQ = xQueueCreate(1, sizeof(DateTime));
