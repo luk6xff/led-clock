@@ -50,7 +50,7 @@ const i18n_map I18N::k_i18n =
     { "Temp", "Temp" },                     // M_SENSOR_TEMP
     { "Pressure", "Ciśn" },                 // M_SENSOR_PRESS
     { "Humidity", "Wilg" },                 // M_SENSOR_HUMID
-    { "VBatt", "Bateria" },                 // M_SENSOR_VBATT
+    { "VBatt", "Bat" },                 // M_SENSOR_VBATT
 };
 
 //------------------------------------------------------------------------------
