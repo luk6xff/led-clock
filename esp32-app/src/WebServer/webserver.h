@@ -28,6 +28,13 @@ public:
     bool start();
     void process();
 
+    bool wifiConnected();
+    const WifiMode wifiMode();
+    bool isAPModeActive();
+    bool isStationModeActive();
+
+    bool runCaptivePortal();
+
 private:
 
     void registerHandlers(AsyncWebServer& server);
@@ -43,11 +50,10 @@ private:
 
     void printOtaUpdateProgress(size_t prg, size_t sz);
 
+    bool createWebServer();
     void startAP();
     bool startAPApi();
     bool startApi();
-
-    bool wifiConnected();
     bool wifiConnect(const char* ssid, const char* password);
 
 private:

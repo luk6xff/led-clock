@@ -63,9 +63,8 @@ bool WebServer::start()
 
     if (m_wifiMode != WifiMode::STATION)
     {
-        utils::inf("WifiMode AP starting...");
-        startAP();
-        startAPApi();
+        utils::inf("WifiMode AP (Captive Portal) starting...");
+        runCaptivePortal();
     };
     return success;
 }
@@ -376,6 +375,31 @@ void WebServer::printOtaUpdateProgress(size_t prg, size_t sz)
 }
 
 //------------------------------------------------------------------------------
+bool WebServer::runCaptivePortal()
+{
+    startAP();
+    return startAPApi();
+}
+
+//------------------------------------------------------------------------------
+bool WebServer::isAPModeActive()
+{
+    return wifiMode() == WifiMode::AP;
+}
+
+//------------------------------------------------------------------------------
+bool WebServer::isStationModeActive()
+{
+    return wifiMode() == WifiMode::STATION;
+}
+
+//------------------------------------------------------------------------------
+const WebServer::WifiMode WebServer::wifiMode()
+{
+    return m_wifiMode;
+}
+
+//------------------------------------------------------------------------------
 bool WebServer::wifiConnected()
 {
   return WiFi.status() == WL_CONNECTED;
@@ -389,7 +413,6 @@ bool WebServer::wifiConnect(const char* ssid, const char* password)
     bool connected = false;
     int retry = 0;
     int wifiConnectRetries = 5;
-    WiFi.disconnect();
     WiFi.begin(ssid, password[0] == '\0' ? NULL : password);
 
     while (retry < wifiConnectRetries && !connected)
@@ -417,6 +440,41 @@ bool WebServer::wifiConnect(const char* ssid, const char* password)
 }
 
 //------------------------------------------------------------------------------
+bool WebServer::createWebServer()
+{
+    // Stop servers if running
+    m_server.end();
+    m_dnsServer.stop();
+    MDNS.end();
+
+    registerHandlers(m_server);
+
+    // Init filesystem
+    if (!SPIFFS.begin(true))
+    {
+        utils::err("Error on SPIFFS begin!");
+        return false;
+    }
+
+    using namespace std::placeholders;
+    Update.onProgress(std::bind(&WebServer::printOtaUpdateProgress, this, _1, _2));
+
+    // Run the server
+    m_server.begin();
+
+    // Run mdns service
+    if (!MDNS.begin(k_apHostname))
+    {
+        utils::err("Error setting up MDNS responder!");
+        return false;
+    }
+
+    MDNS.addService("http", "tcp", 80);
+
+    return true;
+}
+
+//------------------------------------------------------------------------------
 void WebServer::startAP()
 {
     m_wifiMode = WifiMode::AP;
@@ -425,6 +483,7 @@ void WebServer::startAP()
     WiFi.mode(WIFI_OFF);
     WiFi.softAPdisconnect(true);
     WiFi.disconnect(true);
+    delay(2000);
     WiFi.mode(WIFI_AP);
     String apHostname = k_apHostname;
     String apPass = AppCfg.getCurrent().wifi.ap_pass;
@@ -465,57 +524,14 @@ void WebServer::startAP()
 //------------------------------------------------------------------------------
 bool WebServer::startAPApi()
 {
-    registerHandlers(m_server);
-
-    // Init filesystem
-    if (!SPIFFS.begin(true))
-    {
-        utils::err("Error on SPIFFS begin!");
-        return false;
-    }
-
-    using namespace std::placeholders;
-    Update.onProgress(std::bind(&WebServer::printOtaUpdateProgress, this, _1, _2));
-
-    // Run mdns service
-    if (!MDNS.begin(k_apHostname))
-    {
-        utils::err("Error setting up MDNS responder!");
-        return false;
-    }
-
-    MDNS.addService("http", "tcp", 80);
-
-    // Run the server
-    m_server.begin();
-    return true;
+    // LU_TODO - createApWebServer() ?
+    return createWebServer();
 }
 
 //------------------------------------------------------------------------------
 bool WebServer::startApi()
 {
-    registerHandlers(m_server);
-
-    // Init filesystem
-    if (!SPIFFS.begin(true))
-    {
-        utils::err("Error on SPIFFS begin!");
-        return false;
-    }
-
-    using namespace std::placeholders;
-    Update.onProgress(std::bind(&WebServer::printOtaUpdateProgress, this, _1, _2));
-
-    if (!MDNS.begin(k_apHostname))
-    {
-        utils::err("Error setting up MDNS responder!");
-        return false;
-    }
-
-    MDNS.addService("http", "tcp", 80);
-    // Run the server
-    m_server.begin();
-    return true;
+    return createWebServer();
 }
 
 //------------------------------------------------------------------------------

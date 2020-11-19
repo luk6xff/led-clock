@@ -42,7 +42,6 @@ bool AppShared::putDisplayMsg(const char *msg, size_t msgLen)
 //------------------------------------------------------------------------------
 const QueueHandle_t& AppShared::getDisplayQHandle()
 {
-    rtos::LockGuard<rtos::Mutex> lock(m_displayMsgMtx);
     return m_displayMsgQ;
 }
 
@@ -68,7 +67,6 @@ bool AppShared::putDateTimeMsg(const DateTime& dt)
 //------------------------------------------------------------------------------
 const QueueHandle_t& AppShared::getTimeQHandle()
 {
-    rtos::LockGuard<rtos::Mutex> lock(m_timeDataMtx);
     return m_timeDataQ;
 }
 
@@ -82,7 +80,6 @@ void AppShared::setAppDt(const DateTime& dt)
 //------------------------------------------------------------------------------
 const DateTime& AppShared::getAppDt()
 {
-    rtos::LockGuard<rtos::Mutex> lock(m_appDtMtx);
     return m_appDt;
 }
 
@@ -90,6 +87,12 @@ const DateTime& AppShared::getAppDt()
 void AppShared::setAppLang(i18n_lang lang)
 {
     m_i18n.loadTranslation(lang);
+}
+
+//------------------------------------------------------------------------------
+const char* AppShared::getAppTranslated(i18n_msg_id id)
+{
+    return m_i18n.translate(id).c_str();
 }
 
 //------------------------------------------------------------------------------

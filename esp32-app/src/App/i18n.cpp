@@ -5,6 +5,11 @@
 //------------------------------------------------------------------------------
 const i18n_map I18N::k_i18n =
 {
+    // Common
+    { "" },
+    { "°C" },
+    { "°F" },
+    { " " },
     // App language symbol
     { "en", "pl"},
     // Days of week
@@ -31,6 +36,7 @@ const i18n_map I18N::k_i18n =
     // Weather
     { "Weather", "Pogoda" },
     { "Temperature", "Temperatura" },
+    { "Temp", "T" },
     { "in", "wewn" },
     { "out", "zewn" },
     { "Today", "Dzisiaj" },
@@ -46,12 +52,16 @@ I18N::I18N(i18n_lang language)
 }
 
 //------------------------------------------------------------------------------
-std::string I18N::translate(i18n_msg_id msg_id)
+const std::string& I18N::translate(i18n_msg_id msg_id)
 {
     if (k_i18n.size() <= msg_id)
     {
         utils::err("Error can't find: %d msgid in language file!", msg_id);
-        return "";
+        return k_i18n[M_CM_EMPTY][0];
+    }
+    if (msg_id <= M_CM_LAST)
+    {
+        return k_i18n[msg_id][0];
     }
     return  k_i18n[msg_id][m_lang];
 }

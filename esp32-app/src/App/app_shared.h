@@ -13,6 +13,7 @@
 #include "i18n.h"
 
 #define AppSh  AppShared::instance()
+#define tr(msg_id)     AppSh.getAppTranslated(msg_id)
 
 #define APP_DISPLAY_MSG_BUF_SIZE 512
 
@@ -43,7 +44,7 @@ public:
     const DateTime& getAppDt();
 
     void setAppLang(i18n_lang lang);
-    std::string translate(i18n_msg_id);
+    const char * getAppTranslated(i18n_msg_id id);
 
 private:
 

@@ -76,10 +76,29 @@ void WeatherTask::run()
                     utils::dbg("desc: %s",  openWeatherMapOneCallData.daily[i].weatherDescription.c_str());
                 }
             }
+
+            msg += tr(M_W_NAME) + String(": ");
+            msg += tr(M_W_NOW) + String("-") + tr(M_W_TEMP_SHORT) + ":" +\
+                    String(openWeatherMapOneCallData.current.temp, 1).c_str() + tr(M_CM_DEG_CELS) + "," + \
+                    openWeatherMapOneCallData.current.weatherDescription.c_str();
+            // Today
+            if (openWeatherMapOneCallData.daily[0].dt > 0)
+            {
+                msg += String(", ") + tr(M_W_TODAY) + String("-") + tr(M_W_TEMP_SHORT) + ":" + \
+                        String(openWeatherMapOneCallData.daily[0].tempDay, 1).c_str() + tr(M_CM_DEG_CELS) + "," + \
+                        openWeatherMapOneCallData.daily[0].weatherDescription.c_str();
+            }
+            if (openWeatherMapOneCallData.daily[1].dt > 0)
+            {
+                msg += String(", ") + tr(M_W_TOMM) + String("-") + tr(M_W_TEMP_SHORT) + ":" + \
+                        String(openWeatherMapOneCallData.daily[1].tempDay, 1).c_str() + tr(M_CM_DEG_CELS) + "," + \
+                        openWeatherMapOneCallData.daily[1].weatherDescription.c_str();
+            }
+            AppSh.putDisplayMsg(msg.c_str(), msg.length());
         }
         else
         {
-            utils::err("Weather forecasts read failed!");
+            utils::err("%s Weather forecasts read failed!", MODULE_NAME);
         }
 
 

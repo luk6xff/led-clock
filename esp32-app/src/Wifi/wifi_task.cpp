@@ -37,9 +37,8 @@ void WifiTask::run()
 {
     const TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
     uint8_t wifiConnectionFailureCnt = 0;
-
-    // WiFi.setAutoConnect(true);
-    // WiFi.setAutoReconnect(true);
+    const size_t captivePortalTimeout = 60; //seconds
+    size_t captivePortalTimeoutCnt = 0; //seconds
 
     WebServer server(m_wifiCfg.ap_hostname);
     if (server.start())
@@ -48,53 +47,55 @@ void WifiTask::run()
     }
     for(;;)
     {
-        if (WiFi.status() == WL_CONNECTED)
+        if (server.wifiConnected())
         {
-            vTaskDelay(10000 / portTICK_PERIOD_MS);
+            vTaskDelay(5000 / portTICK_PERIOD_MS);
             continue;
         }
 
         xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_DISCONNECTED);
-        // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-        // WiFi.begin(m_wifiCfg.ssid, m_wifiCfg.pass);
 
-        // // Wait until connected or timeou exceeded
-        // utils::inf("%s Connecting...", MODULE_NAME);
-        // const uint32_t startAttemptTime = millis();
-        // while (WiFi.status() != WL_CONNECTED &&
-        //         millis() - startAttemptTime < WIFI_TIMEOUT_MS)
-        // {
+        if (server.isAPModeActive())
+        {
+            if (captivePortalTimeoutCnt++ > captivePortalTimeout)
+            {
+                captivePortalTimeoutCnt = 0;
+                if (server.start())
+                {
+                    utils::inf("%s Succesfully connected to wifi, server is running", MODULE_NAME);
+                    xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
+                }
+            }
+        }
 
-        // }
+        if (server.isStationModeActive() && !server.wifiConnected())
+        {
+            utils::err("%s Connection failed, waiting for %d seconds...",
+                MODULE_NAME, WIFI_TIMEOUT_MS/1000);
+            vTaskDelay(WIFI_TIMEOUT_MS / portTICK_PERIOD_MS);
+            wifiConnectionFailureCnt++;
+            if (wifiConnectionFailureCnt >= 3)
+            {
+                utils::inf("%s Starting CaptivePortal...", MODULE_NAME);
+                if (server.runCaptivePortal())
+                {
+                    utils::inf("%s CaptivePortal is running", MODULE_NAME);
+                }
+                else
+                {
+                    utils::dbg("%s CaptivePortal start failure!", MODULE_NAME);
+                }
 
-        // if (WiFi.status() != WL_CONNECTED)
-        // {
-        //     utils::err("%s Connection failed, waiting for %d seconds...",
-        //         MODULE_NAME, WIFI_TIMEOUT_MS/1000);
-        //     vTaskDelay(WIFI_TIMEOUT_MS / portTICK_PERIOD_MS);
-        //     wifiConnectionFailureCnt++;
-        //     if (wifiConnectionFailureCnt >= 3)
-        //     {
-        //         // If no connection run Captive portal
-        //         if (!wm.autoConnect("LedClock", m_wifiCfg.pass))
-        //         {
-        //             utils::dbg("%s Starting CaptivePortal", MODULE_NAME);
-        //         }
-        //         wifiConnectionFailureCnt = 0;
-        //     }
-        //     else
-        //     {
-        //         continue;
-        //     }
-        // }
+                wifiConnectionFailureCnt = 0;
+            }
+            else
+            {
+                continue;
+            }
+        }
+
         server.process();
 
-        if (WiFi.status() == WL_CONNECTED)
-        {
-            utils::inf("%s Connected to:%s, IPaddress:%s", MODULE_NAME,
-                WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
-            xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
-        }
         vTaskDelay(sleepTime);
     }
 }

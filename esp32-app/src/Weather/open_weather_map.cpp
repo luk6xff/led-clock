@@ -65,9 +65,10 @@ bool OpenWeatherMapOneCall::doUpdate(OpenWeatherMapOneCallData *data, String pat
     client.stop();
   } else {
     utils::dbg("[HTTP] failed to connect to host");
+    return false;
   }
   this->data = nullptr;
-  return false;
+  return true;
 }
 
 void OpenWeatherMapOneCall::whitespace(char c)
