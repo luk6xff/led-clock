@@ -19,7 +19,7 @@ def gzip_file(src_path, dst_path):
 def gzip_webfiles(source, target, env):
 
     # FILETYPES / SUFFIXES WHICh NEED TO BE GZIPPED
-    filetypes_to_gzip = ('js', 'css', 'html', 'jpg', 'ico')
+    filetypes_to_gzip = ('js', 'css', 'html', 'jpg', 'ico', 'svg')
 
     print( '\nGZIP: INITIATED GZIP FOR SPIFFS...\n' )
     data_dir_path = os.path.join(env.get('PROJECTSRC_DIR'), "WebServer", "data")

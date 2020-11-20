@@ -1,7 +1,7 @@
 #include "app_config.h"
 #include "utils.h"
 
-#define DEV_CFG // FOR DEV TESTS ONLY
+#undef DEV_CFG // FOR DEV TESTS ONLY
 
 #ifdef DEV_CFG
     #include "app_dev_cfg.h"
@@ -31,14 +31,13 @@ void AppConfig::init()
 
     readSettings();
 
-    // Print content
-    printCurrentSettings();
-
     // Check if settings are valid
     if (getCurrent().magic == getDefaults().magic && \
         getCurrent().version == getDefaults().version)
     {
         utils::inf("AppCfg read succesfully\r\n");
+        // Print content
+        printCurrentSettings();
     }
     else
     {
@@ -116,6 +115,14 @@ bool AppConfig::saveDisplaySettings(const DisplaySettings& cfg)
 }
 
 //------------------------------------------------------------------------------
+bool AppConfig::saveAppSettings(const AppSettings& cfg)
+{
+    Settings newSettings = getCurrent();
+    newSettings.other = cfg;
+    return saveSettings(newSettings);
+}
+
+//------------------------------------------------------------------------------
 bool AppConfig::saveSettings(const Settings& settings)
 {
     rtos::LockGuard<rtos::Mutex> lk(settingsMtx);
@@ -161,7 +168,7 @@ void AppConfig::setDefaults()
     defaultSettings =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000003,
+        .version = 0x00000001,
     };
 
     // WIFI
@@ -195,6 +202,11 @@ void AppConfig::setDefaults()
     // DISPLAY
     DisplaySettings displayCfg = {true, 0, 70, 1};
     defaultSettings.display = displayCfg;
+
+    // OTHER
+    AppSettings otherCfg = { I18N_POLISH };
+    defaultSettings.other = otherCfg;
+
 }
 
 //------------------------------------------------------------------------------
@@ -209,6 +221,7 @@ void AppConfig::printCurrentSettings()
     utils::inf(getCurrent().weather.toStr().c_str());
     utils::inf(getCurrent().radioSensor.toStr().c_str());
     utils::inf(getCurrent().display.toStr().c_str());
+    utils::inf(getCurrent().other.toStr().c_str());
     utils::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
 }
 

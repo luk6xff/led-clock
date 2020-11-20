@@ -7,8 +7,13 @@
 //------------------------------------------------------------------------------
 SystemTime::SystemTime(SystemTimeSettings& timeSettings)
     : m_timeSettings(timeSettings)
-    , m_timezone(m_timeSettings.dstStart, m_timeSettings.stdStart)
+    , m_timezone(m_timeSettings.stdStart, m_timeSettings.dstStart)
 {
+    if (m_timeSettings.timezoneNum == 1)
+    {
+        m_timezone.setRules(m_timeSettings.stdStart, m_timeSettings.stdStart);
+    }
+
     rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
     if (!m_rtc.begin())
     {

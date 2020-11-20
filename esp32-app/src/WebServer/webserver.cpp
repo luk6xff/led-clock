@@ -226,14 +226,15 @@ void WebServer::registerHandlers(AsyncWebServer& server)
     server.on("/update", HTTP_POST,
         [](AsyncWebServerRequest *request) {},
         [this](AsyncWebServerRequest *request, const String& filename,
-            size_t index, uint8_t *data, size_t len, bool final){
+            size_t index, uint8_t *data, size_t len, bool final)
+        {
             handleDoOtaUpdate(request, filename, index, data, len, final);
         }
     );
 
     server.onNotFound([](AsyncWebServerRequest *request)
     {
-        request->send(404, "text/plain", " <<< Not found >>> ");
+        request->send(404, "text/plain", " <<< ledclock 2020 - Not found >>> ");
     });
 
     // Set serve static files and cache responses for 10 minutes (600 seconds)
@@ -290,6 +291,17 @@ void WebServer::setCfgSaveHandlers()
                 return AppCfg.saveDisplaySettings(cfg);
             }
         },
+
+        {APP_CFG_KEY , [this](const JsonObject& json)
+            {
+                AppSettings cfg = AppCfg.getCurrent().other;
+                cfg.fromJson(json);
+                // Update language globally
+                AppSh.setAppLang(cfg.appLang);
+                utils::inf("%s", cfg.toJson().c_str());
+                return AppCfg.saveAppSettings(cfg);
+            }
+        },
     };
 }
 
@@ -327,15 +339,23 @@ void WebServer::setCfgReadHandlers()
                 return AppCfg.getCurrent().display.toJson();
             }
         },
+
+        {APP_CFG_KEY , [this]()
+            {
+                return AppCfg.getCurrent().other.toJson();
+            }
+        },
     };
 }
 
 //------------------------------------------------------------------------------
-void WebServer::handleDoOtaUpdate(AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final)
+void WebServer::handleDoOtaUpdate(AsyncWebServerRequest *request, const String& filename,
+                                    size_t index, uint8_t *data, size_t len, bool final)
 {
     if (!index)
     {
-        utils::inf("Update starting...");
+        AppSh.setAppOtaUpdateStatus(true);
+        utils::inf("OTA Update starting...");
         m_otaFileContentLen = request->contentLength();
         // If filename includes spiffs, update the spiffs partition
         int cmd = (filename.indexOf("spiffs") > -1) ? U_PART : U_FLASH;
@@ -359,10 +379,12 @@ void WebServer::handleDoOtaUpdate(AsyncWebServerRequest *request, const String& 
         if (!Update.end(true))
         {
             Update.printError(Serial);
+            AppSh.setAppOtaUpdateStatus(false);
         }
         else
         {
-            utils::inf("Update completed!");
+            utils::inf("OTA Update completed!");
+            AppSh.setAppOtaUpdateStatus(false);
             ESP.restart();
         }
     }
@@ -478,18 +500,19 @@ bool WebServer::createWebServer()
 }
 
 //------------------------------------------------------------------------------
-void WebServer::startAP()
+bool WebServer::startAP()
 {
+    bool ret;
     m_wifiMode = WifiMode::AP;
 
     utils::inf("Starting Access Point");
     WiFi.mode(WIFI_OFF);
     WiFi.softAPdisconnect(true);
     WiFi.disconnect(true);
-    delay(2000);
+    delay(3000);
     WiFi.mode(WIFI_AP);
-    String apHostname = k_apHostname;
-    String apPass = AppCfg.getCurrent().wifi.ap_pass;
+    String apHostname(k_apHostname);
+    String apPass(AppCfg.getCurrent().wifi.ap_pass);
     if (apHostname == "")
     {
         apHostname = "ledclock";
@@ -500,28 +523,46 @@ void WebServer::startAP()
         apPass = "admin123";
     }
 
-    WiFi.softAP(apHostname.c_str(), apPass.c_str());
+    ret = WiFi.softAP(apHostname.c_str(), apPass.c_str());
+    if (!ret)
+    {
+        utils::err("Error occured during setting Wifi.softAP!");
+        return false;
+    }
 
-    utils::inf("Setting softAP Hostname:", apHostname.c_str());
-    bool res =  WiFi.softAPsetHostname(apHostname.c_str());
-    if (!res)
+    utils::inf("Setting softAP Hostname: %s", apHostname.c_str());
+    ret = WiFi.softAPsetHostname(apHostname.c_str());
+    if (!ret)
     {
         utils::err("Hostname: AP set failed!");
     }
-    utils::dbg("Hostname: AP: %s", WiFi.softAPgetHostname());
+    else
+    {
+        utils::inf("Hostname: AP: %s", WiFi.softAPgetHostname());
+    }
 
     IPAddress localIp(192,168,4,1);
     IPAddress gateway(192,168,4,1);
     IPAddress subnetMask(255,255,255,0);
-    WiFi.softAPConfig(localIp, gateway, subnetMask);
+    ret = WiFi.softAPConfig(localIp, gateway, subnetMask);
+    if (!ret)
+    {
+        utils::err("WiFi.softAPConfig set failed!");
+        return false;
+    }
 
     delay(500);  // Need to wait to get IP
     utils::inf("AP Name: %s", k_apHostname);
     utils::inf("AP IP address: %s", WiFi.softAPIP().toString().c_str());
 
-    //m_dnsServer.reset(new DNSServer);
     m_dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-    m_dnsServer.start(k_dnsPort, "*", localIp);
+    ret = m_dnsServer.start(k_dnsPort, "*", localIp);
+    if (!ret)
+    {
+        utils::err("dnsServer.start failed!");
+        return false;
+    }
+    return true;
 }
 
 //------------------------------------------------------------------------------

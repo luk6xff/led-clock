@@ -11,7 +11,6 @@
 #define WEATHER_CFG_VAL_ENABLE          "weather-update-enable"
 #define WEATHER_CFG_VAL_SYNC_INTERVAL   "weather-sync-interval"
 #define WEATHER_CFG_VAL_OWM_APIKEY      "weather-owm-api-key"
-#define WEATHER_CFG_VAL_OWM_LANG        "weather-owm-lang"
 #define WEATHER_CFG_VAL_OWM_CITY        "weather-owm-city"
 
 
@@ -25,7 +24,6 @@ struct WeatherSettings
 {
     #define CITY_NAME_MAXLEN    16
     #define OWM_APPID_MAXLEN    48
-    #define LANG_MAXLEN          4
 
     struct City
     {
@@ -51,9 +49,7 @@ struct WeatherSettings
     {
         memset(city.cityName, 0, CITY_NAME_MAXLEN);
         memset(owmAppid, 0, OWM_APPID_MAXLEN);
-        memset(language, 0, LANG_MAXLEN);
         memcpy(owmAppid, "INVALID_KEY", OWM_APPID_MAXLEN);
-        memcpy(language, "pl", LANG_MAXLEN);
         city = {
             49.692167, // Ubiad, PL
             20.708694
@@ -68,7 +64,6 @@ struct WeatherSettings
         , city(city)
     {
         memcpy(this->owmAppid, apiKey, OWM_APPID_MAXLEN);
-        memcpy(this->language, language, LANG_MAXLEN);
     }
 
     std::string toJson()
@@ -82,8 +77,6 @@ struct WeatherSettings
         obj[WEATHER_CFG_VAL_SYNC_INTERVAL] = updateInterval / 60; //Convert from seconds to minutes on server.
         obj = arr.createNestedObject();
         obj[WEATHER_CFG_VAL_OWM_APIKEY] = owmAppid;
-        obj = arr.createNestedObject();
-        obj[WEATHER_CFG_VAL_OWM_LANG] = language;
         obj = arr.createNestedObject();
         const String c = cityToServerStr(city);
         obj[WEATHER_CFG_VAL_OWM_CITY] = c.c_str();
@@ -114,11 +107,6 @@ struct WeatherSettings
             {
                 memset(owmAppid, 0, OWM_APPID_MAXLEN);
                 memcpy(owmAppid, v[WEATHER_CFG_VAL_OWM_APIKEY].as<const char*>(), OWM_APPID_MAXLEN);
-            }
-            else if (v[WEATHER_CFG_VAL_OWM_LANG])
-            {
-                memset(language, 0, LANG_MAXLEN);
-                memcpy(language, v[WEATHER_CFG_VAL_OWM_LANG].as<const char*>(), LANG_MAXLEN);
             }
             else if (v[WEATHER_CFG_VAL_OWM_CITY])
             {
@@ -208,18 +196,16 @@ struct WeatherSettings
     {
         const String colon = ":";
         const String comma =", ";
-        return String(WEATHER_CFG_KEY)+colon+comma + \
+        return String(String(WEATHER_CFG_KEY)+colon+comma + \
                 String(WEATHER_CFG_VAL_ENABLE)+colon+String(enable)+comma + \
                 String(WEATHER_CFG_VAL_SYNC_INTERVAL)+colon+String(updateInterval)+comma + \
                 String(WEATHER_CFG_VAL_OWM_APIKEY)+colon+String(owmAppid)+comma + \
-                String(WEATHER_CFG_VAL_OWM_LANG)+colon+String(language)+comma + \
-                city.toStr();
+                city.toStr());
     }
 
 
     uint32_t enable;
     uint32_t updateInterval; // [s] in seconds
     char owmAppid[OWM_APPID_MAXLEN];
-    char language[LANG_MAXLEN];
     City city;
 };

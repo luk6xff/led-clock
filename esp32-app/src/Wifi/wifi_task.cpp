@@ -1,7 +1,7 @@
 #include "wifi_task.h"
 #include "App/rtos_common.h"
 #include "App/utils.h"
-//#include <WiFiManager.h>
+#include "App/app_shared.h"
 
 #include "WebServer/webserver.h"
 
@@ -53,8 +53,16 @@ void WifiTask::run()
             continue;
         }
 
+        // If OTA update active, do not make any reconnections in both AP and STATION modes
+        if (AppSh.getAppOtaUpdateStatus())
+        {
+            vTaskDelay(10000 / portTICK_PERIOD_MS);
+            continue;
+        }
+
         xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_DISCONNECTED);
 
+        // Try to recconnect after timeout to AP
         if (server.isAPModeActive())
         {
             if (captivePortalTimeoutCnt++ > captivePortalTimeout)
@@ -68,10 +76,11 @@ void WifiTask::run()
             }
         }
 
+        // Lost connection, try to reconnect
         if (server.isStationModeActive() && !server.wifiConnected())
         {
             utils::err("%s Connection failed, waiting for %d seconds...",
-                MODULE_NAME, WIFI_TIMEOUT_MS/1000);
+                        MODULE_NAME, WIFI_TIMEOUT_MS/1000);
             vTaskDelay(WIFI_TIMEOUT_MS / portTICK_PERIOD_MS);
             wifiConnectionFailureCnt++;
             if (wifiConnectionFailureCnt >= 3)

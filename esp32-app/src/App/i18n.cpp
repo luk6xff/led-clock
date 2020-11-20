@@ -46,11 +46,11 @@ const i18n_map I18N::k_i18n =
     { "Tommorow", "Jutro" },                // M_WEATHER_TOMM
     { "Now", "Teraz" },                     // M_WEATHER_NOW
     // Sensor
-    { "Sensor", "Czujnik" },                // M_SENSOR_NAME
+    { "Sensor", "PomiarZewn" },                  // M_SENSOR_NAME
     { "Temp", "Temp" },                     // M_SENSOR_TEMP
     { "Pressure", "Ciśn" },                 // M_SENSOR_PRESS
     { "Humidity", "Wilg" },                 // M_SENSOR_HUMID
-    { "VBatt", "Bat" },                 // M_SENSOR_VBATT
+    { "VBatt", "Bat" },                     // M_SENSOR_VBATT
 };
 
 //------------------------------------------------------------------------------

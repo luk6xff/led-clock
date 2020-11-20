@@ -46,6 +46,9 @@ public:
     void setAppLang(i18n_lang lang);
     const char * getAppTranslated(i18n_msg_id id);
 
+    void setAppOtaUpdateStatus(bool status);
+    bool getAppOtaUpdateStatus() const;
+
 private:
 
     // I18N map
@@ -67,4 +70,7 @@ private:
     DateTime m_appDt;
     // App system time mutex
     rtos::Mutex m_appDtMtx;
+
+    // True if device OTA update is ongoing
+    bool m_otaUpdateStatus;
 };

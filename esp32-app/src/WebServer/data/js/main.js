@@ -39,6 +39,27 @@ $('#tab_devapp').on('load-success.bs.table',function (e,data) {
   }, 5000);
 });
 
+/**
+ * @summary Name column formatter for app-sysinfo-table
+ */
+function nameFormatter(value, row) {
+  var label = value;
+  return label;
+}
+
+/**
+ * @summary Value column formatter for app-sysinfo-table
+ */
+function valueFormatter(value, row) {
+  //console.log("valueFormatter");
+  var label = "";
+  if (row.unit != "") {
+    row.unit = "[" + row.unit + "]"
+  }
+  label = value + " " + row.unit;
+  return label;
+}
+
 
 /**
  * @summary Get info from system
@@ -140,8 +161,8 @@ $('#cfg_save_button').click(function() {
 
       var id = $(this).attr("id");
       var value = $(this).is(':checked');
-
-      var item = {[id] : value}
+      value = value * 1;
+      var item = {[id] : value.toString()}
       dataJson.push(item);
     });
 

@@ -1,11 +1,13 @@
 #include "app_shared.h"
+#include "app_shared.h"
 #include "utils.h"
 
 #define MODULE_NAME "[APSH]"
 
 //------------------------------------------------------------------------------
 AppShared::AppShared()
-    : m_i18n(I18N_POLISH)
+    : m_i18n(I18N_ENGLISH)
+    , m_otaUpdateStatus(false)
 {
     m_displayMsgQ = xQueueCreate(4, sizeof(AppDisplayMsg));
     m_timeDataQ = xQueueCreate(1, sizeof(DateTime));
@@ -93,6 +95,18 @@ void AppShared::setAppLang(i18n_lang lang)
 const char* AppShared::getAppTranslated(i18n_msg_id id)
 {
     return m_i18n.translate(id).c_str();
+}
+
+//------------------------------------------------------------------------------
+void AppShared::setAppOtaUpdateStatus(bool status)
+{
+    m_otaUpdateStatus = status;
+}
+
+//------------------------------------------------------------------------------
+bool AppShared::getAppOtaUpdateStatus() const
+{
+    return m_otaUpdateStatus;
 }
 
 //------------------------------------------------------------------------------

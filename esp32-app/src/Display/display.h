@@ -57,9 +57,15 @@ public:
 
     void enableAutoIntensityLevelControl(bool enable);
 
+    bool isAutoIntensityEnabled();
+
     void processAutoIntensityLevelControl();
 
     void setIntensityLevel(uint8_t level);
+
+    void setDisplaySpeedValue(uint32_t speed);
+
+    void setDisplayPauseValue(uint32_t pause);
 
     void printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots=false);
 
@@ -106,4 +112,14 @@ private:
      * @brief Sensor controlled display intensity level
      */
     bool m_autoIntensityLevelStatus;
+
+    /**
+     * @brief Display scroll speed value [in ms]
+     */
+    uint32_t m_dispSpeed;
+
+    /**
+     * @brief Display scroll pause value [in ms]
+     */
+    uint32_t m_dispPause;
 };

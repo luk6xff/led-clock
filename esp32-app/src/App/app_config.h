@@ -12,6 +12,7 @@
 #include "Weather/weather_settings.h"
 #include "Radio/radio_settings.h"
 #include "Display/display_settings.h"
+#include "app_settings.h"
 #include "rtos_common.h"
 
 
@@ -40,6 +41,7 @@ public:
         WeatherSettings weather;
         RadioSensorSettings radioSensor;
         DisplaySettings display;
+        AppSettings other;
     } Settings;
 
 public:
@@ -57,6 +59,7 @@ public:
     bool saveWeatherSettings(const WeatherSettings& cfg);
     bool saveRadioSensorSettings(const RadioSensorSettings& cfg);
     bool saveDisplaySettings(const DisplaySettings& cfg);
+    bool saveAppSettings(const AppSettings& cfg);
 
 private:
     bool saveSettings(const Settings &settings);

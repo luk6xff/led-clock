@@ -4,20 +4,19 @@
 #include "App/utils.h"
 
 
+//------------------------------------------------------------------------------
 #define MAX_DISPLAY_ZONES 3
 #define DISPLAY_ZONE_0    0
 #define DISPLAY_ZONE_1    1
 #define DISPLAY_ZONE_FULL 2
-
-#define ZONE_SIZE   1
-#define SPEED_TIME  50
-#define PAUSE_TIME  0
 
 
 //------------------------------------------------------------------------------
 Display::Display(const MAX72xxConfig& cfg)
     : m_mx(cfg.moduleType, cfg.max72xxCSpin, cfg.modulesNumber)
     , m_autoIntensityLevelStatus(true)
+    , m_dispSpeed(50)
+    , m_dispPause(0)
 {
     setup();
 }
@@ -33,7 +32,7 @@ void Display::setup()
     m_mx.setFont(DISPLAY_ZONE_FULL, dig_6x8_fonts);
     m_mx.setFont(DISPLAY_ZONE_0, dig_3x5_fonts);
     m_mx.setFont(DISPLAY_ZONE_1, dig_4x8_fonts);
-    m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
+    m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, m_dispSpeed , m_dispPause, PA_PRINT, PA_NO_EFFECT);
     m_mx.displayZoneText(DISPLAY_ZONE_0, m_dispZone0Buf, PA_LEFT, 0, 0, PA_PRINT, PA_NO_EFFECT);
     m_mx.displayZoneText(DISPLAY_ZONE_1, m_dispZone1Buf, PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
 }
@@ -65,11 +64,16 @@ MD_Parola* Display::getDispObject()
     return &m_mx;
 }
 
-
 //------------------------------------------------------------------------------
 void Display::enableAutoIntensityLevelControl(bool enable)
 {
     m_autoIntensityLevelStatus = enable;
+}
+
+//------------------------------------------------------------------------------
+bool Display::isAutoIntensityEnabled()
+{
+    return m_autoIntensityLevelStatus;
 }
 
 //------------------------------------------------------------------------------
@@ -125,6 +129,26 @@ void Display::setIntensityLevel(uint8_t level)
 }
 
 //------------------------------------------------------------------------------
+void Display::setDisplaySpeedValue(uint32_t speed)
+{
+    if (speed > 1000)
+    {
+        speed = 1000;
+    }
+    m_dispSpeed = speed;
+}
+
+//------------------------------------------------------------------------------
+void Display::setDisplayPauseValue(uint32_t pause)
+{
+    if (pause > 1000)
+    {
+        pause = 1000;
+    }
+    m_dispPause = pause;
+}
+
+//------------------------------------------------------------------------------
 void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots)
 {
     switch(tpm)
@@ -134,7 +158,7 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
             if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
             {
                 snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%02d%c%02d", dt.hour(), (timeDots ? ':' : ' '), dt.minute());
-                m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_PRINT, PA_NO_EFFECT);
+                m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, m_dispSpeed , m_dispPause, PA_PRINT, PA_NO_EFFECT);
                 m_mx.setFont(dig_6x8_fonts);
                 m_mx.displayReset(DISPLAY_ZONE_FULL);
             }
@@ -143,7 +167,9 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
 
         case THMS:
         {
-            if (getDispObject()->getZoneStatus(DISPLAY_ZONE_0) && getDispObject()->getZoneStatus(DISPLAY_ZONE_1))
+            if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL) &&
+                getDispObject()->getZoneStatus(DISPLAY_ZONE_0) &&
+                getDispObject()->getZoneStatus(DISPLAY_ZONE_1))
             {
                 snprintf(m_dispZone0Buf, sizeof(m_dispZone0Buf), "%02d", dt.second());
                 snprintf(m_dispZone1Buf, sizeof(m_dispZone1Buf), "%02d%c%02d", dt.hour(), (timeDots ? ':' : ' '), dt.minute());
@@ -164,7 +190,7 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
                 // Convert weekday to extended - ascii;
                 String wd = utf8Ascii(SystemTime::weekdayToStr(dt));
                 snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s %s", wd.c_str(), SystemTime::dateToStr(dt));
-                m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
+                m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, m_dispSpeed , m_dispPause, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
                 m_mx.setFont(NULL);
                 m_mx.displayReset(DISPLAY_ZONE_FULL);
             }
@@ -190,7 +216,7 @@ void Display::printMsg(const char *msg, const size_t msgSize)
     {
         String utfMsg = utf8Ascii(msg);
         snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s", utfMsg.c_str());
-        m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
+        m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, m_dispSpeed , m_dispPause, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
         m_mx.setFont(NULL);
         m_mx.displayReset(DISPLAY_ZONE_FULL);
     }
@@ -202,7 +228,7 @@ String Display::utf8Ascii(const char *s)
 
     uint8_t prev_c = '\0';
     String cp;
-    utils::dbg("Converting: %s from UTF-8 to Extended ASCII...", s);
+    //utils::dbg("Converting: %s from UTF-8 to Extended ASCII...", s);
 
     while (*s != '\0')
     {
@@ -225,7 +251,7 @@ String Display::utf8Ascii(const char *s)
                 case 0x82: if (tmp_c == 0xAC) c = 0x80; // Euro symbol special case
             }
             prev_c = tmp_c;   // save last char
-            utils::dbg("Converted:0x%x[%d] to:0x%x[%d]", tmp_c, tmp_c, c, c);
+            //utils::dbg("Converted:0x%x[%d] to:0x%x[%d]", tmp_c, tmp_c, c, c);
         }
 
         if (c != '\0')
@@ -234,7 +260,7 @@ String Display::utf8Ascii(const char *s)
         }
     }
     cp += '\0';   // terminate the new string
-    utils::dbg(">>>> CP: %s", cp.c_str());
+    //utils::dbg(">>>> CP: %s", cp.c_str());
     return cp;
 }
 

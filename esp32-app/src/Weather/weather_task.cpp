@@ -36,7 +36,7 @@ void WeatherTask::run()
     OpenWeatherMapOneCallData openWeatherMapOneCallData;
     OpenWeatherMapOneCall oneCallClient;
     oneCallClient.setMetric(true);
-    oneCallClient.setLanguage(m_weatherCfg.language);
+    oneCallClient.setLanguage(String(tr(M_LANG)));
     for(;;)
     {
         if (!m_weatherCfg.enable)

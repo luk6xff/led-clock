@@ -32,9 +32,14 @@ void DisplayTask::run()
     const TickType_t dispRefreshTime = (50 / portTICK_PERIOD_MS);
     bool timeDots;
     DateTime dt;
-    Display m_disp(m_dispCfg);
     AppDisplayMsg dispMsg;
+    Display m_disp(m_dispCfg);
     m_disp.enableAutoIntensityLevelControl(m_displayCfg.enableAutoIntenisty);
+    if (!m_disp.isAutoIntensityEnabled())
+    {
+        m_disp.setIntensityLevel(m_displayCfg.intensityValue);
+    }
+    m_disp.setDisplaySpeedValue(m_displayCfg.animSpeed);
     for(;;)
     {
         m_disp.update();

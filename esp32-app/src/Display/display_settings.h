@@ -63,13 +63,17 @@ struct DisplaySettings
             else if (v[DISPLAY_CFG_VAL_INTENSITY_VALUE])
             {
                 intensityValue = v[DISPLAY_CFG_VAL_INTENSITY_VALUE].as<uint8_t>();
+                if (intensityValue > 15)
+                {
+                    intensityValue = 0;
+                }
             }
             else if (v[DISPLAY_CFG_VAL_ANIM_SPEED])
             {
                 animSpeed = v[DISPLAY_CFG_VAL_ANIM_SPEED].as<uint8_t>();
-                if (animSpeed < 1 || animSpeed > 100)
+                if (animSpeed < 1 || animSpeed > 1000)
                 {
-                    animSpeed = 70;
+                    animSpeed = 50;
                 }
             }
             else if (v[DISPLAY_CFG_VAL_TIME_FORMAT])

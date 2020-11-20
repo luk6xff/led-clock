@@ -102,8 +102,8 @@
                         <table id="app-sysinfo-table" data-toggle="table" data-show-colunns="true">
                           <thead>
                             <tr>
-                              <th data-field="name" data-align="left" data-sortable="true" data-formatter="nameFormatter">Name</th>
-                              <th data-field="value" data-align="left" data-sortable="true" data-formatter="valueFormatter">Value</th>
+                              <th data-field="name" data-align="left" data-sortable="false" data-formatter="nameFormatter">Name</th>
+                              <th data-field="value" data-align="left" data-sortable="false" data-formatter="valueFormatter">Value</th>
                             </tr>
                           </thead>
                         </table>
@@ -129,18 +129,16 @@
                     <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-weather">Weather</a>
                     <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-radio">Radio</a>
                     <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-display">Display</a>
-                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-other">Other</a>
+                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#dev-cfg-app">App</a>
                   </div>
                 </div>
                 <div class="col-md-9">
                   <div class="tab-content">
                     <div class="tab-pane fade" id="dev-cfg-wifi">
-
                       <div class="card-body media align-items-center">
                         <img src="img/baca_logo.jpg" alt="" class="d-block ui-w-80">
                       </div>
                       <hr class="border-light m-0">
-
                       <div class="card-body">
                         <div class="form-group">
                           <label class="form-label">WIFI ssid</label>
@@ -176,6 +174,7 @@
                         </div>
                       </div>
                     </div>
+
                     <div class="tab-pane fade" id="dev-cfg-time">
                       <div class="card-body pb-2">
                         <div class="form-group">
@@ -239,10 +238,6 @@
                           <label class="form-label">City</label>
                           <input class="form-control" type="text" id="weather-owm-city" value='[Ubiad|49.692167|20.708694]'>
                         </div>
-                        <div class="form-group cfg-weather-settings">
-                          <label class="form-label">OWM language</label>
-                          <input class="form-control" type="text" id="weather-owm-lang" value='pl'>
-                        </div>
                       </div>
                     </div>
 
@@ -293,11 +288,11 @@
                       </div>
                     </div>
 
-                    <div class="tab-pane fade" id="dev-cfg-other">
+                    <div class="tab-pane fade" id="dev-cfg-app">
                       <div class="card-body pb-2">
                         <div class="form-group">
                           <label class="form-label">App language</label>
-                          <select class="custom-select" id="other-applanguage">
+                          <select class="custom-select" id="app-lang">
                             <option value='0'>English</option>
                             <option value='1'selected="">Polski</option>
                           </select>

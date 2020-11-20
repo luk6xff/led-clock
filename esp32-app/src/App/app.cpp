@@ -48,6 +48,7 @@ void App::setup()
     utils::init();
     printMotd();
     AppCfg.init();
+    AppSh.setAppLang(AppCfg.getCurrent().other.appLang);
     createTasks();
     runTasks();
 }

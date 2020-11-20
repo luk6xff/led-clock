@@ -51,7 +51,7 @@ private:
     void printOtaUpdateProgress(size_t prg, size_t sz);
 
     bool createWebServer();
-    void startAP();
+    bool startAP();
     bool startAPApi();
     bool startApi();
     bool wifiConnect(const char* ssid, const char* password);
