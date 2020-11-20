@@ -79,6 +79,10 @@ app.get('/dev-cfg-read', function (req, res) {
       const resp = '{"dev-cfg-display":[{"display-intensity-val":"99"},{"display-anim-speed":"70"},{"display-auto-intensity":false},{"display-time-format":"0"}]}';
       res.status(200).send(resp);
    }
+   else if (req.query.cfg == "dev-cfg-app") {
+      const resp = '{"dev-cfg-app":[{"app-lang":"0"}]}';
+      res.status(200).send(resp);
+   }
    else {
       res.status(404).send('{"dev-cfg-wifi": "failure"}');
    }

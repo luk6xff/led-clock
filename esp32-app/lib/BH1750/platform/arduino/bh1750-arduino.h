@@ -19,6 +19,8 @@
 typedef struct
 {
     TwoWire *i2c;
+    int sda_pin;
+    int scl_pin;
 } bh1750_arduino;
 
 /**

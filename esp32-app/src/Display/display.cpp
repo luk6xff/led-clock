@@ -41,7 +41,7 @@ void Display::setup()
 void Display::update()
 {
     m_mx.displayAnimate();
-    //processAutoIntensityLevelControl(); // Used externally
+    //processAutoIntensityLevelControl(); // Called in timer task externally
 }
 
 //------------------------------------------------------------------------------

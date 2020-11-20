@@ -9,14 +9,15 @@
 /**
  * @brief Enabled/Disabled TEST Defines
  */
-//#define TEST_RTOS_TASK
-//#define TEST_DISPLAY
-//#define TEST_LIGHT_SENSOR
-//#define TEST_RTC
-//#define TEST_RADIO
-//#define TEST_NTP
-//#define TEST_CAPTIVE_PORTAL
-//#define TEST_WEB_SERVER
+// #define TEST_I2C_SCANNER
+// #define TEST_RTOS_TASK
+// #define TEST_DISPLAY
+#define TEST_LIGHT_SENSOR
+// #define TEST_RTC
+// #define TEST_RADIO
+// #define TEST_NTP
+// #define TEST_CAPTIVE_PORTAL
+// #define TEST_WEB_SERVER
 
 //------------------------------------------------------------------------------
 #if defined(TEST_RTC) || defined(TEST_DISPLAY)
@@ -120,7 +121,12 @@ void tests_setup()
 {
     // Utils init
     utils::init();
-    //utils::util_i2c_scanner();
+#ifdef TEST_I2C_SCANNER
+    utils::dbg("SCANNING I2C_BUS_0...");
+    utils::util_i2c_scanner(0);
+    utils::dbg("SCANNING I2C_BUS_1...");
+    utils::util_i2c_scanner(1);
+#endif
 
 #ifdef TEST_RTOS_TASK
     xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
@@ -236,10 +242,11 @@ void tests_run()
 #if defined(TEST_RTC) || defined(TEST_DISPLAY)
     // Timezones
     // Central European Time (Frankfurt, Paris, Warsaw)
-    SystemTimeSettings timeConfig = {
-        {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
-        {"CET ", Last, Sun, Oct, 3, 60},  // Central European Standard Time
-    };
+    // SystemTimeSettings timeConfig = {
+    //     {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
+    //     {"CET ", Last, Sun, Oct, 3, 60},  // Central European Standard Time
+    // };
+    SystemTimeSettings timeConfig;
     SystemTime time(timeConfig);
 #endif
 

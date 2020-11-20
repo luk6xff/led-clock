@@ -59,6 +59,7 @@
         "regex": "cpp",
         "typeindex": "cpp",
         "valarray": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "random": "cpp"
     }
 }

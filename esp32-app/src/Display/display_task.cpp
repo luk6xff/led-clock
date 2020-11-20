@@ -22,6 +22,7 @@ DisplayTask::DisplayTask(const DisplaySettings& displayCfg,
     , m_timeDispMode(Display::THMS)
     , m_displayCfg(displayCfg)
     , m_timeQ(timeQ)
+    , m_disp(m_dispCfg)
 {
 
 }
@@ -33,17 +34,33 @@ void DisplayTask::run()
     bool timeDots;
     DateTime dt;
     AppDisplayMsg dispMsg;
-    Display m_disp(m_dispCfg);
     m_disp.enableAutoIntensityLevelControl(m_displayCfg.enableAutoIntenisty);
     if (!m_disp.isAutoIntensityEnabled())
     {
         m_disp.setIntensityLevel(m_displayCfg.intensityValue);
     }
+    else
+    {
+        // Create display auto intensity timer if needed
+        m_lightSensorTimerTask.dispHandle = &m_disp;
+        m_lightSensorTimerTask.timeoutMs = 2000;
+        BaseType_t ret = xTaskCreate(runLightSensorCb,
+                                    "DispSensTask",
+                                    4096,
+                                    &m_lightSensorTimerTask,
+                                    2,
+                                    &m_lightSensorTimerTask.timerTask);
+        if (ret != pdPASS)
+        {
+            utils::err("%s DT:%s", MODULE_NAME, "m_lightSensorTimerTask start failed");
+        }
+    }
+
     m_disp.setDisplaySpeedValue(m_displayCfg.animSpeed);
+
     for(;;)
     {
         m_disp.update();
-        m_disp.processAutoIntensityLevelControl();
         if (m_timeQ)
         {
             const BaseType_t rc = xQueueReceive(m_timeQ, &dt, 0);
@@ -77,3 +94,13 @@ void DisplayTask::run()
 
 
 //------------------------------------------------------------------------------
+void DisplayTask::runLightSensorCb(void *arg)
+{
+    DisplayTimerTask *d = static_cast<DisplayTimerTask*>(arg);
+    const TickType_t timeoutMs = (d->timeoutMs / portTICK_PERIOD_MS);
+    for(;;)
+    {
+        d->dispHandle->processAutoIntensityLevelControl();
+        vTaskDelay(timeoutMs);
+    }
+}

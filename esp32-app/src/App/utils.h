@@ -64,5 +64,5 @@ namespace utils
     /**
      * @brief Searches for i2c devices on the bus
      */
-    void util_i2c_scanner();
+    void util_i2c_scanner(uint8_t bus_num);
 };

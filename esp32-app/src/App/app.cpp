@@ -12,11 +12,6 @@
 #include <sdkconfig.h>
 
 
-
-// Define the app version number
-#define APP_VERSION "0.0.1"
-
-
 //------------------------------------------------------------------------------
 App::App()
     : m_wifiTask(nullptr)

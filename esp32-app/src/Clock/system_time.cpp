@@ -14,7 +14,7 @@ SystemTime::SystemTime(SystemTimeSettings& timeSettings)
         m_timezone.setRules(m_timeSettings.stdStart, m_timeSettings.stdStart);
     }
 
-    rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
+    rtos::LockGuard<rtos::Mutex> lock(g_i2c0Mutex);
     if (!m_rtc.begin())
     {
         utils::err("Couldn't find RTC");
@@ -30,7 +30,7 @@ SystemTime::SystemTime(SystemTimeSettings& timeSettings)
 //------------------------------------------------------------------------------
 void SystemTime::setTime(const DateTime& dt)
 {
-    rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
+    rtos::LockGuard<rtos::Mutex> lock(g_i2c0Mutex);
     m_rtc.adjust(dt);
 }
 
@@ -46,14 +46,14 @@ void SystemTime::setUtcTime(const DateTime& dt)
 //------------------------------------------------------------------------------
 const DateTime SystemTime::getTime()
 {
-    rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
+    rtos::LockGuard<rtos::Mutex> lock(g_i2c0Mutex);
     return m_rtc.now();
 }
 
 //------------------------------------------------------------------------------
 float SystemTime::getTemperature()
 {
-    rtos::LockGuard<rtos::Mutex> lock(g_i2cMutex);
+    rtos::LockGuard<rtos::Mutex> lock(g_i2c0Mutex);
     return m_rtc.getTemperature();
 }
 

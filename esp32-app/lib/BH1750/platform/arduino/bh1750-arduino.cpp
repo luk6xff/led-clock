@@ -11,8 +11,8 @@
 //-------------------------------------------------------------------------------
 bool bh1750_arduino_init(bh1750 *const dev, bh1750_arduino *const arduino_dev)
 {
-    arduino_dev->i2c->begin();
-    arduino_dev->i2c->setClock(400000);
+    arduino_dev->i2c->begin(arduino_dev->sda_pin, arduino_dev->scl_pin);
+    arduino_dev->i2c->setClock(100000);
     dev->platform_dev = arduino_dev;
     return bh1750_init(dev);
 }

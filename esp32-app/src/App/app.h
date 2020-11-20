@@ -12,9 +12,11 @@
 #include "Radio/radio_sensor_task.h"
 #include "Wifi/wifi_task.h"
 #include "Weather/weather_task.h"
-
-
 #include <memory>
+
+// Define the app version number
+#define APP_VERSION "0.0.1"
+#define APP_LAST_DATE_MODIFIED
 
 class App
 {

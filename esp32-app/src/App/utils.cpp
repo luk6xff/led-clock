@@ -18,10 +18,18 @@ void utils::init()
 }
 
 //------------------------------------------------------------------------------
-void utils::util_i2c_scanner()
+void utils::util_i2c_scanner(uint8_t bus_num)
 {
-    #define SDA_PIN GPIO_NUM_21
-    #define SCL_PIN GPIO_NUM_22
+    int SDA_PIN = GPIO_NUM_21;
+    int SCL_PIN = GPIO_NUM_22;
+    i2c_port_t I2C_NUM = I2C_NUM_0;
+    if (bus_num == 1)
+    {
+        SDA_PIN = GPIO_NUM_33;
+        SCL_PIN = GPIO_NUM_32;
+        I2C_NUM = I2C_NUM_1;
+    }
+
     static const char TAG[] = "util_i2c_scanner";
     esp_log_level_set(TAG, ESP_LOG_DEBUG);
     ESP_LOGD(TAG, ">> util_i2c_scanner");
@@ -32,9 +40,9 @@ void utils::util_i2c_scanner()
     conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
     conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
     conf.master.clk_speed = 100000;
-    i2c_param_config(I2C_NUM_0, &conf);
+    i2c_param_config(I2C_NUM, &conf);
 
-    i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
+    i2c_driver_install(I2C_NUM, I2C_MODE_MASTER, 0, 0, 0);
 
     int i;
     esp_err_t espRc;
@@ -46,7 +54,7 @@ void utils::util_i2c_scanner()
         i2c_master_write_byte(cmd, (i << 1) | I2C_MASTER_WRITE, 1 /* expect ack */);
         i2c_master_stop(cmd);
 
-        espRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+        espRc = i2c_master_cmd_begin(I2C_NUM, cmd, 10/portTICK_PERIOD_MS);
         if (i%16 == 0) {
             printf("\n%.2x:", i);
         }

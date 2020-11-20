@@ -26,8 +26,8 @@ public:
     }
 
     LockGuard(const LockGuard& other) = delete;
-    LockGuard(LockGuard&& other) = delete; 
-    LockGuard& operator=(const LockGuard& other) = delete; 
+    LockGuard(LockGuard&& other) = delete;
+    LockGuard& operator=(const LockGuard& other) = delete;
 
 private:
     T& m_handle;
@@ -40,7 +40,7 @@ private:
 class Mutex final
 {
 
-public: 
+public:
     Mutex();
     ~Mutex();
 
@@ -60,7 +60,7 @@ private:
 /**
  * @brief Mutex to prevent mutual access to I2C peripheral
  */
-extern rtos::Mutex g_i2cMutex;
+extern rtos::Mutex g_i2c0Mutex;
 
 /**
  * @brief Mutex to prevent mutual access to I2C peripheral

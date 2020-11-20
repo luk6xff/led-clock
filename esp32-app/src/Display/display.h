@@ -19,7 +19,7 @@
 #define DISPLAY_MAX72XX_MODULES_NUM 4
 #define DISPLAY_MSG_MAX_LEN         1024
 
-#define LIGHT_SENSOR_ENABLED false
+#define LIGHT_SENSOR_ENABLED true
 
 class Display
 {
@@ -88,12 +88,6 @@ private:
     MD_Parola m_mx;
 
     /**
-     * @brief Light sensor object
-     */
-#if LIGHT_SENSOR_ENABLED
-    LightSensor m_lightSensor;
-#endif
-    /**
      * @brief Display data buffer, ZONE_FULL
      */
     char m_dispFullBuf[DISPLAY_MSG_MAX_LEN];
@@ -122,4 +116,13 @@ private:
      * @brief Display scroll pause value [in ms]
      */
     uint32_t m_dispPause;
+
+
+#if LIGHT_SENSOR_ENABLED
+    /**
+     * @brief Light sensor object
+     */
+    LightSensor m_lightSensor;
+#endif
+
 };
