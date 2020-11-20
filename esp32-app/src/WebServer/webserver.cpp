@@ -18,6 +18,7 @@
 #include <functional>
 #include "App/app_config.h"
 #include "App/app_shared.h"
+#include "App/app_vars.h"
 #include "esp_wifi.h"
 
 //------------------------------------------------------------------------------
@@ -238,7 +239,9 @@ void WebServer::registerHandlers(AsyncWebServer& server)
     });
 
     // Set serve static files and cache responses for 10 minutes (600 seconds)
-    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html").setCacheControl("max-age=600");
+    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html") \
+                                        .setCacheControl("max-age=600") \
+                                        .setLastModified(APP_DATE_LAST_MODIFIED);
 }
 
 //------------------------------------------------------------------------------
