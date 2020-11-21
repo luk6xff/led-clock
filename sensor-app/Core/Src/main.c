@@ -191,10 +191,10 @@ int main(void)
 
 	/* Refresh watchdog, no more than 2[s] must expire before next refresh */
 	HAL_WWDG_Refresh(&hwwdg);
-	uint8_t rxMsgWaitCnt = 3;
-	while (rxMsgWaitCnt--)
+	uint8_t rxMsgWaitCntSecs = 10; // 5 seconds
+	while (rxMsgWaitCntSecs--)
 	{
-		/* Wait 1 second for incoming data from clock */
+		/* Wait 1 second for incoming data from ledclock */
 		HAL_Delay(1000);
 		/* Refresh watchdog, no more than 2[s] must expire before next refresh */
 		HAL_WWDG_Refresh(&hwwdg);

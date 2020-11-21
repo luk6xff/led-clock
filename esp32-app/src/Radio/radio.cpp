@@ -6,14 +6,14 @@
 //------------------------------------------------------------------------------
 // Radio LORA settings
 #define RF_FREQUENCY                                RF_FREQUENCY_434_0
-#define TX_OUTPUT_POWER                             14        // dBm
-#define LORA_BANDWIDTH                              LORA_BANDWIDTH_125kHz
-#define LORA_SPREADING_FACTOR                       LORA_SF8
-#define LORA_CODINGRATE                             LORA_ERROR_CODING_RATE_4_5
+#define TX_OUTPUT_POWER                             20//14        // dBm
+#define LORA_BANDWIDTH                              LORA_BANDWIDTH_125kHz//LORA_BANDWIDTH_125kHz
+#define LORA_SPREADING_FACTOR                       LORA_SF12//LORA_SF8
+#define LORA_CODINGRATE                             LORA_ERROR_CODING_RATE_4_8
 #define LORA_PREAMBLE_LENGTH                        8         // Same for Tx and Rx
 #define LORA_SYMBOL_TIMEOUT                         5         // Symbols
 #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
-#define LORA_FHSS_ENABLED                           false
+#define LORA_FHSS_ENABLED                           true
 #define LORA_NB_SYMB_HOP                            4
 #define LORA_IQ_INVERSION_ON                        false
 #define LORA_CRC_ENABLED                            true
@@ -65,7 +65,7 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
     }
     utils::dbg("REG_VERSION: 0x%x", sx1278_read(&dev, REG_VERSION));
 
-    sx1278_set_max_payload_length(&dev, MODEM_LORA, MAX_PAYLOAD_LENGTH);
+    sx1278_set_max_payload_length(&dev, MODEM_LORA, sizeof(radio_msg_sensor_frame));//MAX_PAYLOAD_LENGTH);
     sx1278_set_tx_config(&dev, MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
                           LORA_SPREADING_FACTOR, LORA_CODINGRATE,
                           LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,

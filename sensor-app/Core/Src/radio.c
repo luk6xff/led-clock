@@ -19,20 +19,19 @@ extern void dbg(const char* msg);
 //-----------------------------------------------------------------------------
 // Radio LORA settings
 #define RF_FREQUENCY                                RF_FREQUENCY_434_0
-#define TX_OUTPUT_POWER                             14        // dBm
-#define LORA_BANDWIDTH                              LORA_BANDWIDTH_125kHz
-#define LORA_SPREADING_FACTOR                       LORA_SF8
-#define LORA_CODINGRATE                             LORA_ERROR_CODING_RATE_4_5
+#define TX_OUTPUT_POWER                             20//14        // dBm
+#define LORA_BANDWIDTH                              LORA_BANDWIDTH_125kHz//LORA_BANDWIDTH_125kHz
+#define LORA_SPREADING_FACTOR                       LORA_SF12//LORA_SF8
+#define LORA_CODINGRATE                             LORA_ERROR_CODING_RATE_4_8
 #define LORA_PREAMBLE_LENGTH                        8         // Same for Tx and Rx
 #define LORA_SYMBOL_TIMEOUT                         5         // Symbols
 #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
-#define LORA_FHSS_ENABLED                           false
+#define LORA_FHSS_ENABLED                           true
 #define LORA_NB_SYMB_HOP                            4
 #define LORA_IQ_INVERSION_ON                        false
 #define LORA_CRC_ENABLED                            true
-#define RX_TIMEOUT_VALUE                            5000      // in ms
+#define RX_TIMEOUT_VALUE                            8000      // in ms
 #define MAX_PAYLOAD_LENGTH                          60        // bytes
-
 //-----------------------------------------------------------------------------
 static void on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
 static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size);
@@ -74,7 +73,7 @@ void radio_init()
 	    sx1278_delay_ms(1000);
 	}
 
-	sx1278_set_max_payload_length(&radio_dev, MODEM_LORA, MAX_PAYLOAD_LENGTH);
+    sx1278_set_max_payload_length(&radio_dev, MODEM_LORA, sizeof(radio_msg_sensor_frame));//MAX_PAYLOAD_LENGTH);
 	sx1278_set_tx_config(&radio_dev, MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
 	                      LORA_SPREADING_FACTOR, LORA_CODINGRATE,
 	                      LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
@@ -152,7 +151,7 @@ static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size)
 
     if (~(mf->status & MSG_NO_ERROR))
     {
-        dbg("R_MNE");
+        dbg("R_MRECV");
         // Check and store setting if needed
         bool settings_update = false;
         if (mf->update_data_interval != app_settings_get_current()->update_interval)

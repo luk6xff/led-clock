@@ -87,19 +87,23 @@ void Display::processAutoIntensityLevelControl()
     // Measure light
 #if LIGHT_SENSOR_ENABLED
     const float lightVal = m_lightSensor.getIlluminance();
+    utils::dbg("LightSensor - Illuminance value: %f", lightVal);
 #else
     const float lightVal = 0;
 #endif
     if (lightVal == -1)
     {
         utils::err("LightSensor - Illuminance value error!");
+        return;
     }
+
     // Last display intensty level
     static uint8_t lastIntensityLevel = 0;
 
     // Logarithmic level of sensor illuminance in lux [lx]
     const uint8_t level[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}; // 0 = low, 15 = high
-    const uint16_t maxLightIlluminance = 1000;
+    // LU_TODO Move this value to global settings
+    const uint16_t maxLightIlluminance = 600;
 
     // Calculate linear level
     int l = (lightVal * sizeof(level)) / maxLightIlluminance;

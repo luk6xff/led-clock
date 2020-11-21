@@ -37,7 +37,7 @@ void WifiTask::run()
 {
     const TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
     uint8_t wifiConnectionFailureCnt = 0;
-    const size_t captivePortalTimeout = 60; //seconds
+    const size_t captivePortalTimeout = 600; //seconds
     size_t captivePortalTimeoutCnt = 0; //seconds
 
     WebServer server(m_wifiCfg.ap_hostname);
