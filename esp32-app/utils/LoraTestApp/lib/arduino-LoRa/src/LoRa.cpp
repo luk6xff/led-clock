@@ -670,8 +670,9 @@ void LoRaClass::dumpRegisters(Stream& out)
   for (int i = 0; i < 128; i++) {
     out.print("0x");
     out.print(i, HEX);
-    out.print(": 0x");
-    out.println(readRegister(i), HEX);
+    out.print(":0x");
+    out.print(readRegister(i), HEX);
+    out.print(", ");
   }
 }
 

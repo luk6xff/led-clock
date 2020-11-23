@@ -34,6 +34,8 @@ void lora_io_init(lora *const dev)
     pinMode(pd->nss, OUTPUT);
     // Set SS high
     digitalWrite(pd->nss, HIGH);
+    // Perform reset
+    lora_reset(dev);
     // Start SPI
     pd->spi->begin(pd->sck, pd->miso, pd->mosi, pd->nss);
     lora_delay_ms(10);
@@ -73,8 +75,10 @@ void lora_reset(lora *const dev)
 
     pinMode(pd->reset, OUTPUT);
     digitalWrite(pd->reset, LOW);
-    lora_delay_ms(1);
-    pinMode(pd->reset, INPUT);
+    lora_delay_ms(10);
+    //pinMode(pd->reset, INPUT);
+    digitalWrite(pd->reset, HIGH);
+    lora_delay_ms(10);
 }
 
 //-----------------------------------------------------------------------------
@@ -118,7 +122,7 @@ void lora_dumpRegisters(lora *const dev)
     Serial.printf("\r\n<<<LORA DEV REGISTERS>>>\r\nADDR - HEX\r\n");
     for (int i = 0; i < 0x80; i++)
     {
-        Serial.printf("0x%x: 0x%x\n", i, lora_read_reg(dev, i));
+        Serial.printf("0x%X:0x%X, ", i, lora_read_reg(dev, i));
     }
 }
 

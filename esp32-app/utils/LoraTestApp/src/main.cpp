@@ -34,9 +34,9 @@ void setup() {
   }
 
   LoRa.onReceive(onReceive);
-  LoRa.receive();
 
   LoRa.dumpRegisters(Serial);
+  LoRa.receive();
   Serial.println("LoRa init succeeded.");
 }
 
@@ -47,6 +47,7 @@ void loop() {
     Serial.println("Sending " + message);
     lastSendTime = millis();            // timestamp the message
     interval = random(2000) + 1000;     // 2-3 seconds
+    //LoRa.dumpRegisters(Serial);
     LoRa.receive();                     // go back into receive mode
   }
 }

@@ -260,9 +260,9 @@ void tests_setup()
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
     esp_task_wdt_add(NULL); //add current thread to WDT watch
     lora_onReceive(&dev, onReceive);
-    lora_receive(&dev, 0);
 
     lora_dumpRegisters(&dev);
+    lora_receive(&dev, 0);
     Serial.println("LoRa init succeeded.");
 #endif
 
@@ -463,12 +463,13 @@ void tests_run()
 #ifdef TEST_LORA
     if (millis() - lastSendTime > interval)
     {
-    String message = "HeLoRa from ESP32-LORA";   // send a message
-    sendMessage(&dev, message);
-    Serial.println("Sending " + message);
-    lastSendTime = millis();            // timestamp the message
-    interval = random(2000) + 1000;    // 2-3 seconds
-    lora_receive(&dev, 0);
+        String message = "HeLoRa from ESP32-LORA";   // send a message
+        sendMessage(&dev, message);
+        Serial.println("Sending " + message);
+        lastSendTime = millis();            // timestamp the message
+        interval = random(1000);// + 1000;    // 2-3 seconds
+        //lora_dumpRegisters(&dev);
+        lora_receive(&dev, 0);
     }
     esp_task_wdt_reset();
 #endif

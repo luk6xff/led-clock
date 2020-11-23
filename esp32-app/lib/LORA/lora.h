@@ -146,6 +146,11 @@ extern void lora_io_deinit(lora *const dev);
 extern void lora_ioirq_init(lora *const dev);
 
 /**
+ * @brief Resets the LORA device
+ */
+extern void lora_reset(lora *const dev);
+
+/**
  * @brief Writes multiple radio registers starting at address
  *
  * @param[in] addr   First Radio register address
