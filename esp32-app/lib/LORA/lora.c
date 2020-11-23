@@ -9,64 +9,64 @@
 #include "common.h"
 
 // registers
-#define REG_FIFO                 0x00
-#define REG_OP_MODE              0x01
-#define REG_FRF_MSB              0x06
-#define REG_FRF_MID              0x07
-#define REG_FRF_LSB              0x08
-#define REG_PA_CONFIG            0x09
-#define REG_OCP                  0x0b
-#define REG_LNA                  0x0c
-#define REG_FIFO_ADDR_PTR        0x0d
-#define REG_FIFO_TX_BASE_ADDR    0x0e
-#define REG_FIFO_RX_BASE_ADDR    0x0f
-#define REG_FIFO_RX_CURRENT_ADDR 0x10
-#define REG_IRQ_FLAGS            0x12
-#define REG_RX_NB_BYTES          0x13
-#define REG_PKT_SNR_VALUE        0x19
-#define REG_PKT_RSSI_VALUE       0x1a
-#define REG_RSSI_VALUE           0x1b
-#define REG_MODEM_CONFIG_1       0x1d
-#define REG_MODEM_CONFIG_2       0x1e
-#define REG_PREAMBLE_MSB         0x20
-#define REG_PREAMBLE_LSB         0x21
-#define REG_PAYLOAD_LENGTH       0x22
-#define REG_MODEM_CONFIG_3       0x26
-#define REG_FREQ_ERROR_MSB       0x28
-#define REG_FREQ_ERROR_MID       0x29
-#define REG_FREQ_ERROR_LSB       0x2a
-#define REG_RSSI_WIDEBAND        0x2c
-#define REG_DETECTION_OPTIMIZE   0x31
-#define REG_INVERTIQ             0x33
-#define REG_DETECTION_THRESHOLD  0x37
-#define REG_SYNC_WORD            0x39
-#define REG_INVERTIQ2            0x3b
-#define REG_DIO_MAPPING_1        0x40
-#define REG_VERSION              0x42
-#define REG_PA_DAC               0x4d
+#define REG_FIFO                    0x00
+#define REG_OP_MODE                 0x01
+#define REG_FRF_MSB                 0x06
+#define REG_FRF_MID                 0x07
+#define REG_FRF_LSB                 0x08
+#define REG_PA_CONFIG               0x09
+#define REG_OCP                     0x0b
+#define REG_LNA                     0x0c
+#define REG_FIFO_ADDR_PTR           0x0d
+#define REG_FIFO_TX_BASE_ADDR       0x0e
+#define REG_FIFO_RX_BASE_ADDR       0x0f
+#define REG_FIFO_RX_CURRENT_ADDR    0x10
+#define REG_IRQ_FLAGS               0x12
+#define REG_RX_NB_BYTES             0x13
+#define REG_PKT_SNR_VALUE           0x19
+#define REG_PKT_RSSI_VALUE          0x1a
+#define REG_RSSI_VALUE              0x1b
+#define REG_MODEM_CONFIG_1          0x1d
+#define REG_MODEM_CONFIG_2          0x1e
+#define REG_PREAMBLE_MSB            0x20
+#define REG_PREAMBLE_LSB            0x21
+#define REG_PAYLOAD_LENGTH          0x22
+#define REG_MODEM_CONFIG_3          0x26
+#define REG_FREQ_ERROR_MSB          0x28
+#define REG_FREQ_ERROR_MID          0x29
+#define REG_FREQ_ERROR_LSB          0x2a
+#define REG_RSSI_WIDEBAND           0x2c
+#define REG_DETECTION_OPTIMIZE      0x31
+#define REG_INVERTIQ                0x33
+#define REG_DETECTION_THRESHOLD     0x37
+#define REG_SYNC_WORD               0x39
+#define REG_INVERTIQ2               0x3b
+#define REG_DIO_MAPPING_1           0x40
+#define REG_VERSION                 0x42
+#define REG_PA_DAC                  0x4d
 
 // modes
-#define MODE_LONG_RANGE_MODE     0x80
-#define MODE_SLEEP               0x00
-#define MODE_STDBY               0x01
-#define MODE_TX                  0x03
-#define MODE_RX_CONTINUOUS       0x05
-#define MODE_RX_SINGLE           0x06
+#define MODE_LONG_RANGE_MODE        0x80
+#define MODE_SLEEP                  0x00
+#define MODE_STDBY                  0x01
+#define MODE_TX                     0x03
+#define MODE_RX_CONTINUOUS          0x05
+#define MODE_RX_SINGLE              0x06
 
 // PA config
-#define PA_BOOST                 0x80
+#define PA_BOOST                    0x80
 
 // IRQ masks
-#define IRQ_TX_DONE_MASK           0x08
-#define IRQ_PAYLOAD_CRC_ERROR_MASK 0x20
-#define IRQ_RX_DONE_MASK           0x40
+#define IRQ_TX_DONE_MASK            0x08
+#define IRQ_PAYLOAD_CRC_ERROR_MASK  0x20
+#define IRQ_RX_DONE_MASK            0x40
 
-#define RF_MID_BAND_THRESHOLD    525E6
-#define RSSI_OFFSET_HF_PORT      157
-#define RSSI_OFFSET_LF_PORT      164
+#define RF_MID_BAND_THRESHOLD       525E6
+#define RSSI_OFFSET_HF_PORT         157
+#define RSSI_OFFSET_LF_PORT         164
 
-#define PA_OUTPUT_RFO_PIN          0
-#define PA_OUTPUT_PA_BOOST_PIN     1
+#define PA_OUTPUT_RFO_PIN           0
+#define PA_OUTPUT_PA_BOOST_PIN      1
 
 
 /**
@@ -78,7 +78,7 @@
 /**
  * @brief DIO 0 IRQ callback
  */
-static void on_dio0_irq(void *ctx);
+static ISR_PREFIX void on_dio0_irq(void *ctx);
 
 
 
@@ -93,6 +93,9 @@ bool lora_init(lora *const dev)
 {
     // Register Hardware DIO IRQ callback for dio0 - dio5
     dev->dio_irq = on_dio0_irq;
+
+    // Perform Reset
+    lora_reset(dev);
 
     // Initialize IO interfaces
     lora_io_init(dev);
@@ -109,7 +112,7 @@ bool lora_init(lora *const dev)
     lora_sleep(dev);
 
     // set frequency
-    lora_setFrequency(dev, dev->frequency);
+    lora_set_frequency(dev, dev->frequency);
 
     // set base addresses
     lora_write_reg(dev, REG_FIFO_TX_BASE_ADDR, 0);
@@ -122,7 +125,7 @@ bool lora_init(lora *const dev)
     lora_write_reg(dev, REG_MODEM_CONFIG_3, 0x04);
 
     // set output power to 17 dBm
-    lora_setTxPower(dev, 17, PA_OUTPUT_PA_BOOST_PIN);
+    lora_set_tx_power(dev, 17, PA_OUTPUT_PA_BOOST_PIN);
 
     // put in standby mode
     lora_idle(dev);
@@ -138,22 +141,23 @@ void lora_end(lora *const dev)
 }
 
 //-----------------------------------------------------------------------------
-int lora_beginPacket(lora *const dev, int implicitHeader)
+int lora_begin_packet(lora *const dev, int implicitHeader)
 {
-    if (lora_isTransmitting(dev)) {
+    if (lora_is_transmitting(dev))
+    {
         return 0;
     }
 
-    // put in standby mode
+    // Put in standby mode
     lora_idle(dev);
 
     if (implicitHeader)
     {
-        lora_implicitHeaderMode(dev);
+        lora_implicit_header_mode(dev);
     }
     else
     {
-        lora_explicitHeaderMode(dev);
+        lora_explicit_header_mode(dev);
     }
 
     // reset FIFO address and paload length
@@ -164,7 +168,7 @@ int lora_beginPacket(lora *const dev, int implicitHeader)
 }
 
 //-----------------------------------------------------------------------------
-int lora_endPacket(lora *const dev, bool async)
+int lora_end_packet(lora *const dev, bool async)
 {
     if ((async) && (dev->on_tx_done))
     {
@@ -177,9 +181,14 @@ int lora_endPacket(lora *const dev, bool async)
     if (!async)
     {
         // wait for TX done
-        while ((lora_read_reg(dev, REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0)
+        const uint32_t start = lora_timer_read_ms();
+        do
         {
-        }
+            if ((lora_timer_read_ms() - start) > 5000)
+            {
+                break;
+            }
+        } while ((lora_read_reg(dev, REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0);
         // clear IRQ's
         lora_write_reg(dev, REG_IRQ_FLAGS, IRQ_TX_DONE_MASK);
     }
@@ -188,7 +197,7 @@ int lora_endPacket(lora *const dev, bool async)
 }
 
 //-----------------------------------------------------------------------------
-bool lora_isTransmitting(lora *const dev)
+bool lora_is_transmitting(lora *const dev)
 {
     if ((lora_read_reg(dev, REG_OP_MODE) & MODE_TX) == MODE_TX)
     {
@@ -205,20 +214,20 @@ bool lora_isTransmitting(lora *const dev)
 }
 
 //-----------------------------------------------------------------------------
-int lora_parsePacket(lora *const dev, int size)
+int lora_parse_packet(lora *const dev, int size)
 {
     int packetLength = 0;
     int irqFlags = lora_read_reg(dev, REG_IRQ_FLAGS);
 
     if (size > 0)
     {
-        lora_implicitHeaderMode(dev);
+        lora_implicit_header_mode(dev);
 
         lora_write_reg(dev, REG_PAYLOAD_LENGTH, size & 0xff);
     }
     else
     {
-        lora_explicitHeaderMode(dev);
+        lora_explicit_header_mode(dev);
     }
 
     // clear IRQ's
@@ -260,19 +269,19 @@ int lora_parsePacket(lora *const dev, int size)
 }
 
 //-----------------------------------------------------------------------------
-int lora_packetRssi(lora *const dev)
+int lora_packet_rssi(lora *const dev)
 {
     return (lora_read_reg(dev, REG_PKT_RSSI_VALUE) - (dev->frequency < RF_MID_BAND_THRESHOLD ? RSSI_OFFSET_LF_PORT : RSSI_OFFSET_HF_PORT));
 }
 
 //-----------------------------------------------------------------------------
-float lora_packetSnr(lora *const dev)
+float lora_packet_snr(lora *const dev)
 {
     return ((int8_t)lora_read_reg(dev, REG_PKT_SNR_VALUE)) * 0.25;
 }
 
 //-----------------------------------------------------------------------------
-long lora_packetFrequencyError(lora *const dev)
+long lora_packet_frequency_error(lora *const dev)
 {
     int32_t freqError = 0;
     freqError = (int32_t)(lora_read_reg(dev, REG_FREQ_ERROR_MSB) & 0x07);
@@ -287,7 +296,7 @@ long lora_packetFrequencyError(lora *const dev)
     }
 
     const float fXtal = 32E6; // FXOSC: crystal oscillator (XTAL) frequency (2.5. Chip Specification, p. 14)
-    const float fError = (((float)freqError * (1L << 24)) / fXtal) * (lora_getSignalBandwidth(dev) / 500000.0f); // p. 37
+    const float fError = (((float)freqError * (1L << 24)) / fXtal) * (lora_get_signal_bandwidth(dev) / 500000.0f); // p. 37
 
     return (long)fError;
 }
@@ -316,10 +325,11 @@ uint32_t lora_write_data(lora *const dev, const uint8_t *buffer, uint32_t size)
     }
 
     // write data
-    for (uint32_t i = 0; i < size; i++)
-    {
-        lora_write_reg(dev, REG_FIFO, buffer[i]);
-    }
+    // for (uint32_t i = 0; i < size; i++)
+    // {
+    //     lora_write_reg(dev, REG_FIFO, buffer[i]);
+    // }
+    lora_write_buffer(dev, REG_FIFO, buffer, size);
 
     // update length
     lora_write_reg(dev, REG_PAYLOAD_LENGTH, currentLength + size);
@@ -372,13 +382,13 @@ void lora_flush(lora *const dev)
 }
 
 //-----------------------------------------------------------------------------
-void lora_onReceive(lora *const dev, void(*callback)(void*, int))
+void lora_on_receive(lora *const dev, void(*callback)(void*, int))
 {
     dev->on_receive = callback;
 }
 
 //-----------------------------------------------------------------------------
-void lora_onTxDone(lora *const dev, void(*callback)(void*))
+void lora_on_tx_done(lora *const dev, void(*callback)(void*))
 {
     dev->on_tx_done = callback;
 }
@@ -390,12 +400,12 @@ void lora_receive(lora *const dev, int size)
 
     if (size > 0)
     {
-        lora_implicitHeaderMode(dev);
+        lora_implicit_header_mode(dev);
         lora_write_reg(dev, REG_PAYLOAD_LENGTH, size & 0xff);
     }
     else
     {
-        lora_explicitHeaderMode(dev);
+        lora_explicit_header_mode(dev);
     }
 
     lora_write_reg(dev, REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_RX_CONTINUOUS);
@@ -414,7 +424,7 @@ void lora_sleep(lora *const dev)
 }
 
 //-----------------------------------------------------------------------------
-void lora_setTxPower(lora *const dev, int level, int outputPin)
+void lora_set_tx_power(lora *const dev, int level, int outputPin)
 {
     if (PA_OUTPUT_RFO_PIN == outputPin)
     {
@@ -445,7 +455,7 @@ void lora_setTxPower(lora *const dev, int level, int outputPin)
 
             // High Power +20 dBm Operation (Semtech SX1276/77/78/79 5.4.3.)
             lora_write_reg(dev, REG_PA_DAC, 0x87);
-            lora_setOCP(dev, 140);
+            lora_set_ocp(dev, 140);
         }
         else
         {
@@ -455,7 +465,7 @@ void lora_setTxPower(lora *const dev, int level, int outputPin)
             }
             //Default value PA_HF/LF or +17dBm
             lora_write_reg(dev, REG_PA_DAC, 0x84);
-            lora_setOCP(dev, 100);
+            lora_set_ocp(dev, 100);
         }
 
         lora_write_reg(dev, REG_PA_CONFIG, PA_BOOST | (level - 2));
@@ -463,7 +473,7 @@ void lora_setTxPower(lora *const dev, int level, int outputPin)
 }
 
 //-----------------------------------------------------------------------------
-void lora_setFrequency(lora *const dev, long frequency)
+void lora_set_frequency(lora *const dev, long frequency)
 {
     dev->frequency = frequency;
 
@@ -475,13 +485,13 @@ void lora_setFrequency(lora *const dev, long frequency)
 }
 
 //-----------------------------------------------------------------------------
-int lora_getSpreadingFactor(lora *const dev)
+int lora_get_spreading_factor(lora *const dev)
 {
     return lora_read_reg(dev, REG_MODEM_CONFIG_2) >> 4;
 }
 
 //-----------------------------------------------------------------------------
-void lora_setSpreadingFactor(lora *const dev, int sf)
+void lora_set_spreading_factor(lora *const dev, int sf)
 {
     if (sf < 6)
     {
@@ -503,11 +513,11 @@ void lora_setSpreadingFactor(lora *const dev, int sf)
     }
 
     lora_write_reg(dev, REG_MODEM_CONFIG_2, (lora_read_reg(dev, REG_MODEM_CONFIG_2) & 0x0f) | ((sf << 4) & 0xf0));
-    lora_setLdoFlag(dev);
+    lora_set_ldo_flag(dev);
 }
 
 //-----------------------------------------------------------------------------
-long lora_getSignalBandwidth(lora *const dev)
+long lora_get_signal_bandwidth(lora *const dev)
 {
     uint8_t bw = (lora_read_reg(dev, REG_MODEM_CONFIG_1) >> 4);
 
@@ -529,7 +539,7 @@ long lora_getSignalBandwidth(lora *const dev)
 }
 
 //-----------------------------------------------------------------------------
-void lora_setSignalBandwidth(lora *const dev, long sbw)
+void lora_set_signal_bandwidth(lora *const dev, long sbw)
 {
     int bw;
 
@@ -575,14 +585,14 @@ void lora_setSignalBandwidth(lora *const dev, long sbw)
     }
 
     lora_write_reg(dev, REG_MODEM_CONFIG_1, (lora_read_reg(dev, REG_MODEM_CONFIG_1) & 0x0f) | (bw << 4));
-    lora_setLdoFlag(dev);
+    lora_set_ldo_flag(dev);
 }
 
 //-----------------------------------------------------------------------------
-void lora_setLdoFlag(lora *const dev)
+void lora_set_ldo_flag(lora *const dev)
 {
     // Section 4.1.1.5
-    long symbolDuration = 1000 / ( lora_getSignalBandwidth(dev) / (1L << lora_getSpreadingFactor(dev)) ) ;
+    long symbolDuration = 1000 / ( lora_get_signal_bandwidth(dev) / (1L << lora_get_spreading_factor(dev)) ) ;
 
     // Section 4.1.1.6
     bool ldoOn = symbolDuration > 16;
@@ -593,7 +603,7 @@ void lora_setLdoFlag(lora *const dev)
 }
 
 //-----------------------------------------------------------------------------
-void lora_setCodingRate4(lora *const dev, int denominator)
+void lora_set_coding_rate4(lora *const dev, int denominator)
 {
     if (denominator < 5)
     {
@@ -609,46 +619,46 @@ void lora_setCodingRate4(lora *const dev, int denominator)
 }
 
 //-----------------------------------------------------------------------------
-void lora_setPreambleLength(lora *const dev, long length)
+void lora_set_preamble_length(lora *const dev, long length)
 {
     lora_write_reg(dev, REG_PREAMBLE_MSB, (uint8_t)(length >> 8));
     lora_write_reg(dev, REG_PREAMBLE_LSB, (uint8_t)(length >> 0));
 }
 
 //-----------------------------------------------------------------------------
-void lora_setSyncWord(lora *const dev, int sw)
+void lora_set_sync_word(lora *const dev, int sw)
 {
     lora_write_reg(dev, REG_SYNC_WORD, sw);
 }
 
 //-----------------------------------------------------------------------------
-void lora_enableCrc(lora *const dev)
+void lora_enable_crc(lora *const dev)
 {
     lora_write_reg(dev, REG_MODEM_CONFIG_2, lora_read_reg(dev, REG_MODEM_CONFIG_2) | 0x04);
 }
 
 //-----------------------------------------------------------------------------
-void lora_disableCrc(lora *const dev)
+void lora_disable_crc(lora *const dev)
 {
     lora_write_reg(dev, REG_MODEM_CONFIG_2, lora_read_reg(dev, REG_MODEM_CONFIG_2) & 0xfb);
 }
 
 //-----------------------------------------------------------------------------
-void lora_enableInvertIQ(lora *const dev)
+void lora_enable_invert_IQ(lora *const dev)
 {
     lora_write_reg(dev, REG_INVERTIQ,  0x66);
     lora_write_reg(dev, REG_INVERTIQ2, 0x19);
 }
 
 //-----------------------------------------------------------------------------
-void lora_disableInvertIQ(lora *const dev)
+void lora_disable_invert_IQ(lora *const dev)
 {
     lora_write_reg(dev, REG_INVERTIQ,  0x27);
     lora_write_reg(dev, REG_INVERTIQ2, 0x1d);
 }
 
 //-----------------------------------------------------------------------------
-void lora_setOCP(lora *const dev, uint8_t mA)
+void lora_set_ocp(lora *const dev, uint8_t mA)
 {
     uint8_t ocpTrim = 27;
 
@@ -656,7 +666,7 @@ void lora_setOCP(lora *const dev, uint8_t mA)
     {
         ocpTrim = (mA - 45) / 5;
     }
-    else if (mA <=240)
+    else if (mA <= 240)
     {
         ocpTrim = (mA + 30) / 10;
     }
@@ -665,11 +675,12 @@ void lora_setOCP(lora *const dev, uint8_t mA)
 }
 
 //-----------------------------------------------------------------------------
-void lora_setGain(lora *const dev, uint8_t gain)
+void lora_set_gain(lora *const dev, uint8_t gain)
 {
     // check allowed range
-    if (gain > 6) {
-    gain = 6;
+    if (gain > 6)
+    {
+        gain = 6;
     }
 
     // set to standby
@@ -701,21 +712,21 @@ uint8_t lora_random(lora *const dev)
 }
 
 //-----------------------------------------------------------------------------
-void lora_explicitHeaderMode(lora *const dev)
+void lora_explicit_header_mode(lora *const dev)
 {
     dev->implicit_header_mode = 0;
     lora_write_reg(dev, REG_MODEM_CONFIG_1, lora_read_reg(dev, REG_MODEM_CONFIG_1) & 0xfe);
 }
 
 //-----------------------------------------------------------------------------
-void lora_implicitHeaderMode(lora *const dev)
+void lora_implicit_header_mode(lora *const dev)
 {
     dev->implicit_header_mode = 1;
     lora_write_reg(dev, REG_MODEM_CONFIG_1, lora_read_reg(dev, REG_MODEM_CONFIG_1) | 0x01);
 }
 
 //-----------------------------------------------------------------------------
-ISR_PREFIX void lora_handleDio0Rise(lora *const dev)
+ISR_PREFIX void lora_handle_dio0_rise(lora *const dev)
 {
     int irqFlags = lora_read_reg(dev, REG_IRQ_FLAGS);
     // Clear IRQ's
@@ -764,8 +775,11 @@ uint8_t lora_read_reg(lora *const dev, uint8_t addr)
 }
 
 //-----------------------------------------------------------------------------
-void on_dio0_irq(void *ctx)
+ISR_PREFIX void on_dio0_irq(void *ctx)
 {
     lora *const dev = (lora*)ctx;
-    lora_handleDio0Rise(dev);
+    // Disable interrupts and switch into idle mode
+    lora_ioirq_deinit(dev);
+    lora_idle(dev);
+    lora_handle_dio0_rise(dev);
 }

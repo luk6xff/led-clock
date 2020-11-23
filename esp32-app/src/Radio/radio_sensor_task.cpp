@@ -10,7 +10,7 @@
 
 //------------------------------------------------------------------------------
 RadioSensorTask::RadioSensorTask(RadioSensorSettings& radioSensorCfg)
-    : Task("RadioSensorTask", RADIO_SENSOR_TASK_STACK_SIZE, RADIO_SENSOR_TASK_PRIORITY, 0)
+    : Task("RadioSensorTask", RADIO_SENSOR_TASK_STACK_SIZE, RADIO_SENSOR_TASK_PRIORITY, 1)
     , m_radioSensorCfg(radioSensorCfg)
     , m_radioSensorQ(nullptr)
 {
@@ -30,26 +30,35 @@ const QueueHandle_t& RadioSensorTask::getRadioSensorQ()
 //------------------------------------------------------------------------------
 void RadioSensorTask::run()
 {
-    const TickType_t sleepTime = (100 / portTICK_PERIOD_MS);
+    const TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
     Radio radioSensor(m_radioSensorCfg);
+    radio_msg_queue_data msg;
     for(;;)
     {
-        radio_msg_sensor_frame msg;
         const BaseType_t rc = xQueueReceive(Radio::msgSensorDataQ, &msg, portMAX_DELAY);
         if (rc == pdTRUE)
         {
-            utils::dbg(">>>RadioSensorData received:");
-            Radio::parse_incoming_msg_sensor((uint8_t*)&msg, sizeof(msg));
+            utils::dbg(">>>radio_msg_queue_data received:");
+            utils::dbg("received from: 0x%x", msg.hdr.sender_id);
+            utils::dbg("sent to: 0x%x", msg.hdr.receiver_id);
+            utils::dbg("message ID: 0x%x", msg.hdr.msg_id);
+            utils::dbg("payload length: %d", msg.hdr.payload_len);
+            utils::dbg("RSSI: %d", msg.rssi);
+            utils::dbg("SNR: %f", msg.snr);
+            radio_msg_sensor_frame_status ret = Radio::parse_incoming_msg_sensor((uint8_t*)&(msg.frame), sizeof(msg.frame));
             // Send response to the sensor
             radioSensor.sendResponseToSensor();
-            RadioSensorData data =
+            if (ret == MSG_NO_ERROR || ret == MSG_BATT_LOW)
             {
-                .vbatt = msg.vbatt,
-                .temperature = msg.temperature,
-                .pressure = msg.pressure,
-                .humidity = msg.humidity,
-            };
-            pushRadioSensorMsg(data);
+                RadioSensorData data =
+                {
+                    .vbatt = msg.frame.vbatt,
+                    .temperature = msg.frame.temperature,
+                    .pressure = msg.frame.pressure,
+                    .humidity = msg.frame.humidity,
+                };
+                pushRadioSensorMsg(data);
+            }
         }
         vTaskDelay(sleepTime);
     }

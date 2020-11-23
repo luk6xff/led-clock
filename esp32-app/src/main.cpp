@@ -7,14 +7,13 @@
  */
 
 
-#define TESTS_ON
+#define TESTS_OFF
 
 #ifdef TESTS_ON
     #include "Tests/tests.h"
 #else
     #include "App/app.h"
 #endif
-
 
 //------------------------------------------------------------------------------
 void setup(void)
@@ -24,6 +23,9 @@ void setup(void)
 #else
     App::instance().setup();
 #endif
+  //enableLoopWDT();
+  enableCore1WDT();
+  enableCore0WDT();
 }
 
 //------------------------------------------------------------------------------

@@ -56,6 +56,12 @@ void lora_ioirq_init(lora *const dev)
 }
 
 //-----------------------------------------------------------------------------
+void lora_ioirq_init(lora *const dev)
+{
+    // EMPTY
+}
+
+//-----------------------------------------------------------------------------
 void lora_reset(lora *const dev)
 {
     lora_cube_hal *const pd = (lora_cube_hal*)dev->platform_dev;
@@ -87,6 +93,12 @@ void lora_read_buffer(lora *const dev, uint8_t addr, uint8_t *buffer, uint8_t si
     HAL_SPI_Transmit(pd->spi, &address, sizeof(addr), 100);
     HAL_SPI_Receive(pd->spi, buffer, size, 1000);
     HAL_GPIO_WritePin(pd->nss_port, pd->nss_pin, GPIO_PIN_SET);
+}
+
+//-----------------------------------------------------------------------------
+uint32_t lora_timer_read_ms()
+{
+    return HAL_GetTick();
 }
 
 //-----------------------------------------------------------------------------

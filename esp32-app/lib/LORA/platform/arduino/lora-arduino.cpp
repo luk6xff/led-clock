@@ -34,8 +34,6 @@ void lora_io_init(lora *const dev)
     pinMode(pd->nss, OUTPUT);
     // Set SS high
     digitalWrite(pd->nss, HIGH);
-    // Perform reset
-    lora_reset(dev);
     // Start SPI
     pd->spi->begin(pd->sck, pd->miso, pd->mosi, pd->nss);
     lora_delay_ms(10);
@@ -50,7 +48,6 @@ void lora_io_deinit(lora *const dev)
 //-----------------------------------------------------------------------------
 void lora_ioirq_init(lora *const dev)
 {
-
     lora_arduino *const pd = (lora_arduino*)dev->platform_dev;
     if (dev->dio_irq == NULL)
     {
@@ -69,6 +66,19 @@ void lora_ioirq_init(lora *const dev)
 }
 
 //-----------------------------------------------------------------------------
+void lora_ioirq_deinit(lora *const dev)
+{
+    lora_arduino *const pd = (lora_arduino*)dev->platform_dev;
+    if (dev->dio_irq == NULL)
+    {
+        return;
+    }
+    // dio0
+    pinMode(pd->dio0, INPUT);
+    detachInterrupt(digitalPinToInterrupt(pd->dio0));
+}
+
+//-----------------------------------------------------------------------------
 void lora_reset(lora *const dev)
 {
     lora_arduino *const pd = (lora_arduino*)dev->platform_dev;
@@ -76,8 +86,8 @@ void lora_reset(lora *const dev)
     pinMode(pd->reset, OUTPUT);
     digitalWrite(pd->reset, LOW);
     lora_delay_ms(10);
-    //pinMode(pd->reset, INPUT);
-    digitalWrite(pd->reset, HIGH);
+    pinMode(pd->reset, INPUT);
+    //digitalWrite(pd->reset, HIGH);
     lora_delay_ms(10);
 }
 
@@ -117,7 +127,13 @@ void lora_delay_ms(int ms)
 }
 
 //-----------------------------------------------------------------------------
-void lora_dumpRegisters(lora *const dev)
+uint32_t lora_timer_read_ms()
+{
+    return millis();
+}
+
+//-----------------------------------------------------------------------------
+void lora_dump_registers(lora *const dev)
 {
     Serial.printf("\r\n<<<LORA DEV REGISTERS>>>\r\nADDR - HEX\r\n");
     for (int i = 0; i < 0x80; i++)

@@ -5,7 +5,7 @@
  * @author Lukasz Uszko - luk6xff
  * @date   2020-10-15
  */
-
+#include "esp_system.h"
 #include "Display/display_task.h"
 #include "Clock/clock_task.h"
 #include "Clock/ntp_task.h"

@@ -7,6 +7,11 @@
 
 #include "lora-mbed.h"
 
+/**
+ * Miliseconds timer
+ */
+static Timer timer_ms;
+
 //-----------------------------------------------------------------------------
 void lora_mbed_init(lora *const dev, lora_mbed *const mbed_dev)
 
@@ -40,13 +45,22 @@ void lora_io_deinit(lora *const dev)
     lora_io_deinit(dev);
 }
 
-
 //-----------------------------------------------------------------------------
 void lora_ioirq_init(lora *const dev)
 {
     lora_mbed *const pd = (lora_mbed*)dev->platform_dev;
-    // dio0 - dio4
-    pd->dio0->rise(mbed::callback(dev->dio_irq[0], (void*)dev));
+    // dio0
+    pd->dio0->rise(mbed::callback(dev->dio_irq, (void*)dev));
+}
+
+//-----------------------------------------------------------------------------
+void lora_ioirq_deinit(lora *const dev)
+{
+    lora_mbed *const pd = (lora_mbed*)dev->platform_dev;
+    // dio0
+    pd->dio0->fall(mbed::callback(dev->dio_irq, (void*)dev));
+}
+
 
 //-----------------------------------------------------------------------------
 void lora_reset(lora *const dev)
@@ -96,7 +110,13 @@ void lora_delay_ms(int ms)
 }
 
 //-----------------------------------------------------------------------------
-void lora_dumpRegisters(lora *const dev)
+uint32_t lora_timer_read_ms()
+{
+    return timer_ms.read_ms();
+}
+
+//-----------------------------------------------------------------------------
+void lora_dump_registers(lora *const dev)
 {
     printf("\r\n<<<LORA DEV REGISTERS>>>\r\nADDR - HEX\r\n");
     for (int i = 0; i < 0x80; i++)

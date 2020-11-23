@@ -114,14 +114,14 @@
 
     void sendMessage(lora* const dev, String outgoing)
     {
-        lora_beginPacket(dev, false);                   // start packet
+        lora_begin_packet(dev, false);                   // start packet
         lora_write(dev, destination);              // add destination address
         lora_write(dev, localAddress);             // add sender address
         lora_write(dev, msgCount);                 // add message ID
         lora_write(dev, outgoing.length());        // add payload length
         //lora_print(dev, outgoing);                 // add payload
-            lora_write_data(dev, (const uint8_t*)outgoing.c_str(), outgoing.length());
-        lora_endPacket(dev, false);                     // finish packet and send it
+        lora_write_data(dev, (const uint8_t*)outgoing.c_str(), outgoing.length());
+        lora_end_packet(dev, false);                     // finish packet and send it
         msgCount++;                           // increment message ID
     }
 
@@ -164,8 +164,8 @@
         Serial.println("Message ID: " + String(incomingMsgId));
         Serial.println("Message length: " + String(incomingLength));
         Serial.println("Message: " + incoming);
-        Serial.println("RSSI: " + String(lora_packetRssi(dev)));
-        //Serial.println("Snr: " + String(lora_packetSnr(dev)));
+        Serial.println("RSSI: " + String(lora_packet_rssi(dev)));
+        //Serial.println("Snr: " + String(lora_packet_snr(dev)));
         Serial.println();
     }
 #endif
@@ -259,9 +259,9 @@ void tests_setup()
     // disableCore1WDT();
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
     esp_task_wdt_add(NULL); //add current thread to WDT watch
-    lora_onReceive(&dev, onReceive);
+    lora_on_receive(&dev, onReceive);
 
-    lora_dumpRegisters(&dev);
+    lora_dump_registers(&dev);
     lora_receive(&dev, 0);
     Serial.println("LoRa init succeeded.");
 #endif
@@ -468,7 +468,7 @@ void tests_run()
         Serial.println("Sending " + message);
         lastSendTime = millis();            // timestamp the message
         interval = random(1000);// + 1000;    // 2-3 seconds
-        //lora_dumpRegisters(&dev);
+        //lora_dump_registers(&dev);
         lora_receive(&dev, 0);
     }
     esp_task_wdt_reset();
