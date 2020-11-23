@@ -7,17 +7,18 @@
 // Radio LORA settings
 #define RF_FREQUENCY                                RF_FREQUENCY_434_0
 #define TX_OUTPUT_POWER                             20//14        // dBm
-#define LORA_BANDWIDTH                              LORA_BANDWIDTH_125kHz//LORA_BANDWIDTH_125kHz
+#define LORA_BANDWIDTH                              LORA_BANDWIDTH_125kHz//LORA_BANDWIDTH_125kHz//LORA_BANDWIDTH_125kHz
 #define LORA_SPREADING_FACTOR                       LORA_SF12//LORA_SF8
-#define LORA_CODINGRATE                             LORA_ERROR_CODING_RATE_4_8
+#define LORA_CODINGRATE                             LORA_ERROR_CODING_RATE_4_6
 #define LORA_PREAMBLE_LENGTH                        8         // Same for Tx and Rx
 #define LORA_SYMBOL_TIMEOUT                         5         // Symbols
 #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
-#define LORA_FHSS_ENABLED                           true
+#define LORA_FHSS_ENABLED                           false
 #define LORA_NB_SYMB_HOP                            4
 #define LORA_IQ_INVERSION_ON                        false
 #define LORA_CRC_ENABLED                            true
 #define RX_TIMEOUT_VALUE                            8000      // in ms
+#define TX_TIMEOUT_VALUE                            8000      // in ms
 #define MAX_PAYLOAD_LENGTH                          60        // bytes
 
 
@@ -70,13 +71,18 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
                           LORA_SPREADING_FACTOR, LORA_CODINGRATE,
                           LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
                           LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
-                          LORA_IQ_INVERSION_ON, 4000);
+                          LORA_IQ_INVERSION_ON, TX_TIMEOUT_VALUE);
 
     sx1278_set_rx_config(&dev, MODEM_LORA, LORA_BANDWIDTH, LORA_SPREADING_FACTOR,
                           LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
                           LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON, 0,
                           LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
                           LORA_IQ_INVERSION_ON, true);
+
+    for (int i = 0; i < 0x80; i++)
+    {
+        utils::dbg("0x%x: 0x%x", i, sx1278_read(&dev, i));
+    }
 
     // Update clock msg cfg structure
     msgf =
