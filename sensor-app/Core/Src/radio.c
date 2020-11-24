@@ -7,7 +7,7 @@
 
 #include "radio.h"
 #include "settings.h"
-#include <sx1278-cube-hal.h>
+#include <lora-cube-hal.h>
 #include <main.h>
 
 
@@ -18,28 +18,17 @@ extern void dbg(const char* msg);
 
 //-----------------------------------------------------------------------------
 // Radio LORA settings
-#define RF_FREQUENCY                                RF_FREQUENCY_434_0
-#define TX_OUTPUT_POWER                             20//14        // dBm
-#define LORA_BANDWIDTH                              LORA_BANDWIDTH_125kHz//LORA_BANDWIDTH_125kHz
-#define LORA_SPREADING_FACTOR                       LORA_SF12//LORA_SF8
-#define LORA_CODINGRATE                             LORA_ERROR_CODING_RATE_4_8
-#define LORA_PREAMBLE_LENGTH                        8         // Same for Tx and Rx
-#define LORA_SYMBOL_TIMEOUT                         5         // Symbols
-#define LORA_FIX_LENGTH_PAYLOAD_ON                  false
-#define LORA_FHSS_ENABLED                           true
-#define LORA_NB_SYMB_HOP                            4
-#define LORA_IQ_INVERSION_ON                        false
-#define LORA_CRC_ENABLED                            true
-#define RX_TIMEOUT_VALUE                            8000      // in ms
-#define MAX_PAYLOAD_LENGTH                          60        // bytes
-//-----------------------------------------------------------------------------
-static void on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
+#define LORA_RADIO_LEDCLOCK_ID 0xAB
+#define LORA_RADIO_SENSOR_ID 0xCD
+#define LORA_RADIO_LEDCLOCK_SENSOR_MSG_ID 0x67
+
+static void on_rx_done(void *args, int packet_size);
 static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size);
 static uint16_t radio_msg_frame_checksum(const uint8_t *data, const uint8_t data_len);
 
 //-----------------------------------------------------------------------------
 // LORA SX1278 RADIO
-static sx1278_cube_hal radio_cube_hal_dev =
+static lora_cube_hal cube_hal_dev =
 {
 	.spi = &hspi1,
 	.nss_port = SX1278_NSS_GPIO_Port,
@@ -48,48 +37,30 @@ static sx1278_cube_hal radio_cube_hal_dev =
 	.reset_pin = SX1278_RESET_Pin,
 };
 
-static RadioEvents_t radio_events;
-
-static sx1278 radio_dev;
+static lora dev;
 
 //-----------------------------------------------------------------------------
 void radio_init()
 {
-	// Set radio_dev
-	radio_dev.events = &radio_events;
-	radio_dev.events->tx_done = NULL;
-	radio_dev.events->rx_done = on_rx_done;
-	radio_dev.events->tx_timeout = NULL;
-	radio_dev.events->rx_timeout = NULL;
-	radio_dev.events->rx_error = NULL;
-	radio_dev.settings.modem = MODEM_LORA;
-	sx1278_cube_hal_init(&radio_dev, &radio_cube_hal_dev);
-	sx1278_set_channel(&radio_dev, RF_FREQUENCY);
+	// Set dev
+	dev.frequency = 433E6;
+	dev.on_receive = NULL;
+	dev.on_tx_done = NULL;
 
-	// Verify if SX1278 connected to the the board
-	while (sx1278_read(&radio_dev, REG_VERSION) != 0x12)
+	while (!lora_cube_hal_init(&dev, &cube_hal_dev))
 	{
-	    dbg("R_RDN");
-	    sx1278_delay_ms(1000);
+		dbg("R_RDN");
+		lora_delay_ms(1000);
 	}
-
-    sx1278_set_max_payload_length(&radio_dev, MODEM_LORA, sizeof(radio_msg_sensor_frame));//MAX_PAYLOAD_LENGTH);
-	sx1278_set_tx_config(&radio_dev, MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
-	                      LORA_SPREADING_FACTOR, LORA_CODINGRATE,
-	                      LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-	                      LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
-	                      LORA_IQ_INVERSION_ON, 4000);
-
-    sx1278_set_rx_config(&radio_dev, MODEM_LORA, LORA_BANDWIDTH, LORA_SPREADING_FACTOR,
-                          LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                          LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON, 0,
-                          LORA_CRC_ENABLED, LORA_FHSS_ENABLED, LORA_NB_SYMB_HOP,
-                          LORA_IQ_INVERSION_ON, true);
+	lora_on_receive(&dev, on_rx_done);
+	// Switch into idle mode
+	lora_idle(&dev);
 }
 
 //-----------------------------------------------------------------------------
 void radio_send(radio_msg_sensor_frame *msgf)
 {
+	static uint8_t msg_cnt = 0;
 	if (!msgf)
 	{
 		return;
@@ -97,15 +68,24 @@ void radio_send(radio_msg_sensor_frame *msgf)
 
 	msgf->checksum = radio_msg_frame_checksum((const uint8_t*)msgf, (sizeof(radio_msg_sensor_frame)-sizeof(msgf->checksum)));
 	// Send result data
-	sx1278_send(&radio_dev, (uint8_t*)msgf, sizeof(radio_msg_sensor_frame));
+    radio_layer_msg_header hdr;
+    hdr.receiver_id = LORA_RADIO_LEDCLOCK_ID;
+    hdr.sender_id = LORA_RADIO_SENSOR_ID;
+    hdr.msg_id = msg_cnt++;
+    hdr.payload_len = sizeof(radio_msg_sensor_frame);
+    lora_begin_packet(&dev, false);                     // start packet
+    lora_write_data(&dev, (const uint8_t*)&hdr, sizeof(radio_layer_msg_header));
+    lora_write_data(&dev, (const uint8_t*)msgf, sizeof(radio_msg_sensor_frame));
+    lora_end_packet(&dev, false);                       // finish packet and send it
 	dbg("R_DTS");
-	sx1278_set_rx(&radio_dev, 0);
+    // Switch to RX mode
+    lora_receive(&dev, 0);
 }
 
 //-----------------------------------------------------------------------------
 void radio_sleep()
 {
-	sx1278_set_sleep(&radio_dev);
+	lora_sleep(&dev);
 }
 
 //-----------------------------------------------------------------------------
@@ -127,15 +107,54 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == SX1278_DIO0_Pin)
 	{
-		(radio_dev.dio_irq[0])(&radio_dev);
+		(dev.dio_irq)(&dev);
 	}
 }
 
 //-----------------------------------------------------------------------------
-static void on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
+static void on_rx_done(void *ctx, int packet_size)
 {
 	dbg("R_ORD");
-	parse_incoming_msg_clock(payload, size);
+	lora *const dev = (lora*const) ctx;
+
+	radio_layer_msg_header hdr;
+	radio_msg_sensor_frame frame;
+	uint8_t *p = (uint8_t*)&frame;
+	size_t i = 0;
+
+	if (packet_size == 0)
+	{
+		goto err;
+	}
+
+	// Read packet header bytes:
+	hdr.receiver_id = lora_read(dev);          // recipient address
+	hdr.sender_id = lora_read(dev);            // sender address
+	hdr.msg_id = lora_read(dev);     // incoming msg ID
+	hdr.payload_len = lora_read(dev);    // incoming msg length
+
+	// If the recipient isn't this device or broadcast,
+	if (hdr.receiver_id != LORA_RADIO_SENSOR_ID && hdr.receiver_id != 0xFF)
+	{
+		goto err;
+	}
+	// Check payload length
+	if (hdr.payload_len != sizeof(radio_msg_clock_frame))
+	{
+		goto err;
+	}
+
+	// Read payload frame
+	while (lora_available(dev) && i < hdr.payload_len)
+	{
+		*(p+i) = (uint8_t)lora_read(dev);
+		i++;
+	}
+
+	parse_incoming_msg_clock(p, hdr.payload_len);
+
+err:
+	radio_sleep();
 }
 
 //------------------------------------------------------------------------------

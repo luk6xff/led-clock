@@ -86,7 +86,12 @@ static void MX_ADC_Init(void);
 static void system_low_power_mode_config(void);
 static void enter_low_power_mode();
 static uint32_t adc_read_vbatt();
-
+uint8_t PWR_PVDGetLevel(void)
+{
+	uint8_t temp_val = 0;
+  temp_val = (uint8_t) ((PWR->CR >> 5) & 0x07);
+  return temp_val;
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -184,6 +189,7 @@ int main(void)
 	msgf.temperature = temperature;
 	msgf.pressure = pressure;
 	msgf.humidity = humidity;
+	//PWR_PVDCmd(ENABLE);
 	msgf.vbatt = 3300;//adc_read_vbatt();
 
 	/* Send result data */
