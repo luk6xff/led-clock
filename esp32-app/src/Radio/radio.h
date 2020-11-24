@@ -24,8 +24,8 @@ typedef struct
 {
 	uint8_t receiver_id;            // Receiver address
 	uint8_t sender_id;              // Sender address
-	uint32_t msg_id;                // Message ID
-	uint32_t payload_len;           // Message payload length
+	uint8_t msg_id;                // Message ID
+	uint8_t payload_len;           // Message payload length
 } radio_layer_msg_header;
 
 /**
@@ -56,7 +56,7 @@ typedef struct
 
 
 /**
- * @brief Radio layer msg header footprint
+ * @brief Radio msg queue data structure
  */
 typedef struct
 {

@@ -31,7 +31,7 @@ typedef struct
  * @param  dev       LORA Device object pointer
  * @param  cube_dev  STM32Cube  device object pointer
  */
-void lora_cube_hal_init(lora *const dev, lora_cube_hal *const cube_dev);
+bool lora_cube_hal_init(lora *const dev, lora_cube_hal *const cube_dev);
 
 
 /**

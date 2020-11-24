@@ -9,11 +9,11 @@
 #include "lora-cube-hal.h"
 
 //-----------------------------------------------------------------------------
-void lora_cube_hal_init(lora *const dev, lora_cube_hal *const cube_dev)
+bool lora_cube_hal_init(lora *const dev, lora_cube_hal *const cube_dev)
 {
     dev->platform_dev = cube_dev;
 
-    lora_init(dev);
+    return lora_init(dev);
 }
 
 //-----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ void lora_ioirq_init(lora *const dev)
 }
 
 //-----------------------------------------------------------------------------
-void lora_ioirq_init(lora *const dev)
+void lora_ioirq_deinit(lora *const dev)
 {
     // EMPTY
 }

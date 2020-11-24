@@ -4,16 +4,29 @@
 #include "hw-config.h"
 
 
+
 /**
  * @brief Radio Msg frame status field description
  */
 typedef enum
 {
-	MSG_NO_ERROR   = 1<<0,
-	MSG_READ_ERROR = 1<<1,
-	MSG_INIT_ERROR = 1<<2,
-	MSG_BATT_LOW   = 1<<3,
+	MSG_NO_ERROR        = 1<<0,
+	MSG_READ_ERROR      = 1<<1,
+	MSG_INIT_ERROR      = 1<<2,
+	MSG_BATT_LOW        = 1<<3,
+	MSG_CHECKSUM_ERROR  = 1<<4,
 } radio_msg_sensor_frame_status;
+
+/**
+ * @brief Radio layer msg header footprint
+ */
+typedef struct
+{
+	uint8_t receiver_id;            // Receiver address
+	uint8_t sender_id;              // Sender address
+	uint8_t msg_id;                // Message ID
+	uint8_t payload_len;           // Message payload length
+} radio_layer_msg_header;
 
 /**
  * @brief Msg frame footprint, sent to the clock

@@ -5,21 +5,6 @@
 
 //------------------------------------------------------------------------------
 // Radio LORA settings
-// #define RF_FREQUENCY                                RF_FREQUENCY_434_0
-// #define TX_OUTPUT_POWER                             20//14        // dBm
-// #define LORA_BANDWIDTH                              LORA_BANDWIDTH_125kHz//LORA_BANDWIDTH_125kHz//LORA_BANDWIDTH_125kHz
-// #define LORA_SPREADING_FACTOR                       LORA_SF12//LORA_SF8
-// #define LORA_CODINGRATE                             LORA_ERROR_CODING_RATE_4_6
-// #define LORA_PREAMBLE_LENGTH                        8         // Same for Tx and Rx
-// #define LORA_SYMBOL_TIMEOUT                         5         // Symbols
-// #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
-// #define LORA_FHSS_ENABLED                           false
-// #define LORA_NB_SYMB_HOP                            4
-// #define LORA_IQ_INVERSION_ON                        false
-// #define LORA_CRC_ENABLED                            true
-// #define RX_TIMEOUT_VALUE                            8000      // in ms
-// #define TX_TIMEOUT_VALUE                            8000      // in ms
-// #define MAX_PAYLOAD_LENGTH                          60        // bytes
 #define LORA_RADIO_LEDCLOCK_ID 0xAB
 #define LORA_RADIO_SENSOR_ID 0xCD
 #define LORA_RADIO_LEDCLOCK_SENSOR_MSG_ID 0x67
@@ -48,14 +33,6 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
     dev.on_receive = NULL;
     dev.on_tx_done = NULL;
 
-    // dev.events = &events;
-    // //dev.events->tx_done = &Radio::on_tx_done;
-    // dev.events->rx_done = &Radio::on_rx_done;
-    // // dev.events->tx_timeout = &Radio::on_tx_timeout;
-    // // dev.events->rx_timeout = &Radio::on_rx_timeout;
-    // dev.events->rx_error = &Radio::on_rx_error;
-    // dev.settings.modem = MODEM_LORA;
-
     while (!lora_arduino_init(&dev, &arduino_dev))
     {
         utils::dbg("LORA Radio cannot be detected!, check your connections.");
@@ -78,7 +55,7 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
         utils::err("RADIO: msgSensorDataQ has not been created!.");
     }
 
-    // SWitch into RX mode
+    // Switch into RX mode
     lora_receive(&dev, 0);
 }
 
@@ -99,7 +76,6 @@ void Radio::sendResponseToSensor()
     lora_end_packet(&dev, false);                       // finish packet and send it
 
     // Switch to RX mode
-    //lora_reset(&dev);
     lora_receive(&dev, 0);
     lora_ioirq_init(&dev);
 }
@@ -177,10 +153,10 @@ void Radio::on_rx_done(void*ctx, int packetSize)
     }
 
     // Read packet header bytes:
-    hdr.receiver_id = lora_read(dev);          // recipient address
-    hdr.sender_id = lora_read(dev);            // sender address
-    hdr.msg_id = lora_read(dev);     // incoming msg ID
-    hdr.payload_len = lora_read(dev);    // incoming msg length
+    hdr.receiver_id = lora_read(dev);   // recipient address
+    hdr.sender_id = lora_read(dev);     // sender address
+    hdr.msg_id = lora_read(dev);        // incoming msg ID
+    hdr.payload_len = lora_read(dev);   // incoming msg length
 
     // If the recipient isn't this device or broadcast,
     if (hdr.receiver_id != LORA_RADIO_LEDCLOCK_ID && hdr.receiver_id != 0xFF)
