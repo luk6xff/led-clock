@@ -77,7 +77,25 @@ void Radio::sendResponseToSensor()
 
     // Switch to RX mode
     lora_receive(&dev, 0);
-    lora_ioirq_init(&dev);
+}
+
+//-----------------------------------------------------------------------------
+void Radio::restart()
+{
+    // Deinitilaize radio
+    lora_arduino_deinit(&dev);
+    lora_delay_ms(100);
+
+    // Initialize it back
+    while (!lora_arduino_init(&dev, &arduino_dev))
+    {
+        utils::dbg("LORA Radio cannot be detected!, check your connections.");
+        lora_delay_ms(1000);
+    }
+
+    lora_on_receive(&dev, &Radio::on_rx_done);
+    // Switch into RX mode
+    lora_receive(&dev, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -189,9 +207,8 @@ void Radio::on_rx_done(void*ctx, int packetSize)
     }
 
 err:
-    // Enable interrupts and switch into rx mode
+    // Switch back into rx mode
     lora_receive(dev, 0);
-    lora_ioirq_init(dev);
 }
 
 //-----------------------------------------------------------------------------

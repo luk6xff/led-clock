@@ -1,5 +1,7 @@
 #pragma once
+
 #include "App/task.h"
+#include "App/rtos_common.h"
 #include "radio.h"
 
 struct RadioSensorData
@@ -10,12 +12,24 @@ struct RadioSensorData
 	float humidity;
 };
 
+
+struct RadioHealthStateTask
+{
+    TaskHandle_t task;
+    rtos::Mutex mtx;
+    Radio *radioHandle;
+    uint32_t resetTimeoutSecs;
+    uint32_t lastRadioMsgReceivedTimeMs;
+};
+
+
 class RadioSensorTask : public Task
 {
 public:
     explicit RadioSensorTask(RadioSensorSettings& radioSensorCfg);
-
     const QueueHandle_t& getRadioSensorQ();
+
+    static void healtStateCheckCb(void *arg);
 
 private:
     virtual void run() override;
@@ -23,5 +37,8 @@ private:
 
 private:
     RadioSensorSettings& m_radioSensorCfg;
+    Radio m_radioSensor;
     QueueHandle_t m_radioSensorQ;
+    RadioHealthStateTask m_radioHealthStateTask;
 };
+

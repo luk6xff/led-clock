@@ -42,11 +42,11 @@ const i18n_map I18N::k_i18n =
     { "Weather", "Pogoda" },                // M_WEATHER_NAME
     { "Temperature", "Temperatura" },       // M_WEATHER_TEMP
     { "Temp", "T" },                        // M_WEATHER_TEMP_SHORT
-    { "Today", "Dzisiaj" },                 // M_WEATHER_TODAY
+    { "Today", "Dziś" },                    // M_WEATHER_TODAY
     { "Tommorow", "Jutro" },                // M_WEATHER_TOMM
     { "Now", "Teraz" },                     // M_WEATHER_NOW
     // Sensor
-    { "Sensor", "PomiarZewn" },                  // M_SENSOR_NAME
+    { "Sensor", "PomiarZewn" },             // M_SENSOR_NAME
     { "Temp", "Temp" },                     // M_SENSOR_TEMP
     { "Pressure", "Ciśn" },                 // M_SENSOR_PRESS
     { "Humidity", "Wilg" },                 // M_SENSOR_HUMID

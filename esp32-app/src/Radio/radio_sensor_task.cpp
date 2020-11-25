@@ -12,12 +12,28 @@
 RadioSensorTask::RadioSensorTask(RadioSensorSettings& radioSensorCfg)
     : Task("RadioSensorTask", RADIO_SENSOR_TASK_STACK_SIZE, RADIO_SENSOR_TASK_PRIORITY, 1)
     , m_radioSensorCfg(radioSensorCfg)
+    , m_radioSensor(m_radioSensorCfg)
     , m_radioSensorQ(nullptr)
 {
     m_radioSensorQ = xQueueCreate(3, sizeof(RadioSensorData));
     if (!m_radioSensorQ)
     {
         utils::err("%s m_radioSensorQ has not been created!.", MODULE_NAME);
+    }
+
+    // Create radio health state task
+    m_radioHealthStateTask.radioHandle = &m_radioSensor;
+    m_radioHealthStateTask.resetTimeoutSecs = m_radioSensorCfg.update_data_interval * 4; // When no radio msg received in 4x update interval, reset the radio
+    m_radioHealthStateTask.lastRadioMsgReceivedTimeMs = 0;
+    BaseType_t ret = xTaskCreate(healtStateCheckCb,
+                                    "RHSTask",
+                                    4096,
+                                    &m_radioHealthStateTask,
+                                    1,
+                                    &m_radioHealthStateTask.task);
+    if (ret != pdPASS)
+    {
+        utils::err("%s m_radioHealthStateTask start failed", MODULE_NAME);
     }
 }
 
@@ -31,7 +47,6 @@ const QueueHandle_t& RadioSensorTask::getRadioSensorQ()
 void RadioSensorTask::run()
 {
     const TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
-    Radio radioSensor(m_radioSensorCfg);
     radio_msg_queue_data msg;
     for(;;)
     {
@@ -47,7 +62,7 @@ void RadioSensorTask::run()
             utils::dbg("SNR: %f", msg.snr);
             radio_msg_sensor_frame_status ret = Radio::parse_incoming_msg_sensor((uint8_t*)&(msg.frame), sizeof(msg.frame));
             // Send response to the sensor
-            radioSensor.sendResponseToSensor();
+            m_radioSensor.sendResponseToSensor();
             if (ret == MSG_NO_ERROR || ret == MSG_BATT_LOW)
             {
                 RadioSensorData data =
@@ -59,6 +74,11 @@ void RadioSensorTask::run()
                 };
                 pushRadioSensorMsg(data);
             }
+            {
+                rtos::LockGuard<rtos::Mutex> lock(m_radioHealthStateTask.mtx);
+                m_radioHealthStateTask.lastRadioMsgReceivedTimeMs = millis();
+            }
+
         }
         vTaskDelay(sleepTime);
     }
@@ -84,6 +104,27 @@ bool RadioSensorTask::pushRadioSensorMsg(const RadioSensorData& data)
                 tr(M_SENSOR_VBATT) + col + String(float(data.vbatt/1000.f)) + tr(M_COMMON_VOLTAGE));
 
     return AppSh.putDisplayMsg(msg.c_str(), msg.length());
+}
+
+//------------------------------------------------------------------------------
+void RadioSensorTask::healtStateCheckCb(void *arg)
+{
+    RadioHealthStateTask *rhst = static_cast<RadioHealthStateTask*>(arg);
+    const TickType_t timeoutMs = (10000 / portTICK_PERIOD_MS);
+    for(;;)
+    {
+        {
+            rtos::LockGuard<rtos::Mutex> lock(rhst->mtx);
+            if (((millis() - rhst->lastRadioMsgReceivedTimeMs) / 1000) > rhst->resetTimeoutSecs)
+            {
+                // No Frame received for too long, restart radio
+                utils::dbg("%s No Radio frame msg received for too long:[%d] seconds, restarting radio...", MODULE_NAME, rhst->resetTimeoutSecs);
+                rhst->radioHandle->restart();
+                rhst->lastRadioMsgReceivedTimeMs = 0;
+            }
+        }
+        vTaskDelay(timeoutMs);
+    }
 }
 
 //------------------------------------------------------------------------------

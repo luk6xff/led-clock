@@ -136,8 +136,14 @@ bool lora_init(lora *const dev)
 //-----------------------------------------------------------------------------
 void lora_end(lora *const dev)
 {
-  // put in sleep mode
-  lora_sleep(dev);
+    // put in sleep mode
+    lora_sleep(dev);
+    // Perform Reset
+    lora_reset(dev);
+
+    // Deinitialize IO interfaces
+    lora_io_deinit(dev);
+    lora_ioirq_deinit(dev);
 }
 
 //-----------------------------------------------------------------------------
@@ -779,7 +785,5 @@ ISR_PREFIX void on_dio0_irq(void *ctx)
 {
     lora *const dev = (lora*)ctx;
     // Disable interrupts and switch into idle mode
-    lora_ioirq_deinit(dev);
-    lora_idle(dev);
     lora_handle_dio0_rise(dev);
 }

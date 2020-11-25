@@ -75,6 +75,8 @@ public:
     explicit Radio(RadioSensorSettings& radioSensorCfg);
     void sendResponseToSensor();
 
+    void restart();
+
     static radio_msg_sensor_frame_status parse_incoming_msg_sensor(uint8_t *payload, uint16_t size);
 
 private:
@@ -82,7 +84,6 @@ private:
 
     // Callbacks
     static void on_tx_done(void *args);
-    //static void on_rx_done(void *args, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
     static void on_rx_done(void *ctx, int packetSize);
     static void on_tx_timeout(void *args);
     static void on_rx_timeout(void *args);
@@ -97,9 +98,6 @@ public:
 private:
     RadioSensorSettings& cfg;
     SPIClass spi;
-    // RadioEvents_t events;
-    // sx1278 dev;
-    // sx1278_arduino arduino_dev;
     lora dev;
     lora_arduino arduino_dev;
     /**

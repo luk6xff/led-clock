@@ -19,8 +19,7 @@ bool lora_arduino_init(lora *const dev, lora_arduino *const arduino_dev)
 //-----------------------------------------------------------------------------
 void lora_arduino_deinit(lora *const dev)
 {
-    // IO
-    lora_io_deinit(dev);
+    lora_end(dev);
 }
 
 //-----------------------------------------------------------------------------
@@ -42,7 +41,11 @@ void lora_io_init(lora *const dev)
 //-----------------------------------------------------------------------------
 void lora_io_deinit(lora *const dev)
 {
-    // Empty
+    // Get arduino platform data
+    lora_arduino *const pd = (lora_arduino*)dev->platform_dev;
+    // Init SPI
+    pd->spi->end();
+    lora_delay_ms(10);
 }
 
 //-----------------------------------------------------------------------------
