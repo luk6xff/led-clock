@@ -66,4 +66,10 @@ void radio_send(radio_msg_sensor_frame *msgf);
 
 void radio_sleep();
 
+void radio_restart();
+
+uint8_t radio_was_data_received();
+
+void radio_data_received_clear();
+
 #endif /* RADIO_H_ */

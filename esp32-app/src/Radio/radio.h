@@ -2,7 +2,6 @@
 #define __RADIO_H__
 
 #include "radio_settings.h"
-//#include "../SX1278/platform/arduino/sx1278-arduino.h"
 #include "../LORA/platform/arduino/lora-arduino.h"
 
 /**

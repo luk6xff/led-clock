@@ -12,13 +12,9 @@
 #include "Weather/weather_settings.h"
 #include "Radio/radio_settings.h"
 #include "Display/display_settings.h"
-#include "app_settings.h"
 #include "rtos_common.h"
-
-
-
-// Define the version number, also used for webserver as Last-Modified header and to check version for update.
-#define APP_VERSION     "0.0.1"
+#include "app_settings.h"
+#include "app_vars.h"
 
 // LedClock App can be updated (OTA) to the latest version from a remote server.
 #define APP_UPDATEHOST  "github.com"                    // Host for software updates

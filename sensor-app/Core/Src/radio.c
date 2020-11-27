@@ -39,6 +39,8 @@ static lora_cube_hal cube_hal_dev =
 
 static lora dev;
 
+static volatile uint8_t radio_data_received = false;
+
 //-----------------------------------------------------------------------------
 void radio_init()
 {
@@ -53,8 +55,8 @@ void radio_init()
 		lora_delay_ms(1000);
 	}
 	lora_on_receive(&dev, on_rx_done);
-	// Switch into idle mode
-	lora_idle(&dev);
+	// Switch sleep idle mode
+	lora_sleep(&dev);
 }
 
 //-----------------------------------------------------------------------------
@@ -86,6 +88,41 @@ void radio_send(radio_msg_sensor_frame *msgf)
 void radio_sleep()
 {
 	lora_sleep(&dev);
+}
+
+//-----------------------------------------------------------------------------
+void radio_restart()
+{
+	// Deinitilaize radio
+	lora_cube_hal_deinit(&dev);
+	lora_delay_ms(100);
+
+	// Set dev
+	dev.frequency = 433E6;
+	dev.on_receive = NULL;
+	dev.on_tx_done = NULL;
+
+	while (!lora_cube_hal_init(&dev, &cube_hal_dev))
+	{
+		dbg("R_RDN");
+		lora_delay_ms(1000);
+	}
+
+	lora_on_receive(&dev, on_rx_done);
+	// Switch into sleep mode
+	lora_sleep(&dev);
+}
+
+//-----------------------------------------------------------------------------
+uint8_t radio_was_data_received()
+{
+	return radio_data_received;
+}
+
+//-----------------------------------------------------------------------------
+void radio_data_received_clear()
+{
+	radio_data_received = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -128,10 +165,10 @@ static void on_rx_done(void *ctx, int packet_size)
 	}
 
 	// Read packet header bytes:
-	hdr.receiver_id = lora_read(dev);          // recipient address
-	hdr.sender_id = lora_read(dev);            // sender address
-	hdr.msg_id = lora_read(dev);     // incoming msg ID
-	hdr.payload_len = lora_read(dev);    // incoming msg length
+	hdr.receiver_id = lora_read(dev);		// recipient address
+	hdr.sender_id = lora_read(dev);			// sender address
+	hdr.msg_id = lora_read(dev);			// incoming msg ID
+	hdr.payload_len = lora_read(dev);		// incoming msg length
 
 	// If the recipient isn't this device or broadcast,
 	if (hdr.receiver_id != LORA_RADIO_SENSOR_ID && hdr.receiver_id != 0xFF)
@@ -152,7 +189,8 @@ static void on_rx_done(void *ctx, int packet_size)
 	}
 
 	parse_incoming_msg_clock(p, hdr.payload_len);
-
+	// Set global flag
+	radio_data_received = true;
 err:
 	radio_sleep();
 }

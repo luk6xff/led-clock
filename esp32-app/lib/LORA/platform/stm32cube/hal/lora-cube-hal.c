@@ -19,8 +19,7 @@ bool lora_cube_hal_init(lora *const dev, lora_cube_hal *const cube_dev)
 //-----------------------------------------------------------------------------
 void lora_cube_hal_deinit(lora *const dev)
 {
-    // IO
-    lora_io_deinit(dev);
+    lora_end(dev);
 }
 
 //-----------------------------------------------------------------------------

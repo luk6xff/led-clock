@@ -100,6 +100,10 @@ uint8_t PWR_PVDGetLevel(void)
 // Last measured values
 static float temperature, pressure, humidity;
 
+// Last measured values
+const uint8_t radio_health_check_state = 4;
+static uint8_t radio_health_check_state_cnt = 0;
+
 // Msg frame
 static radio_msg_sensor_frame msgf =
 {
@@ -149,9 +153,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
   dbg("LUK6");
 
+  // Read current config from eprom
   app_settings_init();
-  radio_init();
+  // Enable sensor
   sensor_init();
+  // Enable radio
+  radio_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -170,6 +177,9 @@ int main(void)
 	{
 		sprintf(dbg_buf, "M_LWP_EXIT:%d", HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR2));
 		dbg(dbg_buf);
+		// Enable sensor pin
+		HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_SET);
+		HAL_Delay(100);
 		HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR2, 0);
 	}
 
@@ -189,7 +199,6 @@ int main(void)
 	msgf.temperature = temperature;
 	msgf.pressure = pressure;
 	msgf.humidity = humidity;
-	//PWR_PVDCmd(ENABLE);
 	msgf.vbatt = 3300;//adc_read_vbatt();
 
 	/* Send result data */
@@ -197,13 +206,30 @@ int main(void)
 
 	/* Refresh watchdog, no more than 2[s] must expire before next refresh */
 	HAL_WWDG_Refresh(&hwwdg);
-	uint8_t rxMsgWaitCntSecs = 10; // 5 seconds
-	while (rxMsgWaitCntSecs--)
+	uint8_t rx_msg_wait_cnt_secs = 5; // 5 seconds
+	while (rx_msg_wait_cnt_secs--)
 	{
 		/* Wait 1 second for incoming data from ledclock */
 		HAL_Delay(1000);
 		/* Refresh watchdog, no more than 2[s] must expire before next refresh */
 		HAL_WWDG_Refresh(&hwwdg);
+	}
+
+	// Check if any data from ledclock came
+	if (!radio_was_data_received())
+	{
+		radio_health_check_state_cnt++;
+	}
+	else
+	{
+		radio_health_check_state_cnt = 0;
+		radio_data_received_clear();
+	}
+
+	// If any problem with radio exists, restrat it
+	if (radio_health_check_state_cnt >= radio_health_check_state)
+	{
+		radio_restart();
 	}
   }
   /* USER CODE END 3 */
@@ -620,7 +646,6 @@ static void enter_low_power_mode()
 
 	/* Put radio into sleep mode */
 	radio_sleep();
-	//HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_SET);
 
 	/* Disable sensor */
 	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_RESET);
@@ -669,8 +694,6 @@ static void enter_low_power_mode()
 	/* Enable SysTick. */
 	//HAL_ResumeTick();
 	//HAL_GPIO_WritePin(SX1278_RESET_GPIO_Port, SX1278_RESET_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(SENSOR_VDD_GPIO_Port, SENSOR_VDD_Pin, GPIO_PIN_SET);
-	HAL_Delay(100);
 	dbg("M_LPM_RUN");
 }
 
