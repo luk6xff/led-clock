@@ -14,6 +14,10 @@ SystemTime::SystemTime(SystemTimeSettings& timeSettings)
         m_timezone.setRules(m_timeSettings.stdStart, m_timeSettings.stdStart);
     }
 
+    // Enable VDD Pin on RTC
+    pinMode(DS3231_VDD_PIN, OUTPUT);
+    digitalWrite(DS3231_VDD_PIN, HIGH);
+
     rtos::LockGuard<rtos::Mutex> lock(g_i2c0Mutex);
     if (!m_rtc.begin())
     {

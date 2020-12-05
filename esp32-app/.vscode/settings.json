@@ -61,5 +61,6 @@
         "valarray": "cpp",
         "string": "cpp",
         "random": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

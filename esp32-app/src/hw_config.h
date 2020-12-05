@@ -14,6 +14,7 @@
 #define DS3231_I2C_ADDR     0x68
 #define DS3231_SDA_PIN      GPIO_NUM_21
 #define DS3231_SCL_PIN      GPIO_NUM_22
+#define DS3231_VDD_PIN      GPIO_NUM_4
 
 // LIGHT ILLUMINANCE SENSOR - BH1750
 #define BH1750_I2C_ADDR     0x23 //ADDR PIN is conected to GND

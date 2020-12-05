@@ -19,7 +19,7 @@
 #define DISPLAY_MAX72XX_MODULES_NUM 4
 #define DISPLAY_MSG_MAX_LEN         1024
 
-#define LIGHT_SENSOR_ENABLED true
+#define LIGHT_SENSOR_ENABLED 0
 
 class Display
 {

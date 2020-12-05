@@ -33,10 +33,12 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
     dev.on_receive = NULL;
     dev.on_tx_done = NULL;
 
-    while (!lora_arduino_init(&dev, &arduino_dev))
+    const uint8_t attempts_num = 5;
+    uint8_t attempts = 0;
+    while (!lora_arduino_init(&dev, &arduino_dev) && (attempts++ < attempts_num))
     {
         utils::dbg("LORA Radio cannot be detected!, check your connections.");
-        lora_delay_ms(1000);
+        lora_delay_ms(2000);
     }
     lora_on_receive(&dev, &Radio::on_rx_done);
 
@@ -87,10 +89,12 @@ void Radio::restart()
     lora_delay_ms(100);
 
     // Initialize it back
-    while (!lora_arduino_init(&dev, &arduino_dev))
+    const uint8_t attempts_num = 5;
+    uint8_t attempts = 0;
+    while (!lora_arduino_init(&dev, &arduino_dev) && (attempts++ < attempts_num))
     {
         utils::dbg("LORA Radio cannot be detected!, check your connections.");
-        lora_delay_ms(1000);
+        lora_delay_ms(2000);
     }
 
     lora_on_receive(&dev, &Radio::on_rx_done);

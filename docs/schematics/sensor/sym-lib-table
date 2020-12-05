@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name ledclock-sensor-eagle-import)(type Legacy)(uri ${KIPRJMOD}/ledclock-sensor-eagle-import.lib)(options "")(descr ""))
+)

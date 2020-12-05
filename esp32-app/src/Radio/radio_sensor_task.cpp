@@ -24,7 +24,7 @@ RadioSensorTask::RadioSensorTask(RadioSensorSettings& radioSensorCfg)
     // Create radio health state task
     m_radioHealthStateTask.radioHandle = &m_radioSensor;
     m_radioHealthStateTask.resetTimeoutSecs = m_radioSensorCfg.update_data_interval * 4; // When no radio msg received in 4x update interval, reset the radio
-    m_radioHealthStateTask.lastRadioMsgReceivedTimeMs = 0;
+    m_radioHealthStateTask.lastRadioMsgReceivedTimeMs = millis();
     BaseType_t ret = xTaskCreate(healtStateCheckCb,
                                     "RHSTask",
                                     4096,
@@ -120,7 +120,7 @@ void RadioSensorTask::healtStateCheckCb(void *arg)
                 // No Frame received for too long, restart radio
                 utils::dbg("%s No Radio frame msg received for too long:[%d] seconds, restarting radio...", MODULE_NAME, rhst->resetTimeoutSecs);
                 rhst->radioHandle->restart();
-                rhst->lastRadioMsgReceivedTimeMs = 0;
+                rhst->lastRadioMsgReceivedTimeMs = millis();
             }
         }
         vTaskDelay(timeoutMs);

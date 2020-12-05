@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name ledclock-sensor)(type KiCad)(uri "$(KIPRJMOD)/ledclock-sensor.pretty")(options "")(descr ""))
+)

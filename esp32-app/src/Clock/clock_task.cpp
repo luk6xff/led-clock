@@ -11,7 +11,7 @@
 //------------------------------------------------------------------------------
 ClockTask::ClockTask(SystemTimeSettings& timeCfg, const QueueHandle_t& ntpTimeQ,
                         const QueueHandle_t& extTimeQ)
-    : Task("ClockTask", CLOCK_TASK_STACK_SIZE, CLOCK_TASK_PRIORITY, 1)
+    : Task("ClockTask", CLOCK_TASK_STACK_SIZE, CLOCK_TASK_PRIORITY, 0)
     , m_timeCfg(timeCfg)
     , m_ntpTimeQ(ntpTimeQ)
     , m_extTimeQ(extTimeQ)
