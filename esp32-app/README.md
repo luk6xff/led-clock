@@ -27,7 +27,8 @@ platformio run --target upload
 platformio run  &&  platformio run --target buildfs --environment esp32dev  &&  platformio run --target uploadfs --environment esp32dev  &&  platformio run --target upload
 ```
 
-# Debug monitor
+## Debug monitor
+```
 platformio device monitor -f esp32_exception_decoder -b 9600 -p /dev/ttyUSB0
 ```
 
