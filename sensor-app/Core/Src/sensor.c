@@ -19,6 +19,7 @@ static bme280 bme280_dev =
 	.i2c_addr = 0xEC,
 	.t_fine = 0,
 	.t_fine_adjust = 0,
+	.burst_read_mode = false,
 };
 
 static bme280_cube_hal bme280_cube_hal_dev =

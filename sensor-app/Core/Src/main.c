@@ -149,7 +149,7 @@ int main(void)
   MX_WWDG_Init();
   MX_RTC_Init();
   MX_LPUART1_UART_Init();
-  MX_ADC_Init();
+  //MX_ADC_Init(); NOT used currently
   /* USER CODE BEGIN 2 */
   dbg("LUK6");
 
