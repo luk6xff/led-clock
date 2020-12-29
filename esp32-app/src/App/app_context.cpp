@@ -1,7 +1,7 @@
 #include "app_context.h"
 #include "utils.h"
 
-#define MODULE_NAME "[APSH]"
+#define MODULE_NAME "[ACTX]"
 
 //------------------------------------------------------------------------------
 AppContext::AppContext()
