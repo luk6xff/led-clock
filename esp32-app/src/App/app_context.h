@@ -12,8 +12,8 @@
 #include "Clock/system_time.h" // For DateTime structure
 #include "i18n.h"
 
-#define AppSh  AppShared::instance()
-#define tr(msg_id)     AppSh.getAppTranslated(msg_id)
+#define AppCtx      AppContext::instance()
+#define tr(msg_id)  AppCtx.getAppTranslated(msg_id)
 
 #define APP_DISPLAY_MSG_BUF_SIZE 512
 
@@ -24,12 +24,12 @@ typedef struct
 } AppDisplayMsg;
 
 
-class AppShared
+class AppContext
 {
 
 public:
-    AppShared();
-    static AppShared& instance();
+    AppContext();
+    static AppContext& instance();
 
     bool putDisplayMsg(const char *msg, size_t msgLen);
     const QueueHandle_t& getDisplayQHandle();

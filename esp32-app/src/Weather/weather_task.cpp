@@ -2,7 +2,7 @@
 #include "App/rtos_common.h"
 #include "Wifi/wifi_task.h"
 #include "App/utils.h"
-#include "App/app_shared.h"
+#include "App/app_context.h"
 
 //------------------------------------------------------------------------------
 #define WEATHER_TASK_STACK_SIZE (8192*2)
@@ -96,7 +96,7 @@ void WeatherTask::run()
                         String(openWeatherMapOneCallData.daily[1].tempDay, 1).c_str() + tr(M_COMMON_DEG_CELS) + "," + \
                         openWeatherMapOneCallData.daily[1].weatherDescription.c_str();
             }
-            AppSh.putDisplayMsg(msg.c_str(), msg.length());
+            AppCtx.putDisplayMsg(msg.c_str(), msg.length());
         }
         else
         {

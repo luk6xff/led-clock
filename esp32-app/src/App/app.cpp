@@ -5,7 +5,7 @@
 // APP
 #include "utils.h"
 #include "app_config.h"
-#include "app_shared.h"
+#include "app_context.h"
 
 // MISC
 #include <esp_task_wdt.h>
@@ -43,7 +43,7 @@ void App::setup()
     utils::init();
     printMotd();
     AppCfg.init();
-    AppSh.setAppLang(AppCfg.getCurrent().other.appLang);
+    AppCtx.setAppLang(AppCfg.getCurrent().other.appLang);
     createTasks();
     runTasks();
 }
@@ -63,7 +63,7 @@ void App::createTasks()
                                             m_wifiTask->getWifiEvtHandle()));
     m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(AppCfg.getCurrent().time,
                                                 m_ntpTask->getNtpTimeQ(),
-                                                AppSh.getTimeQHandle()));
+                                                AppCtx.getTimeQHandle()));
     m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask(AppCfg.getCurrent().display, m_clockTask->getTimeQ()));
     m_weatherTask = std::unique_ptr<WeatherTask>(new WeatherTask(AppCfg.getCurrent().weather));
     m_radioSensorTask = std::unique_ptr<RadioSensorTask>(new RadioSensorTask(AppCfg.getCurrent().radioSensor));

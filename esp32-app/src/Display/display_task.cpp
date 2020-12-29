@@ -2,7 +2,7 @@
 #include "hw_config.h"
 #include "App/rtos_common.h"
 #include "App/utils.h"
-#include "App/app_shared.h"
+#include "App/app_context.h"
 
 //------------------------------------------------------------------------------
 #define DISPLAY_TASK_STACK_SIZE (8192)
@@ -79,13 +79,19 @@ void DisplayTask::run()
             }
         }
 
-        if (AppSh.getDisplayQHandle())
+
+        if (AppCtx.getDisplayQHandle())
         {
-            const BaseType_t rc = xQueueReceive(AppSh.getDisplayQHandle(), &dispMsg, 0);
+            const BaseType_t rc = xQueuePeek(AppCtx.getDisplayQHandle(), &dispMsg, 0);
             if (rc == pdPASS)
             {
                 utils::dbg("%s MSG:%s", MODULE_NAME, dispMsg.msg);
-                m_disp.printMsg(dispMsg.msg, dispMsg.msgLen);
+                if (m_disp.printMsg(dispMsg.msg, dispMsg.msgLen))
+                {
+                    // Remove the message from the queue if handled properly
+                    xQueueReceive(AppCtx.getDisplayQHandle(), &dispMsg, 0);
+                    free(dispMsg.msg);
+                }
             }
         }
         vTaskDelay(dispRefreshTime);

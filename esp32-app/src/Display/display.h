@@ -71,8 +71,10 @@ public:
 
     /**
      * @brief Print user message on the display
+     *
+     * @return Status if message has been displayed (true) or zone state busy (false)
      */
-    void printMsg(const char *msg, const size_t msgSize);
+    bool printMsg(const char *msg, const size_t msgSize);
 
     /**
      * @brief In place conversion UTF-8 string to Extended ASCII (+ some polish chars from Latin Extended-A)

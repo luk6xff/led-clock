@@ -1,6 +1,6 @@
 #include "radio_sensor_task.h"
 #include "App/utils.h"
-#include "App/app_shared.h"
+#include "App/app_context.h"
 
 //------------------------------------------------------------------------------
 #define RADIO_SENSOR_TASK_STACK_SIZE (8192*2)
@@ -103,7 +103,7 @@ bool RadioSensorTask::pushRadioSensorMsg(const RadioSensorData& data)
                 tr(M_SENSOR_HUMID) + col + String(uint8_t(data.humidity)) + tr(M_COMMON_PERCENT));// + com + spc + \
                 //tr(M_SENSOR_VBATT) + col + String(float(data.vbatt/1000.f)) + tr(M_COMMON_VOLTAGE));
 
-    return AppSh.putDisplayMsg(msg.c_str(), msg.length());
+    return AppCtx.putDisplayMsg(msg.c_str(), msg.length());
 }
 
 //------------------------------------------------------------------------------

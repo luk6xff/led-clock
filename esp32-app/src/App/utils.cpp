@@ -4,7 +4,7 @@
 #include "sdkconfig.h"
 
 
-#define DBG_BAUDRATE 9600
+#define DBG_BAUDRATE 115200
 #define DBG_VERBOSITY_LEVEL DBG_VERBOSE
 
 //------------------------------------------------------------------------------

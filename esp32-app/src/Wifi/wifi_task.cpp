@@ -1,7 +1,7 @@
 #include "wifi_task.h"
 #include "App/rtos_common.h"
 #include "App/utils.h"
-#include "App/app_shared.h"
+#include "App/app_context.h"
 
 #include "WebServer/webserver.h"
 
@@ -54,7 +54,7 @@ void WifiTask::run()
         }
 
         // If OTA update active, do not make any reconnections in both AP and STATION modes
-        if (AppSh.getAppOtaUpdateStatus())
+        if (AppCtx.getAppOtaUpdateStatus())
         {
             vTaskDelay(10000 / portTICK_PERIOD_MS);
             continue;

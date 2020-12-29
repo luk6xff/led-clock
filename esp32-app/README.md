@@ -29,7 +29,7 @@ platformio run  &&  platformio run --target buildfs --environment esp32dev  &&  
 
 ## Debug monitor
 ```
-platformio device monitor -f esp32_exception_decoder -b 9600 -p /dev/ttyUSB0
+platformio device monitor -f esp32_exception_decoder -b 115200 -p /dev/ttyUSB1
 ```
 
 ## HARDWARE

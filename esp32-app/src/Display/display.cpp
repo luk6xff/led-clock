@@ -210,20 +210,28 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
 }
 
 //------------------------------------------------------------------------------
-void Display::printMsg(const char *msg, const size_t msgSize)
+bool Display::printMsg(const char *msg, const size_t msgSize)
 {
+    bool status = false;
+
     if (!msg)
     {
         utils::dbg("Invalid msg to be displayed");
     }
-    if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
+    else
     {
-        String utfMsg = utf8Ascii(msg);
-        snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s", utfMsg.c_str());
-        m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, m_dispSpeed , m_dispPause, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
-        m_mx.setFont(NULL);
-        m_mx.displayReset(DISPLAY_ZONE_FULL);
+        if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
+        {
+            String utfMsg = utf8Ascii(msg);
+            snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s", utfMsg.c_str());
+            m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, m_dispSpeed , m_dispPause, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
+            m_mx.setFont(NULL);
+            m_mx.displayReset(DISPLAY_ZONE_FULL);
+            status = true;
+        }
     }
+
+    return status;
 }
 
 //------------------------------------------------------------------------------

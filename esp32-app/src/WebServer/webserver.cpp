@@ -17,7 +17,7 @@
 #include "AsyncJson.h"
 #include <functional>
 #include "App/app_config.h"
-#include "App/app_shared.h"
+#include "App/app_context.h"
 #include "App/app_vars.h"
 #include "esp_wifi.h"
 
@@ -154,7 +154,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
             const uint32_t t = (uint32_t)val.toInt();
             utils::dbg("Received DT value: %s, %d", val.c_str(), t);
             DateTime dt(t);
-            if (AppSh.putDateTimeMsg(dt))
+            if (AppCtx.putDateTimeMsg(dt))
             {
                 errorCode = 200;
                 response = "{\"status\":\"success\"}";
@@ -173,7 +173,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         DynamicJsonDocument doc(capacity);
         doc["dt"] = "0";
         uint16_t errorCode = 400;
-        DateTime dt = AppSh.getAppDt();
+        DateTime dt = AppCtx.getAppDt();
         if (dt.isValid())
         {
             errorCode = 200;
@@ -200,7 +200,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
 
             response = "{\"status\":\"success\"}";
             errorCode = 200;
-            AppSh.putDisplayMsg(txt.c_str(), txt.length());
+            AppCtx.putDisplayMsg(txt.c_str(), txt.length());
             utils::inf("/dev-app-print-text TXT: %s", txt.c_str());
         }
         request->send(errorCode, "application/json", response);
@@ -300,7 +300,7 @@ void WebServer::setCfgSaveHandlers()
                 AppSettings cfg = AppCfg.getCurrent().other;
                 cfg.fromJson(json);
                 // Update language globally
-                AppSh.setAppLang(cfg.appLang);
+                AppCtx.setAppLang(cfg.appLang);
                 utils::inf("%s", cfg.toJson().c_str());
                 return AppCfg.saveAppSettings(cfg);
             }
@@ -357,7 +357,7 @@ void WebServer::handleDoOtaUpdate(AsyncWebServerRequest *request, const String& 
 {
     if (!index)
     {
-        AppSh.setAppOtaUpdateStatus(true);
+        AppCtx.setAppOtaUpdateStatus(true);
         utils::inf("OTA Update starting...");
         m_otaFileContentLen = request->contentLength();
         // If filename includes spiffs, update the spiffs partition
@@ -382,12 +382,12 @@ void WebServer::handleDoOtaUpdate(AsyncWebServerRequest *request, const String& 
         if (!Update.end(true))
         {
             Update.printError(Serial);
-            AppSh.setAppOtaUpdateStatus(false);
+            AppCtx.setAppOtaUpdateStatus(false);
         }
         else
         {
             utils::inf("OTA Update completed!");
-            AppSh.setAppOtaUpdateStatus(false);
+            AppCtx.setAppOtaUpdateStatus(false);
             ESP.restart();
         }
     }
