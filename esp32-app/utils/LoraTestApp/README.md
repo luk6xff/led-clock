@@ -1,8 +1,8 @@
-# usbmux
-Energy meter probe gateway
+# LORA_SENSOR_TEST_APP
+Lora Sensor test app
 
 ## Details
-TODO
+Emulates a sensor-app built on STM32, behaving the same way but in ESP8266 WEMOS D1_MINI board.
 
 ## Instalation
 * Install `vscode` with `platformio` plugin (Versions: vscode[1.49.2], platformio[Core:5.0.1, Home:3.3.0])
@@ -10,30 +10,14 @@ TODO
 
 ## Building and flashing
 ```sh
-# Build an application
-platformio run
+# Build an application and upload the application binary
+platformio run  && platformio run --target upload
+```
 
-# Build filesystem
-platformio run --target buildfs --environment d1_mini
-
-# Upload filesystem image
-platformio run --target uploadfs --environment d1_mini
-
-# Upload the application binary
-platformio run --target upload
-
-# All in one-liner
-platformio run  &&  platformio run --target buildfs --environment d1_mini  &&  platformio run --target uploadfs --environment d1_mini  &&  platformio run --target upload
+## Debug monitor
+```
+platformio device monitor -f esp8266_exception_decoder -b 9600 -p /dev/ttyUSB1
 ```
 
 ## Pinout
-* HW pinout defined at: `src/Common/hw-config.h`
-
-
-## More random pics
-
-## BOM
-
-| PART NAME                          | SHOP LINK                                                                                        | DATASHEET | QUANTITY | PRICE [PLN] |
-|------------------------------------|--------------------------------------------------------------------------------------------------|-----------|----------|-------------|
-| ESP8266 WEMOS D1-MINI | [AliExpress](https://aliexpress.com/item/32845061455.html)|[ESP8266-D1MINI](./https://docs.wemos.cc/en/latest/d1/d1_mini.html) | 1 | 7.99          |
+* HW pinout defined at: `src/hw-config.h`

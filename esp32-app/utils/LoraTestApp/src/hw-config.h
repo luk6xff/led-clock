@@ -3,12 +3,12 @@
 
 #define NC -1
 
-///< LORA module
-#define LORA_MOSI D7 // GPIO13
-#define LORA_MISO D6 // GPIO12
-#define LORA_SCLK D5 // GPIO14
-#define LORA_NSS  D8 // GPIO15
-#define LORA_RST  D3 // GPIO0
-#define LORA_DIO0 D2 // GPIO4
+///< LORA RADIO module ESP8266 WEMOS D1 MINI PINOUT
+#define RADIO_MOSI_PIN D7 // GPIO13
+#define RADIO_MISO_PIN D6 // GPIO12
+#define RADIO_SCK_PIN D5 // GPIO14
+#define RADIO_NSS_PIN  D8 // GPIO15
+#define RADIO_RST_PIN  D3 // GPIO0
+#define RADIO_DIO0_PIN D2 // GPIO4
 
 #endif //__HW_CONFIG_H__

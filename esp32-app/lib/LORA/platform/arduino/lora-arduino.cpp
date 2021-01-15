@@ -34,7 +34,14 @@ void lora_io_init(lora *const dev)
     // Set SS high
     digitalWrite(pd->nss, HIGH);
     // Start SPI
+#if (ESP32)
     pd->spi->begin(pd->sck, pd->miso, pd->mosi, pd->nss);
+#elif (ESP8266)
+    pd->spi->pins(pd->sck, pd->miso, pd->mosi, pd->nss);
+    pd->spi->begin();
+#else
+    #error("Not supported Arduino platform!)
+#endif
     lora_delay_ms(10);
 }
 
