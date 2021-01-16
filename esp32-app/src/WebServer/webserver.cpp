@@ -438,6 +438,7 @@ bool WebServer::wifiConnect(const char* ssid, const char* password)
     bool connected = false;
     int retry = 0;
     int wifiConnectRetries = 5;
+
     WiFi.begin(ssid, password[0] == '\0' ? NULL : password);
 
     while (retry < wifiConnectRetries && !connected)
@@ -544,8 +545,8 @@ bool WebServer::startAP()
         utils::inf("Hostname: AP: %s", WiFi.softAPgetHostname());
     }
 
-    IPAddress localIp(192,168,4,1);
-    IPAddress gateway(192,168,4,1);
+    IPAddress localIp(192,168,6,6);
+    IPAddress gateway(192,168,6,6);
     IPAddress subnetMask(255,255,255,0);
     ret = WiFi.softAPConfig(localIp, gateway, subnetMask);
     if (!ret)
