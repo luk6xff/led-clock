@@ -21,10 +21,15 @@ void setup()
 //-----------------------------------------------------------------------------
 void loop()
 {
+    const int sleep_minutes = 5;
     static int msgCount = 0;
     sendSensorMsg();
     Serial.printf("Sending msgCount:%d\r\n", msgCount++);
-    delay(60000);
+    for (int i = 0; i < sleep_minutes; i++)
+    {
+        delay(60000);
+    }
+
 }
 
 //-----------------------------------------------------------------------------

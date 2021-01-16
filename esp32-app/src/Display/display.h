@@ -67,7 +67,7 @@ public:
 
     void setDisplayPauseValue(uint32_t pause);
 
-    void printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots=false);
+    bool printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots=false);
 
     /**
      * @brief Print user message on the display
@@ -81,6 +81,15 @@ public:
      *        The extended ASCII string is always shorter.
      */
     static String utf8Ascii(const char *s);
+
+private:
+
+    /**
+     * @brief Returns Display zone status
+     *
+     * @return Status if display zones are ready for writing (true if so, false otherwise)
+     */
+    bool isDisplayWritable();
 
 private:
 

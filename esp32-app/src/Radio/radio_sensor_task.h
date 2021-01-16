@@ -40,5 +40,6 @@ private:
     Radio m_radioSensor;
     QueueHandle_t m_radioSensorQ;
     RadioHealthStateTask m_radioHealthStateTask;
+    RadioSensorData m_lastRadioMsg;
 };
 

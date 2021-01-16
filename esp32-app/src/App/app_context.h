@@ -15,7 +15,9 @@
 #define AppCtx      AppContext::instance()
 #define tr(msg_id)  AppCtx.getAppTranslated(msg_id)
 
-#define APP_DISPLAY_MSG_BUF_SIZE 512
+#define APP_DISPLAY_MSG_BUF_SIZE    512
+#define APP_DISPLAY_MSG_QUEUE_SIZE  4
+#define APP_TIME_MSG_QUEUE_SIZE     1
 
 typedef struct
 {
@@ -31,14 +33,14 @@ public:
     AppContext();
     static AppContext& instance();
 
-    bool putDisplayMsg(const char *msg, size_t msgLen);
+    bool putDisplayMsg(const char *msg, size_t msgLen, uint8_t msgRepeatNum=0);
     const QueueHandle_t& getDisplayQHandle();
 
     bool putDateTimeMsg(const DateTime& dt);
     const QueueHandle_t& getTimeQHandle();
 
     /**
-     * @brief Contains current system time, used (updated) inly in Clock task
+     * @brief Contains current system time, used (updated) only in Clock task
      */
     void setAppDt(const DateTime& dt);
     const DateTime& getAppDt();
@@ -56,8 +58,7 @@ private:
 
     // Global display message queue
     QueueHandle_t m_displayMsgQ;
-    // Global display message queue buffer
-    char displayMsgBufer[APP_DISPLAY_MSG_BUF_SIZE];
+
     // Display message mutex
     rtos::Mutex m_displayMsgMtx;
 

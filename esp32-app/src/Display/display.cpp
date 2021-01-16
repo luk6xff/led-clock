@@ -153,27 +153,28 @@ void Display::setDisplayPauseValue(uint32_t pause)
 }
 
 //------------------------------------------------------------------------------
-void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots)
+bool Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots)
 {
+    bool status = false;
+
     switch(tpm)
     {
         case THM:
         {
-            if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
+            if (isDisplayWritable())
             {
                 snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%02d%c%02d", dt.hour(), (timeDots ? ':' : ' '), dt.minute());
                 m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, m_dispSpeed , m_dispPause, PA_PRINT, PA_NO_EFFECT);
                 m_mx.setFont(dig_6x8_fonts);
                 m_mx.displayReset(DISPLAY_ZONE_FULL);
+                status = true;
             }
             break;
         }
 
         case THMS:
         {
-            if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL) &&
-                getDispObject()->getZoneStatus(DISPLAY_ZONE_0) &&
-                getDispObject()->getZoneStatus(DISPLAY_ZONE_1))
+            if (isDisplayWritable())
             {
                 snprintf(m_dispZone0Buf, sizeof(m_dispZone0Buf), "%02d", dt.second());
                 snprintf(m_dispZone1Buf, sizeof(m_dispZone1Buf), "%02d%c%02d", dt.hour(), (timeDots ? ':' : ' '), dt.minute());
@@ -183,13 +184,14 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
                 m_mx.setFont(DISPLAY_ZONE_1, dig_4x8_fonts);
                 m_mx.displayReset(DISPLAY_ZONE_0);
                 m_mx.displayReset(DISPLAY_ZONE_1);
+                status = true;
             }
             break;
         }
 
         case DWYMD:
         {
-            if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
+            if (isDisplayWritable())
             {
                 // Convert weekday to extended - ascii;
                 String wd = utf8Ascii(SystemTime::weekdayToStr(dt));
@@ -197,6 +199,7 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
                 m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, m_dispSpeed , m_dispPause, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
                 m_mx.setFont(NULL);
                 m_mx.displayReset(DISPLAY_ZONE_FULL);
+                status = true;
             }
             break;
         }
@@ -207,6 +210,7 @@ void Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
             break;
         }
     }
+    return status;
 }
 
 //------------------------------------------------------------------------------
@@ -220,13 +224,13 @@ bool Display::printMsg(const char *msg, const size_t msgSize)
     }
     else
     {
-        if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL))
+        if (isDisplayWritable())
         {
             String utfMsg = utf8Ascii(msg);
             snprintf(getDispTxtBuffer(), sizeof(m_dispFullBuf), "%s", utfMsg.c_str());
             m_mx.displayZoneText(DISPLAY_ZONE_FULL, m_dispFullBuf, PA_CENTER, m_dispSpeed , m_dispPause, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
-            m_mx.setFont(NULL);
             m_mx.displayReset(DISPLAY_ZONE_FULL);
+            m_mx.setFont(NULL);
             status = true;
         }
     }
@@ -274,6 +278,18 @@ String Display::utf8Ascii(const char *s)
     cp += '\0';   // terminate the new string
     //utils::dbg(">>>> CP: %s", cp.c_str());
     return cp;
+}
+
+//------------------------------------------------------------------------------
+bool Display::isDisplayWritable()
+{
+    if (getDispObject()->getZoneStatus(DISPLAY_ZONE_FULL) &&
+        getDispObject()->getZoneStatus(DISPLAY_ZONE_0) &&
+        getDispObject()->getZoneStatus(DISPLAY_ZONE_1))
+    {
+        return true;
+    }
+    return false;
 }
 
 //------------------------------------------------------------------------------

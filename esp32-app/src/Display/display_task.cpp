@@ -30,8 +30,11 @@ DisplayTask::DisplayTask(const DisplaySettings& displayCfg,
 //------------------------------------------------------------------------------
 void DisplayTask::run()
 {
-    const TickType_t dispRefreshTime = (50 / portTICK_PERIOD_MS);
+    const TickType_t k_dispRefreshTime = (50 / portTICK_PERIOD_MS);
     bool timeDots;
+    bool timeMsgLock = false;
+    const uint8_t k_timeMsgUnlockTime = 2; // [secs]
+    uint8_t timeMsgUnlockTimer = 0; // [secs]
     DateTime dt;
     AppDisplayMsg dispMsg;
     m_disp.enableAutoIntensityLevelControl(m_displayCfg.enableAutoIntenisty);
@@ -74,27 +77,38 @@ void DisplayTask::run()
                 {
                     timeDots = true;
                 }
-                m_disp.printTime(dt, (Display::DateTimePrintMode)m_displayCfg.timeFormat, timeDots);
+
+                if (!m_disp.printTime(dt, (Display::DateTimePrintMode)m_displayCfg.timeFormat, timeDots))
+                {
+                    timeMsgLock = true;
+                }
+                else
+                {
+                    if (timeMsgUnlockTimer++ > k_timeMsgUnlockTime)
+                    {
+                        timeMsgUnlockTimer = 0;
+                        timeMsgLock = false;
+                    }
+                }
                 utils::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
             }
         }
 
-
-        if (AppCtx.getDisplayQHandle())
+        if (!timeMsgLock && AppCtx.getDisplayQHandle())
         {
             const BaseType_t rc = xQueuePeek(AppCtx.getDisplayQHandle(), &dispMsg, 0);
             if (rc == pdPASS)
             {
-                utils::dbg("%s MSG:%s", MODULE_NAME, dispMsg.msg);
                 if (m_disp.printMsg(dispMsg.msg, dispMsg.msgLen))
                 {
+                    utils::dbg("%s MSG removed from DISP queue:%s", MODULE_NAME, dispMsg.msg);
                     // Remove the message from the queue if handled properly
                     xQueueReceive(AppCtx.getDisplayQHandle(), &dispMsg, 0);
                     free(dispMsg.msg);
                 }
             }
         }
-        vTaskDelay(dispRefreshTime);
+        vTaskDelay(k_dispRefreshTime);
     }
 }
 

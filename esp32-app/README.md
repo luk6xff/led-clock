@@ -12,24 +12,25 @@ TODO
 ## Building and flashing
 ```sh
 # Build an application
-platformio run
-
-# Build filesystem
-platformio run --target buildfs --environment esp32dev
-
-# Upload filesystem image
-platformio run --target uploadfs --environment esp32dev
+pio run
 
 # Upload the application binary
-platformio run --target upload
+pio run --target upload
+
+# Build filesystem
+pio run --target buildfs --environment esp32dev
+
+# Upload filesystem image
+pio run --target uploadfs --environment esp32dev
+
 
 # All in one-liner
-platformio run  &&  platformio run --target buildfs --environment esp32dev  &&  platformio run --target uploadfs --environment esp32dev  &&  platformio run --target upload
+pio run  &&  pio run --target upload  &&  pio run --target buildfs --environment esp32dev  &&  pio run --target uploadfs --environment esp32dev
 ```
 
 ## Debug monitor
 ```
-platformio device monitor -f esp32_exception_decoder -b 115200 -p /dev/ttyUSB1
+pio device monitor -f esp32_exception_decoder -b 115200 -p /dev/ttyUSB0
 ```
 
 ## HARDWARE

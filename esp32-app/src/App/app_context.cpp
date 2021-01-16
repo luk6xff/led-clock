@@ -8,8 +8,8 @@ AppContext::AppContext()
     : m_i18n(I18N_ENGLISH)
     , m_otaUpdateStatus(false)
 {
-    m_displayMsgQ = xQueueCreate(3, sizeof(AppDisplayMsg));
-    m_timeDataQ = xQueueCreate(1, sizeof(DateTime));
+    m_displayMsgQ = xQueueCreate(APP_DISPLAY_MSG_QUEUE_SIZE, sizeof(AppDisplayMsg));
+    m_timeDataQ = xQueueCreate(APP_TIME_MSG_QUEUE_SIZE, sizeof(DateTime));
 }
 
 //------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ AppContext& AppContext::instance()
 }
 
 //------------------------------------------------------------------------------
-bool AppContext::putDisplayMsg(const char *msg, size_t msgLen)
+bool AppContext::putDisplayMsg(const char *msg, size_t msgLen, uint8_t msgRepeatNum)
 {
     rtos::LockGuard<rtos::Mutex> lock(m_displayMsgMtx);
     bool ret = false;
@@ -30,28 +30,36 @@ bool AppContext::putDisplayMsg(const char *msg, size_t msgLen)
         utils::err("%s m_displayMsgQ has not been created!.", MODULE_NAME);
         return ret;
     }
+
     if (msgLen > APP_DISPLAY_MSG_BUF_SIZE)
     {
         msgLen = APP_DISPLAY_MSG_BUF_SIZE;
     }
 
-    const size_t msgDataSize = msgLen + 1;
-    char *msgData = (char*)malloc(msgDataSize);
-    if (msgData)
+    // Add +1 for use in for loop
+    msgRepeatNum++;
+
+    for (size_t i = 0; i < msgRepeatNum && i < APP_DISPLAY_MSG_QUEUE_SIZE; i++)
     {
-        memset(msgData, 0, msgDataSize);
-        memcpy(msgData, msg, msgDataSize);
-        AppDisplayMsg dispMsg = { msgData, msgDataSize };
-        ret = xQueueSendToBack(m_displayMsgQ, &dispMsg, 0) == pdPASS;
-        if (!ret)
+        const size_t msgDataSize = msgLen + 1;
+        char *msgData = (char*)malloc(msgDataSize);
+        if (msgData)
         {
-            utils::err("%s dispMsg queue is full!, available space %d.", MODULE_NAME, uxQueueSpacesAvailable(m_displayMsgQ));
-            free((void*)msgData);
-        }
-        else
-        {
-            ret = true;
-            utils::err("%s dispMsg: %s sent succesfully!", MODULE_NAME, msgData);
+            memset(msgData, 0, msgDataSize);
+            memcpy(msgData, msg, msgDataSize);
+            AppDisplayMsg dispMsg = { msgData, msgDataSize };
+            ret = xQueueSendToBack(m_displayMsgQ, &dispMsg, 0) == pdPASS;
+            if (!ret)
+            {
+                utils::err("%s dispMsg queue is full!, available space %d.", MODULE_NAME, uxQueueSpacesAvailable(m_displayMsgQ));
+                free((void*)msgData);
+                break;
+            }
+            else
+            {
+                ret = true;
+                utils::inf("%s dispMsg: %s sent succesfully!", MODULE_NAME, msgData);
+            }
         }
     }
 

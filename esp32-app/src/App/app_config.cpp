@@ -168,7 +168,7 @@ void AppConfig::setDefaults()
     defaultSettings =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000001,
+        .version = 0x00000002,
     };
 
     // WIFI
@@ -196,7 +196,7 @@ void AppConfig::setDefaults()
     defaultSettings.weather = weatherCfg;
 
     // RADIO_SENSOR
-    RadioSensorSettings radioSensorCfg = {60, 3000};
+    RadioSensorSettings radioSensorCfg = {60, 3000, 1, 5};
     defaultSettings.radioSensor = radioSensorCfg;
 
     // DISPLAY

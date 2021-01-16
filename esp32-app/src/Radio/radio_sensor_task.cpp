@@ -46,11 +46,16 @@ const QueueHandle_t& RadioSensorTask::getRadioSensorQ()
 //------------------------------------------------------------------------------
 void RadioSensorTask::run()
 {
-    const TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
+
+    uint32_t sendLastMsgCounterSecs = 0;
+    uint32_t sendLastMsgNumCounter = 0;
+    bool firstValidMsgReceived = false;
+    const uint32_t sleepTimeSecs = 10;
+    const TickType_t sleepTime = ((sleepTimeSecs * 1000)/ portTICK_PERIOD_MS);
     radio_msg_queue_data msg;
     for(;;)
     {
-        const BaseType_t rc = xQueueReceive(Radio::msgSensorDataQ, &msg, portMAX_DELAY);
+        const BaseType_t rc = xQueueReceive(Radio::msgSensorDataQ, &msg, 0);
         if (rc == pdTRUE)
         {
             utils::dbg(">>>radio_msg_queue_data received:");
@@ -72,15 +77,37 @@ void RadioSensorTask::run()
                     .pressure = msg.frame.pressure,
                     .humidity = msg.frame.humidity,
                 };
+
+                // Send a radio message to the display
                 pushRadioSensorMsg(data);
+
+                firstValidMsgReceived = true;
+                // Store last message
+                m_lastRadioMsg = data;
+
+                // Clear send last message counters
+                sendLastMsgNumCounter = 0;
+                sendLastMsgCounterSecs = 0;
             }
             {
                 rtos::LockGuard<rtos::Mutex> lock(m_radioHealthStateTask.mtx);
                 m_radioHealthStateTask.lastRadioMsgReceivedTimeMs = millis();
             }
-
         }
+
+        // Sleep for some time
         vTaskDelay(sleepTime);
+
+        if (firstValidMsgReceived && sendLastMsgNumCounter < 10)
+        {
+            sendLastMsgCounterSecs += sleepTimeSecs;
+            if ((sendLastMsgCounterSecs / 60) >= m_radioSensorCfg.last_msg_disp_every_minutes)
+            {
+                pushRadioSensorMsg(m_lastRadioMsg);
+                sendLastMsgNumCounter++;
+                sendLastMsgCounterSecs = 0;
+            }
+        }
     }
 }
 
@@ -103,7 +130,7 @@ bool RadioSensorTask::pushRadioSensorMsg(const RadioSensorData& data)
                 tr(M_SENSOR_HUMID) + col + String(uint8_t(data.humidity)) + tr(M_COMMON_PERCENT));// + com + spc + \
                 //tr(M_SENSOR_VBATT) + col + String(float(data.vbatt/1000.f)) + tr(M_COMMON_VOLTAGE));
 
-    return AppCtx.putDisplayMsg(msg.c_str(), msg.length());
+    return AppCtx.putDisplayMsg(msg.c_str(), msg.length(), m_radioSensorCfg.msg_disp_repeat_num);
 }
 
 //------------------------------------------------------------------------------
