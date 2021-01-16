@@ -46,13 +46,15 @@ const QueueHandle_t& RadioSensorTask::getRadioSensorQ()
 //------------------------------------------------------------------------------
 void RadioSensorTask::run()
 {
+    const uint32_t k_sendLastMsgNumber = 10;
+    const uint32_t k_sleepTimeSecs = 10;
+    const TickType_t k_sleepTime = ((k_sleepTimeSecs * 1000)/ portTICK_PERIOD_MS);
 
     uint32_t sendLastMsgCounterSecs = 0;
     uint32_t sendLastMsgNumCounter = 0;
     bool firstValidMsgReceived = false;
-    const uint32_t sleepTimeSecs = 10;
-    const TickType_t sleepTime = ((sleepTimeSecs * 1000)/ portTICK_PERIOD_MS);
     radio_msg_queue_data msg;
+
     for(;;)
     {
         const BaseType_t rc = xQueueReceive(Radio::msgSensorDataQ, &msg, 0);
@@ -96,16 +98,20 @@ void RadioSensorTask::run()
         }
 
         // Sleep for some time
-        vTaskDelay(sleepTime);
+        vTaskDelay(k_sleepTime);
 
-        if (firstValidMsgReceived && sendLastMsgNumCounter < 10)
+        // Display last message
+        if (m_radioSensorCfg.last_msg_disp_every_minutes != 0)
         {
-            sendLastMsgCounterSecs += sleepTimeSecs;
-            if ((sendLastMsgCounterSecs / 60) >= m_radioSensorCfg.last_msg_disp_every_minutes)
+            if (firstValidMsgReceived && (sendLastMsgNumCounter < k_sendLastMsgNumber))
             {
-                pushRadioSensorMsg(m_lastRadioMsg);
-                sendLastMsgNumCounter++;
-                sendLastMsgCounterSecs = 0;
+                sendLastMsgCounterSecs += k_sleepTimeSecs;
+                if ((sendLastMsgCounterSecs / 60) >= m_radioSensorCfg.last_msg_disp_every_minutes)
+                {
+                    pushRadioSensorMsg(m_lastRadioMsg);
+                    sendLastMsgNumCounter++;
+                    sendLastMsgCounterSecs = 0;
+                }
             }
         }
     }

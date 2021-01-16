@@ -196,7 +196,7 @@ void AppConfig::setDefaults()
     defaultSettings.weather = weatherCfg;
 
     // RADIO_SENSOR
-    RadioSensorSettings radioSensorCfg = {60, 3000, 1, 5};
+    RadioSensorSettings radioSensorCfg = {1800, 3000, 1, 5};
     defaultSettings.radioSensor = radioSensorCfg;
 
     // DISPLAY
