@@ -72,4 +72,6 @@ uint8_t radio_was_data_received();
 
 void radio_data_received_clear();
 
+const radio_msg_clock_frame* radio_get_last_clock_response();
+
 #endif /* RADIO_H_ */

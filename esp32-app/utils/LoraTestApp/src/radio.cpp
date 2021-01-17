@@ -30,6 +30,8 @@ static SPIClass spi;
 
 static volatile uint8_t radio_data_received = false;
 
+static radio_msg_clock_frame last_clock_response;
+
 //-----------------------------------------------------------------------------
 void radio_init()
 {
@@ -56,6 +58,10 @@ void radio_init()
 	lora_on_receive(&dev, on_rx_done);
 	// Switch sleep idle mode
 	lora_sleep(&dev);
+
+
+    // Not used in production
+    last_clock_response.update_data_interval = 60; //s
 }
 
 //-----------------------------------------------------------------------------
@@ -193,9 +199,18 @@ static void parse_incoming_msg_clock(uint8_t *payload, uint16_t size)
         return;
     }
 
-    if (~(mf->status & MSG_NO_ERROR))
+    if ((mf->status & MSG_NO_ERROR))
     {
         Serial.printf("R_MRECV: update_data_interval:%d,  crit_vbatt_level:%3.2f", mf->update_data_interval, mf->crit_vbatt_level);
+        memcpy(&last_clock_response, mf, sizeof(last_clock_response));
     }
 }
 
+//------------------------------------------------------------------------------
+const radio_msg_clock_frame* radio_get_last_clock_response()
+{
+    return &last_clock_response;
+}
+
+
+//------------------------------------------------------------------------------

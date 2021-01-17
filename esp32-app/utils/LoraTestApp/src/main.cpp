@@ -11,7 +11,14 @@ void setup()
     Serial.begin(9600);                   // initialize serial
     while (!Serial);
 
-    Serial.println("Welcome to test LORA Radio app");
+    int delayTime = 30;
+    while(delayTime--)
+    {
+        delay(100);
+        Serial.printf(".");
+    }
+    Serial.println("\nWelcome to test LORA Radio app");
+
 
     // Enable radio
     radio_init();
@@ -21,13 +28,12 @@ void setup()
 //-----------------------------------------------------------------------------
 void loop()
 {
-    const int sleep_minutes = 5;
     static int msgCount = 0;
     sendSensorMsg();
     Serial.printf("Sending msgCount:%d\r\n", msgCount++);
-    for (int i = 0; i < sleep_minutes; i++)
+    for (int i = 0; i < radio_get_last_clock_response()->update_data_interval; i++)
     {
-        delay(60000);
+        delay(1000);
     }
 
 }
