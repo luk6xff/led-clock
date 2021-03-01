@@ -12,10 +12,10 @@ TODO
 ## Building and flashing
 ```sh
 # Build an application
-pio run
+pio run  --environment esp32dev
 
 # Upload the application binary
-pio run --target upload
+pio run --target upload  --environment esp32dev
 
 # Build filesystem
 pio run --target buildfs --environment esp32dev
@@ -25,7 +25,12 @@ pio run --target uploadfs --environment esp32dev
 
 
 # All in one-liner
-pio run  &&  pio run --target upload  &&  pio run --target buildfs --environment esp32dev  &&  pio run --target uploadfs --environment esp32dev
+pio run --environment esp32dev  &&  pio run --target upload --environment esp32dev  &&  pio run --target buildfs --environment esp32dev  &&  pio run --target uploadfs --environment esp32dev
+```
+
+## Running unit tests
+```
+pio test --environment native
 ```
 
 ## Debug monitor
