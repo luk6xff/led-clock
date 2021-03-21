@@ -20,6 +20,7 @@ App::App()
     , m_ntpTask(nullptr)
     , m_weatherTask(nullptr)
     , m_radioSensorTask(nullptr)
+    , m_intEnvDataTask(nullptr)
 {
 
 }
@@ -61,9 +62,10 @@ void App::createTasks()
     m_wifiTask = std::unique_ptr<WifiTask>(new WifiTask(AppCfg.getCurrent().wifi));
     m_ntpTask = std::unique_ptr<NtpTask>(new NtpTask(AppCfg.getCurrent().time.ntp,
                                             m_wifiTask->getWifiEvtHandle()));
+    m_intEnvDataTask = std::unique_ptr<IntEnvDataTask>(new IntEnvDataTask(AppCfg.getCurrent().intEnv));
     m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(AppCfg.getCurrent().time,
                                                 m_ntpTask->getNtpTimeQ(),
-                                                AppCtx.getTimeQHandle()));
+                                                m_intEnvDataTask->getComm()));
     m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask(AppCfg.getCurrent().display, m_clockTask->getTimeQ()));
     m_weatherTask = std::unique_ptr<WeatherTask>(new WeatherTask(AppCfg.getCurrent().weather));
     m_radioSensorTask = std::unique_ptr<RadioSensorTask>(new RadioSensorTask(AppCfg.getCurrent().radioSensor));
@@ -72,7 +74,7 @@ void App::createTasks()
 //------------------------------------------------------------------------------
 void App::runTasks()
 {
-    //Run all the tasks if created
+    // Run all the tasks if created
     if (m_wifiTask)
     {
         m_wifiTask->start();
@@ -101,6 +103,11 @@ void App::runTasks()
     if (m_radioSensorTask)
     {
         m_radioSensorTask->start();
+    }
+
+    if (m_intEnvDataTask)
+    {
+        m_intEnvDataTask->start();
     }
 }
 

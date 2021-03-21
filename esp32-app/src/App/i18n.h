@@ -51,8 +51,9 @@ typedef enum
     M_WEATHER_TODAY,
     M_WEATHER_TOMM,
     M_WEATHER_NOW,
-    // Sensor
-    M_SENSOR_NAME,
+    // External/Internal environment data sensor
+    M_EXT_ENV_SENSOR_NAME,
+    M_INT_ENV_SENSOR_NAME,
     M_SENSOR_TEMP,
     M_SENSOR_PRESS,
     M_SENSOR_HUMID,

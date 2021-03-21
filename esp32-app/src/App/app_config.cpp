@@ -107,6 +107,14 @@ bool AppConfig::saveRadioSensorSettings(const RadioSensorSettings& cfg)
 }
 
 //------------------------------------------------------------------------------
+bool AppConfig::saveIntEnvDataSettings(const InternalEnvDataSettings& cfg)
+{
+    Settings newSettings = getCurrent();
+    newSettings.intEnv = cfg;
+    return saveSettings(newSettings);
+}
+
+//------------------------------------------------------------------------------
 bool AppConfig::saveDisplaySettings(const DisplaySettings& cfg)
 {
     Settings newSettings = getCurrent();
@@ -168,7 +176,7 @@ void AppConfig::setDefaults()
     defaultSettings =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000002,
+        .version = 0x00000003,
     };
 
     // WIFI
@@ -199,6 +207,10 @@ void AppConfig::setDefaults()
     RadioSensorSettings radioSensorCfg = {1800, 3000, 1, 5};
     defaultSettings.radioSensor = radioSensorCfg;
 
+    // INTERNAL ENVIRONMENT DATA
+    InternalEnvDataSettings intEnvCfg = {60, 1};
+    defaultSettings.intEnv = intEnvCfg;
+
     // DISPLAY
     DisplaySettings displayCfg = {true, 0, 70, 1};
     defaultSettings.display = displayCfg;
@@ -220,6 +232,7 @@ void AppConfig::printCurrentSettings()
     utils::inf(getCurrent().time.toStr().c_str());
     utils::inf(getCurrent().weather.toStr().c_str());
     utils::inf(getCurrent().radioSensor.toStr().c_str());
+    utils::inf(getCurrent().intEnv.toStr().c_str());
     utils::inf(getCurrent().display.toStr().c_str());
     utils::inf(getCurrent().other.toStr().c_str());
     utils::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");

@@ -1,6 +1,6 @@
 #include "ntp_task.h"
 #include "system_time.h"
-#include "App/rtos_common.h"
+#include "App/rtos_utils.h"
 #include "Wifi/wifi_task.h"
 #include "App/utils.h"
 

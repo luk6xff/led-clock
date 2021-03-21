@@ -61,8 +61,3 @@ private:
  * @brief Mutex to prevent mutual access to I2C peripheral
  */
 extern rtos::Mutex g_i2c0Mutex;
-
-/**
- * @brief Mutex to prevent mutual access to I2C peripheral
- */
-//extern rtos::Mutex g_dispQueue;

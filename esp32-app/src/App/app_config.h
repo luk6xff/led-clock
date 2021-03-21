@@ -10,9 +10,10 @@
 #include "Wifi/wifi_settings.h"
 #include "Clock/system_time_settings.h"
 #include "Weather/weather_settings.h"
-#include "Radio/radio_settings.h"
+#include "Radio_ExtEnvData/radio_settings.h"
+#include "IntEnvData/int_env_data_settings.h"
 #include "Display/display_settings.h"
-#include "rtos_common.h"
+#include "rtos_utils.h"
 #include "app_settings.h"
 #include "app_vars.h"
 
@@ -36,6 +37,7 @@ public:
         SystemTimeSettings time;
         WeatherSettings weather;
         RadioSensorSettings radioSensor;
+        InternalEnvDataSettings intEnv;
         DisplaySettings display;
         AppSettings other;
     } Settings;
@@ -54,6 +56,7 @@ public:
     bool saveSystemTimeSettings(const SystemTimeSettings& cfg);
     bool saveWeatherSettings(const WeatherSettings& cfg);
     bool saveRadioSensorSettings(const RadioSensorSettings& cfg);
+    bool saveIntEnvDataSettings(const InternalEnvDataSettings& cfg);
     bool saveDisplaySettings(const DisplaySettings& cfg);
     bool saveAppSettings(const AppSettings& cfg);
 

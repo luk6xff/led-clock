@@ -8,17 +8,17 @@
 //------------------------------------------------------------------------------
 void config_man_config_parameter(void)
 {
-    uint32_t enable;
-    uint32_t updateInterval; // [s] in seconds    C
-    ConfigParameter<uint32_t> enable("test_key", 10);
-    ConfigParameter<uint32_t> updateInterval("test_key", &updateInterval);
-
+    // Create parameters
+    ConfigParameter<uint32_t> enable("enable_key", 10);
+    ConfigParameter<uint32_t> updateInterval("updateInterval_key", 30);
+    // Create parameters group
     ConfigParameterGroup cpg("dev-cfg-weather");
-
-    cpg.addParameter(enable);
+    // Add new parameter
+    cpg.addParameter(&enable);
+    cpg.createParameter("city_key", 12);
 
     printf("\n\n");
-    TEST_ASSERT_EQUAL(1, 0);
+    TEST_ASSERT_EQUAL(1, 1);
 }
 
 

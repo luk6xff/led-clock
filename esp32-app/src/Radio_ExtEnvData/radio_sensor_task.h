@@ -1,7 +1,7 @@
 #pragma once
 
 #include "App/task.h"
-#include "App/rtos_common.h"
+#include "App/rtos_utils.h"
 #include "radio.h"
 
 struct RadioSensorData

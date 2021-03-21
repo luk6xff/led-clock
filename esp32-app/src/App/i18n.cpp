@@ -45,8 +45,9 @@ const i18n_map I18N::k_i18n =
     { "Today", "Dziś" },                    // M_WEATHER_TODAY
     { "Tommorow", "Jutro" },                // M_WEATHER_TOMM
     { "Now", "Teraz" },                     // M_WEATHER_NOW
-    // Sensor
-    { "Sensor", "PomiarZewn" },             // M_SENSOR_NAME
+    // External/Internal environment data sensor
+    { "ExternalSensor", "PomiarZewn" },     // M_EXT_ENV_SENSOR_NAME
+    { "InternalSensor", "PomiarWewn" },     // M_INT_ENV_SENSOR_NAME
     { "Temp", "Temp" },                     // M_SENSOR_TEMP
     { "Pressure", "Ciśn" },                 // M_SENSOR_PRESS
     { "Humidity", "Wilg" },                 // M_SENSOR_HUMID

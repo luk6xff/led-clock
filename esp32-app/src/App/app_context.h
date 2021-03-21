@@ -8,7 +8,7 @@
  * @date   2020-11-18
  */
 
-#include "rtos_common.h"
+#include "rtos_utils.h"
 #include "Clock/system_time.h" // For DateTime structure
 #include "i18n.h"
 
@@ -46,7 +46,7 @@ public:
     const DateTime& getAppDt();
 
     void setAppLang(i18n_lang lang);
-    const char * getAppTranslated(i18n_msg_id id);
+    const char *getAppTranslated(i18n_msg_id id);
 
     void setAppOtaUpdateStatus(bool status);
     bool getAppOtaUpdateStatus() const;

@@ -130,7 +130,7 @@ bool RadioSensorTask::pushRadioSensorMsg(const RadioSensorData& data)
     String col(":");
     String spc(" ");
     String com(",");
-    String msg(tr(M_SENSOR_NAME) + col + spc + \
+    String msg(tr(M_EXT_ENV_SENSOR_NAME) + col + spc + \
                 tr(M_SENSOR_TEMP) + col + String(data.temperature, 1) + tr(M_COMMON_DEG_CELS) + com + spc + \
                 tr(M_SENSOR_PRESS) + col + String(uint32_t(data.pressure/100)) + tr(M_COMMON_PRESSURE_HPA) + com + spc + \
                 tr(M_SENSOR_HUMID) + col + String(uint8_t(data.humidity)) + tr(M_COMMON_PERCENT));// + com + spc + \

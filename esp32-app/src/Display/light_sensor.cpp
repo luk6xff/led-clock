@@ -1,6 +1,6 @@
 #include "light_sensor.h"
 #include "hw_config.h"
-#include "App/rtos_common.h"
+#include "App/rtos_utils.h"
 
 //-----------------------------------------------------------------------------
 LightSensor::LightSensor()

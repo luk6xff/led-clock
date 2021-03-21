@@ -1,6 +1,6 @@
 #include "system_time.h"
 #include "hw_config.h"
-#include "App/rtos_common.h"
+#include "App/rtos_utils.h"
 #include "App/utils.h"
 #include "App/app_context.h"
 

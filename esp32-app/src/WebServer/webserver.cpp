@@ -10,7 +10,7 @@
 #include <SPIFFS.h>
 #include <Update.h>
 #include <ESPmDNS.h>
-#include "App/rtos_common.h"
+#include "App/rtos_utils.h"
 #include "Wifi/wifi_task.h"
 #include "App/utils.h"
 #include "App/devinfo.h"
