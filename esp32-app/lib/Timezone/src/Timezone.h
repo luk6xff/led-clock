@@ -9,9 +9,11 @@
 #ifndef TIMEZONE_H_INCLUDED
 #define TIMEZONE_H_INCLUDED
 #if ARDUINO >= 100
-#include <Arduino.h>
+    #include <Arduino.h>
 #else
-#include <WProgram.h>
+#ifndef PLATFORM_NATIVE
+    #include <WProgram.h>
+#endif
 #endif
 #include "Time.h"    // https://github.com/PaulStoffregen/Time
 
@@ -31,11 +33,14 @@ struct TimeChangeRule
     uint8_t hour;      // 0-23
     int offset;        // offset from UTC in minutes
 
+#ifndef PLATFORM_NATIVE
     String toStr()
     {
         return String("abbrev:" + String(abbrev) + " week:" + String(week) + " dow:" + String(dow) + \
                       " month:" + String(month) + " hour:" + String(hour) + " offset:" + String(offset));
-    }
+    }        
+#endif
+
 };
 
 class Timezone

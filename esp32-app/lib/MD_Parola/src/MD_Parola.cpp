@@ -66,7 +66,7 @@ void MD_Parola::begin(uint8_t numZones)
   setTextEffect(PA_PRINT, PA_NO_EFFECT);
   setTextBuffer(nullptr);
   setInvert(false);
-  setIntensity(MAX_INTENSITY / 2);
+  //setIntensity(MAX_INTENSITY / 2); //LU_TODO panic here
 
   // Now set the default viewing parameters for this library
   _D.setFont(nullptr);

@@ -123,6 +123,7 @@ void MD_PZone::effectHScroll(bool bLeft, bool bIn)
 
       // check if enough scrolled off to say that new message should start
       // how we count depends on the direction for scrolling
+#if 0 // LU_FIX Stop filling empty bar while moving back
       {
         uint16_t  spaceCount = 0;
         uint16_t  maxCount = (_zoneEnd - _zoneStart + 1) * COL_SIZE;
@@ -144,6 +145,9 @@ void MD_PZone::effectHScroll(bool bLeft, bool bIn)
 
         if (maxCount <= spaceCount) _fsmState = END;  // enough of a space between messages, end this FSM
       }
+#else
+      _fsmState = END;
+#endif
       break;
 
     default:

@@ -48,6 +48,7 @@ void IntEnvDataTask::run()
         const BaseType_t rc = xQueueReceive(m_intEnvDataComm.intEnvQ, &msg, k_waitForDataSecs);
         if (rc == pdTRUE)
         {
+            utils::err("%s IntEnvData received: temperature: %3.2f", MODULE_NAME, msg.temperature);
             pushIntEnvDataMsg(msg);
         }
 

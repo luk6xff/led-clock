@@ -68,6 +68,14 @@ MD_Parola* Display::getDispObject()
 void Display::enableAutoIntensityLevelControl(bool enable)
 {
     m_autoIntensityLevelStatus = enable;
+    if (enable)
+    {
+        m_lightSensor.init();
+    }
+    else
+    {
+       m_lightSensor.deinit(); 
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -79,18 +87,15 @@ bool Display::isAutoIntensityEnabled()
 //------------------------------------------------------------------------------
 void Display::processAutoIntensityLevelControl()
 {
-    if (!m_autoIntensityLevelStatus)
+    if (!isAutoIntensityEnabled())
     {
         return;
     }
 
     // Measure light
-#if LIGHT_SENSOR_ENABLED
     const float lightVal = m_lightSensor.getIlluminance();
     utils::dbg("LightSensor - Illuminance value: %f", lightVal);
-#else
-    const float lightVal = 0;
-#endif
+
     if (lightVal == -1)
     {
         utils::err("LightSensor - Illuminance value error!");

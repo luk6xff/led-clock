@@ -7,6 +7,8 @@ class LightSensor
 
 public:
     LightSensor();
+    void init();
+    void deinit();
     float getIlluminance();
 
 private:

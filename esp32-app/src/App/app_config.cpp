@@ -176,7 +176,7 @@ void AppConfig::setDefaults()
     defaultSettings =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000003,
+        .version = 0x00000004,
     };
 
     // WIFI
@@ -208,7 +208,7 @@ void AppConfig::setDefaults()
     defaultSettings.radioSensor = radioSensorCfg;
 
     // INTERNAL ENVIRONMENT DATA
-    InternalEnvDataSettings intEnvCfg = {60, 1};
+    InternalEnvDataSettings intEnvCfg = {600, 1};
     defaultSettings.intEnv = intEnvCfg;
 
     // DISPLAY

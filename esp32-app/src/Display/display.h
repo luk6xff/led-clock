@@ -128,12 +128,8 @@ private:
      */
     uint32_t m_dispPause;
 
-
-#if LIGHT_SENSOR_ENABLED
     /**
      * @brief Light sensor object
      */
     LightSensor m_lightSensor;
-#endif
-
 };
