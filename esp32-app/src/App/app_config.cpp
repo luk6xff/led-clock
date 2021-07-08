@@ -176,7 +176,7 @@ void AppConfig::setDefaults()
     defaultSettings =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000004,
+        .version = 0x00000005,
     };
 
     // WIFI
@@ -212,7 +212,7 @@ void AppConfig::setDefaults()
     defaultSettings.intEnv = intEnvCfg;
 
     // DISPLAY
-    DisplaySettings displayCfg = {true, 0, 70, 1};
+    DisplaySettings displayCfg = {false, 0, 60, 1};
     defaultSettings.display = displayCfg;
 
     // OTHER
