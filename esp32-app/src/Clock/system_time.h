@@ -32,6 +32,7 @@ private:
     RTC_DS3231 m_rtc;
     SystemTimeSettings &m_timeSettings;
     Timezone m_timezone;
+    bool stdTimeChangeOccured;
 };
 
 

@@ -65,11 +65,9 @@ float SystemTime::getTemperature()
 // bool SystemTime::checkTimezoneChange(const DateTime& dt)
 // {
 //     const time_t time = dt.unixtime();
-//     if (m_timezone.locIsDST(time) && !m_timeSettings.wasDstSet)
+//     if (!m_timezone.locIsDST(time) && !stdTimeChangeOccured)
 //     {
-//         m_timeSettings.wasStdSet = false;
-//         m_timeSettings.wasDstSet = true;
-
+//         stdTimeChangeOccured = true;
 //     }
 // }
 
