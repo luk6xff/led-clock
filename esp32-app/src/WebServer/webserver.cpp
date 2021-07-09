@@ -277,6 +277,15 @@ void WebServer::setCfgSaveHandlers()
             }
         },
 
+        {INTENV_CFG_KEY, [this](const JsonObject& json)
+            {
+                InternalEnvDataSettings cfg = AppCfg.getCurrent().intEnv;
+                cfg.fromJson(json);
+                utils::inf("%s", cfg.toJson().c_str());
+                return AppCfg.saveIntEnvDataSettings(cfg);
+            }
+        },
+
         {RADIO_CFG_KEY, [this](const JsonObject& json)
             {
                 RadioSensorSettings cfg = AppCfg.getCurrent().radioSensor;
@@ -328,6 +337,12 @@ void WebServer::setCfgReadHandlers()
         {WEATHER_CFG_KEY, [this]()
             {
                 return AppCfg.getCurrent().weather.toJson();
+            }
+        },
+
+        {INTENV_CFG_KEY, [this]()
+            {
+                return AppCfg.getCurrent().intEnv.toJson();
             }
         },
 

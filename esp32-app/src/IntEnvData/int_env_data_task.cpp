@@ -36,24 +36,33 @@ const IntEnvDataComm& IntEnvDataTask::getComm()
 //------------------------------------------------------------------------------
 void IntEnvDataTask::run()
 {
-    const uint32_t k_sleepTimeSecs = m_intEnvCfg.update_data_interval;
-    const TickType_t k_sleepTime = ((k_sleepTimeSecs * 1000) / portTICK_PERIOD_MS);
     const TickType_t k_waitForDataSecs = ((10 * 1000) / portTICK_PERIOD_MS);
-
     InternalEnvData msg;
+
     for(;;)
     {
-        // Set event group
-        xEventGroupSetBits(m_intEnvDataComm.intEvtH, IntEnvDataEvent::INTERNAL_ENV_DATA_REQ);
-        const BaseType_t rc = xQueueReceive(m_intEnvDataComm.intEnvQ, &msg, k_waitForDataSecs);
-        if (rc == pdTRUE)
+        if (m_intEnvCfg.update_data_interval == 0) // If internal env data sensor disabled
         {
-            utils::err("%s IntEnvData received: temperature: %3.2f", MODULE_NAME, msg.temperature);
-            pushIntEnvDataMsg(msg);
+            utils::inf("%s IntEnvData task not active! update_data_interval=0", MODULE_NAME);
+            // Sleep longer
+            vTaskDelay(k_waitForDataSecs);
         }
+        else
+        {
+            // Set event group
+            xEventGroupSetBits(m_intEnvDataComm.intEvtH, IntEnvDataEvent::INTERNAL_ENV_DATA_REQ);
+            const BaseType_t rc = xQueueReceive(m_intEnvDataComm.intEnvQ, &msg, k_waitForDataSecs);
+            if (rc == pdTRUE)
+            {
+                utils::err("%s IntEnvData received: temperature: %3.2f", MODULE_NAME, msg.temperature);
+                pushIntEnvDataMsg(msg);
+            }
 
-        // Sleep for some time
-        vTaskDelay(k_sleepTime);
+            // Sleep for some time
+            const uint32_t k_sleepTimeSecs = m_intEnvCfg.update_data_interval;
+            const TickType_t k_sleepTime = ((k_sleepTimeSecs * 1000) / portTICK_PERIOD_MS);
+            vTaskDelay(k_sleepTime);
+        }
     }
 }
 

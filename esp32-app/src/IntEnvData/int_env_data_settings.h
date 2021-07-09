@@ -36,9 +36,9 @@ struct InternalEnvDataSettings
             if (v[INTENV_CFG_VAL_UPDATE_INTERVAL])
             {
                 update_data_interval = v[INTENV_CFG_VAL_UPDATE_INTERVAL].as<uint32_t>();
-                if (update_data_interval == 0)
+                if (update_data_interval > 3600)
                 {
-                    update_data_interval = 1;
+                    update_data_interval = 3600;
                 }
                 // Convert from minutes on server to seconds
                 update_data_interval = update_data_interval * 60;
