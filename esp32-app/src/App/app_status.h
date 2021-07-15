@@ -15,7 +15,7 @@ typedef enum
     RADIO_ERROR             = 1<<1,
     RTC_ERROR               = 1<<2,
     DISP_ERROR              = 1<<3,
-    NO_FRAME_FROM_RADIO     = 1<<4,
+    EXT_DATA_SENSOR_ERROR   = 1<<4,
     OTA_UPDATE_RUNNING      = 1<<5,
 } AppStatusType;
 

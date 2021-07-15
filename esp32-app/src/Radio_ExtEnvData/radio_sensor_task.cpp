@@ -57,6 +57,13 @@ void RadioSensorTask::run()
 
     for(;;)
     {
+        // Disable if OTA Update
+        if (AppCtx.appStatus() & AppStatusType::OTA_UPDATE_RUNNING)
+        {
+            vTaskDelay(k_sleepTime);
+            continue;
+        }
+
         const BaseType_t rc = xQueueReceive(Radio::msgSensorDataQ, &msg, 0);
         if (rc == pdTRUE)
         {
@@ -90,6 +97,9 @@ void RadioSensorTask::run()
                 // Clear send last message counters
                 sendLastMsgNumCounter = 0;
                 sendLastMsgCounterSecs = 0;
+
+                // Update status
+                AppCtx.clearAppStatus(AppStatusType::EXT_DATA_SENSOR_ERROR);
             }
             {
                 rtos::LockGuard<rtos::Mutex> lock(m_radioHealthStateTask.mtx);
@@ -152,6 +162,8 @@ void RadioSensorTask::healtStateCheckCb(void *arg)
             {
                 // No Frame received for too long, restart radio
                 utils::dbg("%s No Radio frame msg received for too long:[%d] seconds, restarting radio...", MODULE_NAME, rhst->resetTimeoutSecs);
+                // Update status
+                AppCtx.setAppStatus(AppStatusType::EXT_DATA_SENSOR_ERROR);
                 rhst->radioHandle->restart();
                 rhst->lastRadioMsgReceivedTimeMs = millis();
             }

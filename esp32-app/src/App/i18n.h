@@ -59,6 +59,12 @@ typedef enum
     M_SENSOR_HUMID,
     M_SENSOR_VBATT,
     // App Status
+    M_ERROR,
+    M_RADIO_ERROR,
+    M_RTC_ERROR,
+    M_DISP_ERROR,
+    M_EXT_DATA_SENSOR_ERROR,
+    M_OTA_UPDATE_RUNNING,
 
     // Last msg_id keep it always here
     M_MSGID_LAST

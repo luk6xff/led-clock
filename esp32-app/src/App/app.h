@@ -6,6 +6,7 @@
  * @date   2020-10-15
  */
 #include "esp_system.h"
+#include "App/app_status_task.h"
 #include "Wifi/wifi_task.h"
 #include "Display/display_task.h"
 #include "Clock/clock_task.h"
@@ -32,6 +33,7 @@ private:
     void printMotd();
 
 private:
+    std::unique_ptr<AppStatusTask> m_appStatusTask;
     std::unique_ptr<WifiTask> m_wifiTask;
     std::unique_ptr<DisplayTask> m_dispTask;
     std::unique_ptr<ClockTask> m_clockTask;

@@ -127,14 +127,12 @@ const char* AppContext::getAppTranslated(i18n_msg_id id)
 void AppContext::setAppStatus(AppStatusValue val)
 {
     m_appStatus |= val;
-    utils::inf("%s AppStatus changed: 0x%x", MODULE_NAME, m_appStatus);
 }
 
 //------------------------------------------------------------------------------
 void AppContext::clearAppStatus(AppStatusValue val)
 {
     m_appStatus &= ~(val);
-    utils::inf("%s AppStatus changed: 0x%x", MODULE_NAME, m_appStatus);
 }
 
 //------------------------------------------------------------------------------

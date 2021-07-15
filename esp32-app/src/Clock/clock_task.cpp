@@ -42,9 +42,18 @@ void ClockTask::run()
     DateTime lastDt;
     for(;;)
     {
+
+        // Disable if OTA Update
+        if (AppCtx.appStatus() & AppStatusType::OTA_UPDATE_RUNNING)
+        {
+            vTaskDelay(timeMeasDelay);
+            continue;
+        }
+
         dt = time.getTime();
         if (dt.isValid())
         {
+            AppCtx.clearAppStatus(AppStatusType::RTC_ERROR);
             if (lastDt != dt)
             {
                 if (pushTimeMsg(dt))
@@ -58,6 +67,7 @@ void ClockTask::run()
         }
         else
         {
+            AppCtx.setAppStatus(AppStatusType::RTC_ERROR);
             utils::err("%s Invalid DateTime read from RTC: %s", MODULE_NAME, dt.timestamp().c_str());
         }
 

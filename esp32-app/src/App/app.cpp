@@ -14,7 +14,8 @@
 
 //------------------------------------------------------------------------------
 App::App()
-    : m_wifiTask(nullptr)
+    : m_appStatusTask(nullptr)
+    , m_wifiTask(nullptr)
     , m_dispTask(nullptr)
     , m_clockTask(nullptr)
     , m_ntpTask(nullptr)
@@ -59,6 +60,7 @@ void App::run()
 void App::createTasks()
 {
     // Create all the tasks
+    m_appStatusTask = std::unique_ptr<AppStatusTask>(new AppStatusTask());
     m_wifiTask = std::unique_ptr<WifiTask>(new WifiTask(AppCfg.getCurrent().wifi));
     m_ntpTask = std::unique_ptr<NtpTask>(new NtpTask(AppCfg.getCurrent().time.ntp,
                                             m_wifiTask->getWifiEvtHandle()));
@@ -75,6 +77,11 @@ void App::createTasks()
 void App::runTasks()
 {
     // Run all the tasks if created
+    if (m_appStatusTask)
+    {
+        m_appStatusTask->start();
+    }
+
     if (m_wifiTask)
     {
         m_wifiTask->start();

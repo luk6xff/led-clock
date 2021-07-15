@@ -52,6 +52,13 @@ const i18n_map I18N::k_i18n =
     { "Pressure", "Ciśn" },                 // M_SENSOR_PRESS
     { "Humidity", "Wilg" },                 // M_SENSOR_HUMID
     { "VBatt", "Bat" },                     // M_SENSOR_VBATT
+    // App Status
+    { "Error", "Błąd" },                                                // M_ERROR
+    { "No Radio comm", "Brak komunikacji z radiem" },                   // M_RADIO_ERROR,
+    { "No RTC comm", "Brak komunikacji z RTC" },                        // M_RTC_ERROR,
+    { "Display", "Wyświetlacz" },                                       // M_DISP_ERROR,
+    { "No radio frame", "Brak komunikacji z zewn. sensorem" },          // M_EXT_DATA_SENSOR_ERROR,
+    { "OTA update is ongoing", "Trwa aktualizacja oprogramowania..." }, // M_OTA_UPDATE_RUNNING,
 };
 
 //------------------------------------------------------------------------------

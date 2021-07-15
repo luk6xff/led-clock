@@ -41,6 +41,13 @@ void IntEnvDataTask::run()
 
     for(;;)
     {
+        // Disable if OTA Update
+        if (AppCtx.appStatus() & AppStatusType::OTA_UPDATE_RUNNING)
+        {
+            vTaskDelay(k_waitForDataSecs);
+            continue;
+        }
+
         if (m_intEnvCfg.update_data_interval == 0) // If internal env data sensor disabled
         {
             utils::inf("%s IntEnvData task not active! update_data_interval=0", MODULE_NAME);

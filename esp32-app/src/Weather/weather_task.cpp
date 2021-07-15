@@ -31,7 +31,7 @@ const QueueHandle_t& WeatherTask::getWeatherQ()
 //------------------------------------------------------------------------------
 void WeatherTask::run()
 {
-    const TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
+    const TickType_t k_sleepTime = (1000 / portTICK_PERIOD_MS);
     uint32_t updateIntervalSeconds = m_weatherCfg.updateInterval;
     OpenWeatherMapOneCallData openWeatherMapOneCallData;
     OpenWeatherMapOneCall oneCallClient;
@@ -39,6 +39,14 @@ void WeatherTask::run()
     oneCallClient.setLanguage(String(tr(M_LANG)));
     for(;;)
     {
+
+        // Disable if OTA Update
+        if (AppCtx.appStatus() & AppStatusType::OTA_UPDATE_RUNNING)
+        {
+            vTaskDelay(k_sleepTime);
+            continue;
+        }
+
         if (!m_weatherCfg.enable)
         {
             vTaskDelay((10000 / portTICK_PERIOD_MS));
@@ -47,13 +55,13 @@ void WeatherTask::run()
 
         if (!WiFi.isConnected())
         {
-            vTaskDelay(sleepTime);
+            vTaskDelay(k_sleepTime);
             continue;
         }
 
         if (updateIntervalSeconds++ < m_weatherCfg.updateInterval)
         {
-            vTaskDelay(sleepTime);
+            vTaskDelay(k_sleepTime);
             continue;
         }
 

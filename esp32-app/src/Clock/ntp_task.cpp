@@ -3,6 +3,7 @@
 #include "App/rtos_utils.h"
 #include "Wifi/wifi_task.h"
 #include "App/utils.h"
+#include "App/app_context.h"
 
 //------------------------------------------------------------------------------
 #define NTP_TASK_STACK_SIZE (4096)
@@ -44,6 +45,13 @@ void NtpTask::run()
 
     for(;;)
     {
+        // Disable if OTA Update
+        if (AppCtx.appStatus() & AppStatusType::OTA_UPDATE_RUNNING)
+        {
+            vTaskDelay(sleepTime);
+            continue;
+        }
+
         const EventBits_t wifiEv = xEventGroupWaitBits(
                                     m_wifiEvtHandle,// WIFI Event group
                                     WifiTask::WIFI_CONNECTED |
