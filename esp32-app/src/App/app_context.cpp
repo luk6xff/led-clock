@@ -1,12 +1,13 @@
 #include "app_context.h"
 #include "utils.h"
+#include <type_traits>
 
 #define MODULE_NAME "[ACTX]"
 
 //------------------------------------------------------------------------------
 AppContext::AppContext()
     : m_i18n(I18N_ENGLISH)
-    , m_otaUpdateStatus(false)
+    , m_appStatus(AppStatusType::NO_ERROR)
 {
     m_displayMsgQ = xQueueCreate(APP_DISPLAY_MSG_QUEUE_SIZE, sizeof(AppDisplayMsg));
     m_timeDataQ = xQueueCreate(APP_TIME_MSG_QUEUE_SIZE, sizeof(DateTime));
@@ -123,15 +124,23 @@ const char* AppContext::getAppTranslated(i18n_msg_id id)
 }
 
 //------------------------------------------------------------------------------
-void AppContext::setAppOtaUpdateStatus(bool status)
+void AppContext::setAppStatus(AppStatusValue val)
 {
-    m_otaUpdateStatus = status;
+    m_appStatus |= val;
+    utils::inf("%s AppStatus changed: 0x%x", MODULE_NAME, m_appStatus);
 }
 
 //------------------------------------------------------------------------------
-bool AppContext::getAppOtaUpdateStatus() const
+void AppContext::clearAppStatus(AppStatusValue val)
 {
-    return m_otaUpdateStatus;
+    m_appStatus &= ~(val);
+    utils::inf("%s AppStatus changed: 0x%x", MODULE_NAME, m_appStatus);
+}
+
+//------------------------------------------------------------------------------
+AppStatusValue AppContext::appStatus() const
+{
+    return m_appStatus;
 }
 
 //------------------------------------------------------------------------------

@@ -372,7 +372,7 @@ void WebServer::handleDoOtaUpdate(AsyncWebServerRequest *request, const String& 
 {
     if (!index)
     {
-        AppCtx.setAppOtaUpdateStatus(true);
+        AppCtx.setAppStatus(AppStatusType::OTA_UPDATE_RUNNING);
         utils::inf("OTA Update starting...");
         m_otaFileContentLen = request->contentLength();
         // If filename includes spiffs, update the spiffs partition
@@ -397,12 +397,12 @@ void WebServer::handleDoOtaUpdate(AsyncWebServerRequest *request, const String& 
         if (!Update.end(true))
         {
             Update.printError(Serial);
-            AppCtx.setAppOtaUpdateStatus(false);
+            AppCtx.setAppStatus(AppStatusType::OTA_UPDATE_RUNNING);
         }
         else
         {
             utils::inf("OTA Update completed!");
-            AppCtx.setAppOtaUpdateStatus(false);
+            AppCtx.clearAppStatus(AppStatusType::OTA_UPDATE_RUNNING);
             ESP.restart();
         }
     }

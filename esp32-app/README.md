@@ -8,11 +8,17 @@ TODO
 * Install `vscode` with `platformio` plugin (Versions: vscode[1.49.2], platformio[Core:5.0.1, Home:3.3.0])
 * (Platform Espressif32 version 2.0.0)[https://github.com/platformio/platform-espressif32/releases/tag/v2.0.0]
 
+## PIO tool path
+If `pio` tool not visible globally, add:
+```
+alias pio=~/.platformio/penv/bin/pio
+```
+
 
 ## Building and flashing
 ```sh
 # Build an application
-pio run  --environment esp32dev
+pio run --environment esp32dev
 
 # Upload the application binary
 pio run --target upload  --environment esp32dev

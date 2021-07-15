@@ -54,7 +54,7 @@ void WifiTask::run()
         }
 
         // If OTA update active, do not make any reconnections in both AP and STATION modes
-        if (AppCtx.getAppOtaUpdateStatus())
+        if (AppCtx.appStatus() & AppStatusType::OTA_UPDATE_RUNNING)
         {
             vTaskDelay(10000 / portTICK_PERIOD_MS);
             continue;

@@ -93,6 +93,7 @@ $(document).ready(function() {
 function hideAlerts() {
   $("#success-alert").hide();
   $("#error-alert").hide();
+  $('#upload_status').html('');
 }
 
 function showAlert(alertType, text) {
@@ -418,32 +419,34 @@ function updateAppTime() {
 }
 
 /* OTA TAB */
-
-// $('form').submit(function(e){
-//     e.preventDefault();
-//     var form = $('#upload_form')[0];
-//     var data = new FormData(form);
-//     $.ajax({
-//         url: '/update',
-//         type: 'POST',
-//         data: data,
-//         contentType: false,
-//         processData:false,
-//         xhr: function() {
-//             var xhr = new window.XMLHttpRequest();
-//             xhr.upload.addEventListener('progress', function(evt) {
-//                 if (evt.lengthComputable) {
-//                     var per = evt.loaded / evt.total;
-//                     $('#prg').html('progress: ' + Math.round(per*100) + '%');
-//                 }
-//             }, false);
-//         return xhr;
-//         },
-//         success:function(d, s) {
-//             console.log('OTA success!')
-//         },
-//         error: function (a, b, c) {
-//             console.log('OTA error!')
-//         }
-//     });
-//  });
+$('form').submit(function(e){
+    e.preventDefault();
+    var form = $('#upload_form')[0];
+    var data = new FormData(form);
+    $.ajax({
+        url: '/update',
+        type: 'POST',
+        data: data,
+        contentType: false,
+        processData:false,
+        xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener('progress', function(evt) {
+                $('#upload_status').html('Uploading...');
+                if (evt.lengthComputable) {
+                    var per = evt.loaded / evt.total;
+                    $('#upload_prg').html('progress: ' + Math.round(per*100) + '%');
+                }
+            }, false);
+        return xhr;
+        },
+        success:function(d, s) {
+            console.log('OTA success!')
+            $('#upload_status').html('OTA success! resetting the device...');
+        },
+        error: function (a, b, c) {
+            console.log('OTA error!')
+            $('#upload_status').html('OTA Error, try again!');
+        }
+    });
+ });

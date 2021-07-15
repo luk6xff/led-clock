@@ -212,7 +212,7 @@ void AppConfig::setDefaults()
     defaultSettings.intEnv = intEnvCfg;
 
     // DISPLAY
-    DisplaySettings displayCfg = {false, 0, 60, 1};
+    DisplaySettings displayCfg = {false, 0, 30, 1};
     defaultSettings.display = displayCfg;
 
     // OTHER

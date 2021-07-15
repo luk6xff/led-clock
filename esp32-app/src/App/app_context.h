@@ -11,6 +11,7 @@
 #include "rtos_utils.h"
 #include "Clock/system_time.h" // For DateTime structure
 #include "i18n.h"
+#include "app_status.h"
 
 #define AppCtx      AppContext::instance()
 #define tr(msg_id)  AppCtx.getAppTranslated(msg_id)
@@ -25,6 +26,11 @@ typedef struct
     uint32_t msgLen;
 } AppDisplayMsg;
 
+typedef struct
+{
+    AppStatusValue val;
+    AppDisplayMsg msg;
+} AppStatus;
 
 class AppContext
 {
@@ -48,8 +54,9 @@ public:
     void setAppLang(i18n_lang lang);
     const char *getAppTranslated(i18n_msg_id id);
 
-    void setAppOtaUpdateStatus(bool status);
-    bool getAppOtaUpdateStatus() const;
+    void setAppStatus(AppStatusValue val);
+    void clearAppStatus(AppStatusValue val);
+    AppStatusValue appStatus() const;
 
 private:
 
@@ -64,6 +71,7 @@ private:
 
     // Global time queue
     QueueHandle_t m_timeDataQ;
+
     // Global time data mutex
     rtos::Mutex m_timeDataMtx;
 
@@ -72,6 +80,6 @@ private:
     // App system time mutex
     rtos::Mutex m_appDtMtx;
 
-    // True if device OTA update is ongoing
-    bool m_otaUpdateStatus;
+    // Current app status
+    AppStatusValue m_appStatus;
 };

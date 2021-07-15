@@ -58,6 +58,7 @@ typedef enum
     M_SENSOR_PRESS,
     M_SENSOR_HUMID,
     M_SENSOR_VBATT,
+    // App Status
 
     // Last msg_id keep it always here
     M_MSGID_LAST

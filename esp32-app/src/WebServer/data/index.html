@@ -344,11 +344,20 @@
         <div class="tab-pane fade show" id="tab_devota">
           <h2>Device OTA Update</h2>
           <div class="container light-style flex-grow-1 container-p-y">
-            <div class="card overflow-hidden">
-              <div class="row no-gutters row-bordered row-border-light">
-                <form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>
-                <div id='prg'>progress: 0%</div>
+
+            <div class="form-group">
+              <div class="card overflow-hidden">
+                <div class="row no-gutters row-bordered row-border-light">
+                  <form method='POST' action='/update' enctype='multipart/form-data' id='upload_form'>
+                      <input type='file' name='update' accept=".bin,.bin.gz">
+                  </form>
+                </div>
               </div>
+            </div>
+            <div class="form-group">
+              <input type='submit' value='Start update'>
+              <div id='upload_prg'>progress: 0%</div>
+              <div id='upload_status'></div>
             </div>
           </div>
         </div>
