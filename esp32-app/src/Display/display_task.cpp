@@ -3,6 +3,7 @@
 #include "App/rtos_utils.h"
 #include "App/utils.h"
 #include "App/app_context.h"
+#include <cstring>
 
 //------------------------------------------------------------------------------
 #define DISPLAY_TASK_STACK_SIZE (8192)
@@ -63,6 +64,7 @@ void DisplayTask::run()
     for(;;)
     {
         m_disp.update();
+        // Time queue
         if (m_timeQ)
         {
             const BaseType_t rc = xQueueReceive(m_timeQ, &dt, 0);
@@ -78,16 +80,48 @@ void DisplayTask::run()
                 }
 
                 if (m_disp.printTime(dt, (Display::DateTimePrintMode)m_displayCfg.timeFormat, timeDots))
-                {   
+                {
                     timeMsgUnlockTimer++;
                 }
                 utils::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
             }
         }
 
-        if ((timeMsgUnlockTimer > k_timeMsgUnlockTime) && AppCtx.getDisplayQHandle())
+        // AppDisplay cmd queue
+        AppDisplayCmd cmd;
+        const BaseType_t rc = xQueueReceive(AppCtx.getDisplayCmdQHandle(), &cmd, 0);
+        if (rc == pdPASS)
         {
-            const BaseType_t rc = xQueuePeek(AppCtx.getDisplayQHandle(), &dispMsg, 0);
+            switch (cmd)
+            {
+                utils::dbg("%s APP_DISPLAY_CMD received: 0x%x", MODULE_NAME, cmd);
+                case APP_DISPLAY_CLEAR_CMD:
+                {
+                    m_disp.clear();
+                    // Unlock msg queue immediately
+                    timeMsgUnlockTimer = k_timeMsgUnlockTime + 1;
+                    break;
+                }
+
+                case APP_DISPLAY_RESET_CMD:
+                {
+                    m_disp.reset();
+                    // Unlock msg queue immediately
+                    timeMsgUnlockTimer = k_timeMsgUnlockTime + 1;
+                    break;
+                }
+
+                default:
+                {
+                    break;
+                }
+            }
+        }
+
+        // AppDisplay msg queue
+        if ((timeMsgUnlockTimer > k_timeMsgUnlockTime) && AppCtx.getDisplayMsgQHandle())
+        {
+            const BaseType_t rc = xQueuePeek(AppCtx.getDisplayMsgQHandle(), &dispMsg, 0);
             if (rc == pdPASS)
             {
                 if (m_disp.printMsg(dispMsg.msg, dispMsg.msgLen))
@@ -95,12 +129,14 @@ void DisplayTask::run()
                     utils::dbg("%s MSG removed from DISP queue:%s", MODULE_NAME, dispMsg.msg);
                     // Clear the print time counter
                     timeMsgUnlockTimer = 0;
+
                     // Remove the message from the queue if handled properly
-                    xQueueReceive(AppCtx.getDisplayQHandle(), &dispMsg, 0);
+                    xQueueReceive(AppCtx.getDisplayMsgQHandle(), &dispMsg, 0);
                     free(dispMsg.msg);
                 }
             }
         }
+
         vTaskDelay(k_dispRefreshTime);
     }
 }

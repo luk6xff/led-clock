@@ -42,7 +42,7 @@ bool WebServer::start()
 {
     int attempt = 0;
     bool success = false;
-    int wifiConnectAttempts = 5;
+    const int wifiConnectAttempts = 5;
 
     while (attempt < wifiConnectAttempts && !success)
     {
@@ -452,10 +452,10 @@ bool WebServer::wifiConnect(const char* ssid, const char* password)
 
     bool connected = false;
     int retry = 0;
-    int wifiConnectRetries = 5;
+    const int wifiConnectRetries = 5;
 
     WiFi.begin(ssid, password[0] == '\0' ? NULL : password);
-
+    utils::inf("%s WIFI: ssid:%s, pass:%s", MODULE_NAME, ssid, password);
     while (retry < wifiConnectRetries && !connected)
     {
         utils::inf(".");
@@ -467,6 +467,7 @@ bool WebServer::wifiConnect(const char* ssid, const char* password)
 
             m_wifiMode = WifiMode::STATION;
             WiFi.mode(WIFI_STA);
+            break;
         }
         else
         {

@@ -20,17 +20,23 @@
 #define APP_DISPLAY_MSG_QUEUE_SIZE  4
 #define APP_TIME_MSG_QUEUE_SIZE     1
 
+
+// App display Msg
 typedef struct
 {
     char *msg;
     uint32_t msgLen;
 } AppDisplayMsg;
 
-typedef struct
+
+// App display Cmd
+typedef enum
 {
-    AppStatusValue val;
-    AppDisplayMsg msg;
-} AppStatus;
+    APP_DISPLAY_CLEAR_CMD = 0,
+    APP_DISPLAY_RESET_CMD = 1,
+} AppDisplayCmd;
+
+
 
 class AppContext
 {
@@ -40,7 +46,11 @@ public:
     static AppContext& instance();
 
     bool putDisplayMsg(const char *msg, size_t msgLen, uint8_t msgRepeatNum=0);
-    const QueueHandle_t& getDisplayQHandle();
+    const QueueHandle_t& getDisplayMsgQHandle();
+    void clearDisplayMsgQueue();
+
+    bool putDisplayCmd(const AppDisplayCmd cmd);
+    const QueueHandle_t& getDisplayCmdQHandle();
 
     bool putDateTimeMsg(const DateTime& dt);
     const QueueHandle_t& getTimeQHandle();
@@ -65,6 +75,9 @@ private:
 
     // Global display message queue
     QueueHandle_t m_displayMsgQ;
+
+    // Global display cmd queue
+    QueueHandle_t m_displayCmdQ;
 
     // Display message mutex
     rtos::Mutex m_displayMsgMtx;

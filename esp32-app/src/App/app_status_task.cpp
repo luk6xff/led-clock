@@ -5,7 +5,7 @@
 
 //------------------------------------------------------------------------------
 #define APP_STATUS_TASK_STACK_SIZE (8192)
-#define APP_STATUS_TASK_PRIORITY      (2)
+#define APP_STATUS_TASK_PRIORITY      (5)
 
 #define MODULE_NAME "[APPSTAT]"
 
@@ -24,7 +24,8 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
     {
         RADIO_ERROR, []()
         {
-            String msg(tr(M_ERROR) + col + spc + tr(M_RADIO_ERROR));
+            const String msg(tr(M_ERROR) + col + spc + tr(M_RADIO_ERROR));
+            AppCtx.clearDisplayMsgQueue();
             AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
             utils::err("APP_STATUS: RADIO_ERROR-%s",tr(M_RADIO_ERROR));
         }
@@ -32,7 +33,8 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
     {
         RTC_ERROR, []()
         {
-            String msg(tr(M_ERROR) + col + spc + tr(M_RTC_ERROR));
+            const String msg(tr(M_ERROR) + col + spc + tr(M_RTC_ERROR));
+            AppCtx.clearDisplayMsgQueue();
             AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
             utils::err("APP_STATUS: RTC_ERROR-%s",tr(M_RTC_ERROR));
         }
@@ -40,7 +42,7 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
     {
         DISP_ERROR, []()
         {
-            String msg(tr(M_ERROR) + col + spc + tr(M_DISP_ERROR));
+            const String msg(tr(M_ERROR) + col + spc + tr(M_DISP_ERROR));
             AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
             utils::err("APP_STATUS: DISP_ERROR-%s",tr(M_DISP_ERROR));
         }
@@ -48,7 +50,7 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
     {
         EXT_DATA_SENSOR_ERROR, []()
         {
-            String msg(tr(M_ERROR) + col + spc + tr(M_EXT_DATA_SENSOR_ERROR));
+            const String msg(tr(M_ERROR) + col + spc + tr(M_EXT_DATA_SENSOR_ERROR));
             AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
             utils::err("APP_STATUS: EXT_DATA_SENSOR_ERROR-%s",tr(M_EXT_DATA_SENSOR_ERROR));
         }
@@ -56,9 +58,18 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
     {
         OTA_UPDATE_RUNNING, []()
         {
-            String msg(tr(M_OTA_UPDATE_RUNNING));
+            const String msg(tr(M_OTA_UPDATE_RUNNING));
+            static bool once = false;
+            if (!once)
+            {
+                AppCtx.clearDisplayMsgQueue();
+                // Clear display on OTA update once
+                AppCtx.putDisplayCmd(APP_DISPLAY_CLEAR_CMD);
+                // Send OTA msg
+                once = true;
+            }
             AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
-            utils::err("APP_STATUS: OTA_UPDATE_RUNNING-%s",tr(M_OTA_UPDATE_RUNNING));
+            utils::inf("APP_STATUS: OTA_UPDATE_RUNNING-%s",tr(M_OTA_UPDATE_RUNNING));
         }
     },
 

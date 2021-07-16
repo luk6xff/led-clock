@@ -58,7 +58,7 @@ const i18n_map I18N::k_i18n =
     { "No RTC comm", "Brak komunikacji z RTC" },                        // M_RTC_ERROR,
     { "Display", "Wyświetlacz" },                                       // M_DISP_ERROR,
     { "No radio frame", "Brak komunikacji z zewn. sensorem" },          // M_EXT_DATA_SENSOR_ERROR,
-    { "OTA update is ongoing", "Trwa aktualizacja oprogramowania..." }, // M_OTA_UPDATE_RUNNING,
+    { "OTA update is ongoing", "OTA aktualizacja..." },                 // M_OTA_UPDATE_RUNNING,
 };
 
 //------------------------------------------------------------------------------

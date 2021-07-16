@@ -45,11 +45,13 @@ void WifiTask::run()
     {
         xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
     }
+
     for(;;)
     {
         if (server.wifiConnected())
         {
             vTaskDelay(5000 / portTICK_PERIOD_MS);
+            wifiConnectionFailureCnt = 0;
             continue;
         }
 

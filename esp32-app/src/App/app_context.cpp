@@ -10,6 +10,7 @@ AppContext::AppContext()
     , m_appStatus(AppStatusType::NO_ERROR)
 {
     m_displayMsgQ = xQueueCreate(APP_DISPLAY_MSG_QUEUE_SIZE, sizeof(AppDisplayMsg));
+    m_displayCmdQ = xQueueCreate(APP_DISPLAY_MSG_QUEUE_SIZE, sizeof(AppDisplayCmd));
     m_timeDataQ = xQueueCreate(APP_TIME_MSG_QUEUE_SIZE, sizeof(DateTime));
 }
 
@@ -68,9 +69,55 @@ bool AppContext::putDisplayMsg(const char *msg, size_t msgLen, uint8_t msgRepeat
 }
 
 //------------------------------------------------------------------------------
-const QueueHandle_t& AppContext::getDisplayQHandle()
+const QueueHandle_t& AppContext::getDisplayMsgQHandle()
 {
     return m_displayMsgQ;
+}
+
+//------------------------------------------------------------------------------
+void AppContext::clearDisplayMsgQueue()
+{
+    if (!getDisplayMsgQHandle())
+    {
+        return;
+    }
+    AppDisplayMsg dispMsg;
+    while (xQueueReceive(getDisplayMsgQHandle(), &dispMsg, 0) == pdPASS)
+    {
+        free(dispMsg.msg);
+    }
+    xQueueReset(getDisplayMsgQHandle());
+}
+
+//------------------------------------------------------------------------------
+bool AppContext::putDisplayCmd(const AppDisplayCmd cmd)
+{
+    bool ret = false;
+
+    if (!m_displayCmdQ)
+    {
+        utils::err("%s m_displayCmdQ has not been created!.", MODULE_NAME);
+        return ret;
+    }
+
+    ret = xQueueSendToBack(m_displayCmdQ, &cmd, 0) == pdPASS;
+    if (!ret)
+    {
+        utils::err("%s dispCmd queue is full!", MODULE_NAME);
+    }
+    else
+    {
+        ret = true;
+        utils::inf("%s dispCmd: %d sent succesfully!", MODULE_NAME, cmd);
+    }
+
+    return ret;
+}
+
+//------------------------------------------------------------------------------
+const QueueHandle_t& AppContext::getDisplayCmdQHandle()
+{
+    return m_displayCmdQ;
 }
 
 //------------------------------------------------------------------------------

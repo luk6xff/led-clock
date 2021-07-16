@@ -53,6 +53,15 @@ void Display::reset()
 }
 
 //------------------------------------------------------------------------------
+void Display::clear()
+{
+   m_mx.displayClear();
+   memset(getDispTxtBuffer(), sizeof(m_dispZone0Buf), 0);
+   memset(getDispTxtBuffer(), sizeof(m_dispZone1Buf), 0);
+   memset(getDispTxtBuffer(), sizeof(m_dispFullBuf), 0);
+}
+
+//------------------------------------------------------------------------------
 char *Display::getDispTxtBuffer()
 {
     return m_dispFullBuf;
@@ -74,7 +83,7 @@ void Display::enableAutoIntensityLevelControl(bool enable)
     }
     else
     {
-       m_lightSensor.deinit(); 
+       m_lightSensor.deinit();
     }
 }
 

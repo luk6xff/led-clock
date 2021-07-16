@@ -51,6 +51,8 @@ public:
 
     void reset();
 
+    void clear();
+
     char *getDispTxtBuffer();
 
     MD_Parola *getDispObject();

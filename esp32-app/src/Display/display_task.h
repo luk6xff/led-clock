@@ -3,6 +3,7 @@
 #include "display_settings.h"
 #include "display.h"
 
+
 typedef struct
 {
     TaskHandle_t  timerTask;
