@@ -6,18 +6,27 @@ The clock is configurable via web inteface. The time is driven by extremaly accu
 It receives and display meteo data from external LORA sensor.
 
 ## Some pics
+Device
+* Custom Case:
+![](docs/pics/dev-custom-case.jpg)
+![](docs/pics/dev-custom-case1.jpg)
+![](docs/pics/dev-custom-case2.jpg)
+![](docs/pics/dev-custom-case3.jpg)
+* LoRa meteo sensor:
+![](docs/pics/dev-sensor.jpg)
+
 Web app
-![1](docs/pics/app-info-ui.png)
-![2](docs/pics/config-ui.png)
-![3](docs/pics/config-ui2.png)
-![4](docs/pics/ota-ui.png)
-![5](docs/pics/web-ui.png)
+![](docs/pics/web-app-info-ui.png)
+![](docs/pics/web-config-ui.png)
+![](docs/pics/web-config-ui2.png)
+![](docs/pics/web-ota-ui.png)
+![](docs/pics/web-ui.png)
 
 Schematics
 * Clock:
-![1](docs/schematics/clock/led-clock_schematic.png)
+![](docs/schematics/clock/led-clock_schematic.png)
 * LoRa external sensor:
-![2](docs/schematics/sensor/ledclock-sensor_schematic.png)
+![](docs/schematics/sensor/ledclock-sensor_schematic.png)
 
 ## Parts used
 All the modules used in the project are listed [here](./docs/BOM.md).
