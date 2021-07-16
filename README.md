@@ -8,10 +8,10 @@ It receives and display meteo data from external LORA sensor.
 ## Some pics
 Device
 * Custom Case:
-![](docs/pics/dev-custom-case.jpg)
 ![](docs/pics/dev-custom-case1.jpg)
 ![](docs/pics/dev-custom-case2.jpg)
 ![](docs/pics/dev-custom-case3.jpg)
+![](docs/pics/dev-custom-case.jpg)
 * LoRa meteo sensor:
 ![](docs/pics/dev-sensor.jpg)
 
