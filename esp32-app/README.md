@@ -1,9 +1,6 @@
 # esp32-app
 Main led-clock application based on esp32 wroom device.
 
-## Details
-TODO
-
 ## Instalation
 * Install `vscode` with `platformio` plugin (Versions: vscode[1.49.2], platformio[Core:5.0.1, Home:3.3.0])
 * (Platform Espressif32 version 2.0.0)[https://github.com/platformio/platform-espressif32/releases/tag/v2.0.0]

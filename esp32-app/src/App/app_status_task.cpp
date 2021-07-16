@@ -25,7 +25,6 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
         RADIO_ERROR, []()
         {
             const String msg(tr(M_ERROR) + col + spc + tr(M_RADIO_ERROR));
-            AppCtx.clearDisplayMsgQueue();
             AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
             utils::err("APP_STATUS: RADIO_ERROR-%s",tr(M_RADIO_ERROR));
         }
@@ -51,7 +50,12 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
         EXT_DATA_SENSOR_ERROR, []()
         {
             const String msg(tr(M_ERROR) + col + spc + tr(M_EXT_DATA_SENSOR_ERROR));
-            AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
+            static int error_cnt = 0;
+            // Print msg every 10 min
+            if ((error_cnt++ % 600) == 0)
+            {
+                AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
+            }
             utils::err("APP_STATUS: EXT_DATA_SENSOR_ERROR-%s",tr(M_EXT_DATA_SENSOR_ERROR));
         }
     },
@@ -85,7 +89,7 @@ AppStatusTask::AppStatusTask()
 //------------------------------------------------------------------------------
 void AppStatusTask::run()
 {
-    TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
+    const TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
     AppStatusValue lastAppStatus = AppCtx.appStatus();
 
     for(;;)
