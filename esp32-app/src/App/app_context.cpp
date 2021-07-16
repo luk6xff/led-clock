@@ -1,6 +1,7 @@
 #include "app_context.h"
 #include "utils.h"
 #include <type_traits>
+#include "day_info_runner.h"
 
 #define MODULE_NAME "[ACTX]"
 
@@ -150,6 +151,9 @@ void AppContext::setAppDt(const DateTime& dt)
 {
     rtos::LockGuard<rtos::Mutex> lock(m_appDtMtx);
     m_appDt = dt;
+    // Check day info
+    DayInfoRunner dInfRun(dt);
+    dInfRun.process();
 }
 
 //------------------------------------------------------------------------------

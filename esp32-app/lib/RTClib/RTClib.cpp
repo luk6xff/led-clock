@@ -581,6 +581,26 @@ uint8_t DateTime::dayOfTheWeek() const {
 
 /**************************************************************************/
 /*!
+    @brief  Return the day of the year.
+    @return Day of a year.
+*/
+/**************************************************************************/
+uint16_t DateTime::dayOfTheYear() const {
+
+  uint16_t days = d;
+
+  for (uint8_t i = 1; i < m; ++i) {
+    days += daysInMonth[i-1];
+  }
+
+  if (m > 2 && yOff % 4 == 0) {
+    ++days;
+  }
+  return days;
+}
+
+/**************************************************************************/
+/*!
     @brief  Return Unix time: seconds since 1 Jan 1970.
 
     @see The `DateTime::DateTime(uint32_t)` constructor is the converse of

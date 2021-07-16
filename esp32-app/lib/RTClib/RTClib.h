@@ -123,6 +123,8 @@ public:
 
   uint8_t dayOfTheWeek() const;
 
+  uint16_t dayOfTheYear() const;
+
   /* 32-bit times as seconds since 2000-01-01. */
   uint32_t secondstime() const;
 

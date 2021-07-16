@@ -174,7 +174,6 @@ char *SystemTime::timeDateToStr(const DateTime& dt)
 //------------------------------------------------------------------------------
 const char* SystemTime::weekdayToStr(const DateTime& dt)
 {
-    // TODO - i18n
     static const char *dow[7] = { tr(M_DOW_SUN), tr(M_DOW_MON), tr(M_DOW_TUE), tr(M_DOW_WED), tr(M_DOW_THU), tr(M_DOW_FRI), tr(M_DOW_SAT) };
 	return dow[dt.dayOfTheWeek()];
 }
@@ -256,7 +255,7 @@ uint8_t SystemTime::validateDate(const DateTime& dt)
 
         else if (dt.day()==(array[dt.month()-1]+1))
         {
-        od = 1;
+            od = 1;
         }
         else
         {

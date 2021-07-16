@@ -65,6 +65,11 @@ typedef enum
     M_DISP_ERROR,
     M_EXT_DATA_SENSOR_ERROR,
     M_OTA_UPDATE_RUNNING,
+    // Day Info
+    M_TODAY_IS,
+    M_DAY,
+    M_OF_THE_YEAR,
+    M_HAPPY_NEW_YEAR,
 
     // Last msg_id keep it always here
     M_MSGID_LAST

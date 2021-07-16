@@ -342,11 +342,17 @@ $('#app-date-time-button').click(function() {
 
   var dtRead = new Date($('#app-date').val()+'T'+$('#app-time').val());
   var tzDiff = new Date(1970, 0, 1).getTime();
-  console.log(tzDiff);
+  console.log(dtRead, tzDiff);
   var dt = Math.floor((dtRead.valueOf() - tzDiff) / 1000); // time since Epoch to current now in seconds
-  console.log(dt);
-  $.post("dev-app-set-dt", {'dt' : dt.valueOf()}, function() {
-    console.log("app-datetime set succesfully: "+ dt.toString());
+
+  //console.log(dt.valueOf()); // Time converted to your timezone
+  // $.post("dev-app-set-dt", {'dt' : dt}, function() {
+  //   console.log("app-datetime set succesfully: "+ dt.toString());
+  // })
+
+  console.log(dtRead.valueOf()); // Time already in UTC
+  $.post("dev-app-set-dt", {'dt' : dtRead.valueOf() / 1000}, function() {
+    console.log("app-datetime set succesfully: "+ dtRead.toString());
   })
   .done(function(data) {
     showAlert('success',"app-datetime set succesfully! "+ JSON.stringify(data));

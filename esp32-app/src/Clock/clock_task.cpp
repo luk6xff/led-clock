@@ -88,8 +88,8 @@ void ClockTask::run()
             const BaseType_t rc = xQueueReceive(m_extTimeQ, &dt, 0);
             if (rc == pdPASS)
             {
-                utils::dbg("%s EXT time src:%s", MODULE_NAME, dt.timestamp().c_str());
-                time.setTime(dt);
+                utils::dbg("%s EXT UTC time src: %s", MODULE_NAME, dt.timestamp().c_str());
+                time.setUtcTime(dt);
             }
         }
 

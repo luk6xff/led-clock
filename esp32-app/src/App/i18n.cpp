@@ -59,6 +59,11 @@ const i18n_map I18N::k_i18n =
     { "Display", "Wyświetlacz" },                                       // M_DISP_ERROR,
     { "No radio frame", "Brak komunikacji z zewn. sensorem" },          // M_EXT_DATA_SENSOR_ERROR,
     { "OTA update is ongoing", "OTA aktualizacja..." },                 // M_OTA_UPDATE_RUNNING,
+    // Day Info
+    { "Today is", "Dzisiaj jest" },                                                // M_TODAY,
+    { "day", "dzień" },                                                 // M_DAY,
+    { "of the year", "roku" },                                          // M_OF_THE_YEAR,
+    { "<< Happy new year! >>", "<< Szczęśliwego nowego roku! >>" },     // M_HAPPY_NEW_YEAR,
 };
 
 //------------------------------------------------------------------------------
