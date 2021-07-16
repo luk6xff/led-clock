@@ -10,6 +10,7 @@
 #include <ESPAsyncWebServer.h>
 #include <DNSServer.h>
 #include <ArduinoJson.h>
+#include <OtaUpdate/ota.h>
 
 #include <functional>
 #include <map>
@@ -61,7 +62,7 @@ private:
     AsyncWebServer m_server;
     std::map<String, std::function<bool(const JsonObject&)>> m_cfgSaveHandleMap;
     std::map<String, std::function<std::string(void)>> m_cfgReadHandleMap;
-    size_t m_otaFileContentLen;
+
     const char *k_apHostname;
 
     const uint8_t k_dnsPort = 53;
@@ -70,4 +71,6 @@ private:
 
     WifiMode m_wifiMode;
     bool m_webServerRunning;
+
+    OtaUpdate ota;
 };

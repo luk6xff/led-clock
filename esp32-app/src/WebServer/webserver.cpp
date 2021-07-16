@@ -8,7 +8,6 @@
 #include "webserver.h"
 #include <FS.h>
 #include <SPIFFS.h>
-#include <Update.h>
 #include <ESPmDNS.h>
 #include "App/rtos_utils.h"
 #include "Wifi/wifi_task.h"
@@ -26,7 +25,6 @@
 #define WEBSERVER_TASK_PRIORITY      (2)
 
 #define MODULE_NAME "[WEBS]"
-#define U_PART U_SPIFFS
 
 //------------------------------------------------------------------------------
 WebServer::WebServer(const char* hostname)
@@ -229,7 +227,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         [this](AsyncWebServerRequest *request, const String& filename,
             size_t index, uint8_t *data, size_t len, bool final)
         {
-            handleDoOtaUpdate(request, filename, index, data, len, final);
+            ota.handleOtaRequest(request, filename, index, data, len, final);
         }
     );
 
@@ -367,54 +365,6 @@ void WebServer::setCfgReadHandlers()
 }
 
 //------------------------------------------------------------------------------
-void WebServer::handleDoOtaUpdate(AsyncWebServerRequest *request, const String& filename,
-                                    size_t index, uint8_t *data, size_t len, bool final)
-{
-    if (!index)
-    {
-        AppCtx.setAppStatus(AppStatusType::OTA_UPDATE_RUNNING);
-        utils::inf("OTA Update starting...");
-        m_otaFileContentLen = request->contentLength();
-        // If filename includes spiffs, update the spiffs partition
-        int cmd = (filename.indexOf("spiffs") > -1) ? U_PART : U_FLASH;
-        if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd))
-        {
-            Update.printError(Serial);
-        }
-    }
-
-    if (Update.write(data, len) != len)
-    {
-        Update.printError(Serial);
-    }
-
-    if (final)
-    {
-        AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "Please wait while the device reboots");
-        response->addHeader("Refresh", "20");
-        response->addHeader("Location", "/");
-        request->send(response);
-        if (!Update.end(true))
-        {
-            Update.printError(Serial);
-            AppCtx.setAppStatus(AppStatusType::OTA_UPDATE_RUNNING);
-        }
-        else
-        {
-            utils::inf("OTA Update completed!");
-            AppCtx.clearAppStatus(AppStatusType::OTA_UPDATE_RUNNING);
-            ESP.restart();
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-void WebServer::printOtaUpdateProgress(size_t prg, size_t sz)
-{
-    utils::inf("Progress: %d%%\n", (prg*100) / m_otaFileContentLen);
-}
-
-//------------------------------------------------------------------------------
 bool WebServer::runCaptivePortal()
 {
     startAP();
@@ -495,9 +445,6 @@ bool WebServer::createWebServer()
             utils::err("Error on SPIFFS begin!");
             return false;
         }
-
-        using namespace std::placeholders;
-        Update.onProgress(std::bind(&WebServer::printOtaUpdateProgress, this, _1, _2));
 
         // Run the server
         m_server.begin();
