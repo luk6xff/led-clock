@@ -7,11 +7,13 @@
 //------------------------------------------------------------------------------
 SystemTime::SystemTime(SystemTimeSettings& timeSettings)
     : m_timeSettings(timeSettings)
-    , m_timezone(m_timeSettings.stdStart, m_timeSettings.dstStart)
+    , m_timezone(m_timeSettings.dstStart, m_timeSettings.stdStart)
 {
     if (m_timeSettings.timezoneNum == 1)
     {
+        // Set only STD
         m_timezone.setRules(m_timeSettings.stdStart, m_timeSettings.stdStart);
+        m_timeSettings.dstStart = m_timeSettings.stdStart;
     }
 
     // Enable VDD Pin on RTC
@@ -30,7 +32,8 @@ SystemTime::SystemTime(SystemTimeSettings& timeSettings)
         m_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     }
 
-    m_lastTimezone = TimezoneType::TIMEZONE_STD;//(m_timezone.locIsDST(getTime().unixtime())) ? TimezoneType::TIMEZONE_DST : TimezoneType::TIMEZONE_STD;
+    m_lastTimezone = (m_timezone.locIsDST(m_rtc.now().unixtime())) ? TimezoneType::TIMEZONE_DST : TimezoneType::TIMEZONE_STD;
+    utils::dbg("RTC current timezone: %d", m_lastTimezone);
 }
 
 //------------------------------------------------------------------------------
@@ -52,9 +55,9 @@ void SystemTime::setUtcTime(const DateTime& dt)
 //------------------------------------------------------------------------------
 const DateTime SystemTime::getTime()
 {
-    //rtos::LockGuard<rtos::Mutex> lock(g_i2c0Mutex);
-    //return checkTimezoneChange(m_rtc.now());
+    rtos::LockGuard<rtos::Mutex> lock(g_i2c0Mutex);
     return m_rtc.now();
+    //return checkTimezoneChange(m_rtc.now()); //LU_TODO Timezone change updated on NTP only so far
 }
 
 //------------------------------------------------------------------------------
@@ -69,20 +72,27 @@ DateTime SystemTime::checkTimezoneChange(const DateTime& dt)
 {
     const time_t time = dt.unixtime();
     const time_t utc = m_timezone.toUTC(time);
+    const uint8_t toSecs = 60;
     DateTime resultDt = dt;
     if (!m_timezone.locIsDST(time) && m_lastTimezone == TimezoneType::TIMEZONE_DST)
     {
+        utils::inf("Timezone changed from DST to STD");
         m_lastTimezone = TimezoneType::TIMEZONE_STD;
-        DateTime newDt(utc+m_timeSettings.stdStart.offset*60);
+        DateTime newDt(utc + (m_timeSettings.stdStart.offset - 60) * toSecs);
         setTime(newDt);
         resultDt = newDt;
     }
     else if (m_timezone.locIsDST(time) && m_lastTimezone == TimezoneType::TIMEZONE_STD)
     {
-        m_lastTimezone = TimezoneType::TIMEZONE_DST;
-        DateTime newDt(utc+m_timeSettings.dstStart.offset*60);
-        setTime(newDt);
-        resultDt = newDt;
+        if (m_timezone.locIsDST(time + (m_timeSettings.stdStart.offset * toSecs)))
+        {
+            // Check if time was not moved back one hour before
+            utils::inf(">>> Timezone changed from STD to DST");
+            m_lastTimezone = TimezoneType::TIMEZONE_DST;
+            DateTime newDt(utc + (m_timeSettings.dstStart.offset + 60) * toSecs);
+            setTime(newDt);
+            resultDt = newDt;
+        }
     }
     return resultDt;
 }
