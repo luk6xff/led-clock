@@ -5,6 +5,10 @@ LED clock with some fancy features.
 The clock is configurable over web inteface. The time is provided by extremaly accurate RTC DS3231. It can be also synchronized with NTP server.
 It receives and display meteo data from external LORA sensor.
 You can also configure [openweather map API](https://openweathermap.org/) to get and display latest weather forecast for your city.
+The clock UI supports two languages currently: polish and english.
+You can check below the videos to see how it works in action:
+[![video1](https://img.youtube.com/vi/KoFvoKO0Jg0/0.jpg)](https://www.youtube.com/watch?v=KoFvoKO0Jg0)
+[![video1](https://img.youtube.com/vi/WqVvntWIiOE/0.jpg)](https://www.youtube.com/watch?v=WqVvntWIiOE)
 
 ## Some pics
 Device
