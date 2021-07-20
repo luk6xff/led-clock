@@ -26,13 +26,13 @@ public:
     static uint8_t validateDate(const DateTime& dt);
 
 private:
-    //bool checkTimezoneChange(const DateTime& dt);
+    DateTime checkTimezoneChange(const DateTime& dt);
 
 private:
     RTC_DS3231 m_rtc;
     SystemTimeSettings &m_timeSettings;
     Timezone m_timezone;
-    bool stdTimeChangeOccured;
+    TimezoneType m_lastTimezone;
 };
 
 

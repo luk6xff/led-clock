@@ -38,9 +38,15 @@ struct TimeChangeRule
     {
         return String("abbrev:" + String(abbrev) + " week:" + String(week) + " dow:" + String(dow) + \
                       " month:" + String(month) + " hour:" + String(hour) + " offset:" + String(offset));
-    }        
+    }
 #endif
 
+};
+
+enum class TimezoneType
+{
+    TIMEZONE_STD = 0,
+    TIMEZONE_DST = 1,
 };
 
 class Timezone

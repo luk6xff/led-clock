@@ -61,7 +61,7 @@ void radio_init()
 
 
     // Not used in production
-    last_clock_response.update_data_interval = 60; //s
+    last_clock_response.update_data_interval = 30; //s
 }
 
 //-----------------------------------------------------------------------------

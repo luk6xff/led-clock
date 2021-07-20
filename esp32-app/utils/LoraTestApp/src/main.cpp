@@ -41,13 +41,13 @@ void loop()
 //-----------------------------------------------------------------------------
 void sendSensorMsg()
 {
-    static float temp = -40.0f;
+    static float temp = 22.3f;
     temp += 0.1f;
 
     radio_msg_sensor_frame msgf;
     msgf.temperature = temp;
-    msgf.humidity = 11.99f;
-    msgf.pressure = 109900;
+    msgf.humidity = 46.f;
+    msgf.pressure = 96900; // [Pa]
     msgf.vbatt = 3300;
     radio_send(&msgf);
 }

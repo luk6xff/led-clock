@@ -29,6 +29,8 @@ SystemTime::SystemTime(SystemTimeSettings& timeSettings)
         utils::err("RTC lost power, let set the default time!");
         m_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     }
+
+    m_lastTimezone = TimezoneType::TIMEZONE_STD;//(m_timezone.locIsDST(getTime().unixtime())) ? TimezoneType::TIMEZONE_DST : TimezoneType::TIMEZONE_STD;
 }
 
 //------------------------------------------------------------------------------
@@ -50,7 +52,8 @@ void SystemTime::setUtcTime(const DateTime& dt)
 //------------------------------------------------------------------------------
 const DateTime SystemTime::getTime()
 {
-    rtos::LockGuard<rtos::Mutex> lock(g_i2c0Mutex);
+    //rtos::LockGuard<rtos::Mutex> lock(g_i2c0Mutex);
+    //return checkTimezoneChange(m_rtc.now());
     return m_rtc.now();
 }
 
@@ -61,15 +64,28 @@ float SystemTime::getTemperature()
     return m_rtc.getTemperature();
 }
 
-// //------------------------------------------------------------------------------
-// bool SystemTime::checkTimezoneChange(const DateTime& dt)
-// {
-//     const time_t time = dt.unixtime();
-//     if (!m_timezone.locIsDST(time) && !stdTimeChangeOccured)
-//     {
-//         stdTimeChangeOccured = true;
-//     }
-// }
+//------------------------------------------------------------------------------
+DateTime SystemTime::checkTimezoneChange(const DateTime& dt)
+{
+    const time_t time = dt.unixtime();
+    const time_t utc = m_timezone.toUTC(time);
+    DateTime resultDt = dt;
+    if (!m_timezone.locIsDST(time) && m_lastTimezone == TimezoneType::TIMEZONE_DST)
+    {
+        m_lastTimezone = TimezoneType::TIMEZONE_STD;
+        DateTime newDt(utc+m_timeSettings.stdStart.offset*60);
+        setTime(newDt);
+        resultDt = newDt;
+    }
+    else if (m_timezone.locIsDST(time) && m_lastTimezone == TimezoneType::TIMEZONE_STD)
+    {
+        m_lastTimezone = TimezoneType::TIMEZONE_DST;
+        DateTime newDt(utc+m_timeSettings.dstStart.offset*60);
+        setTime(newDt);
+        resultDt = newDt;
+    }
+    return resultDt;
+}
 
 //------------------------------------------------------------------------------
 char* SystemTime::timeToStr(const DateTime& dt)

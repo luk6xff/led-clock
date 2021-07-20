@@ -2,18 +2,31 @@
 LED clock with some fancy features.
 
 ## Details
-The clock is configurable via web inteface. The time is driven by extremaly accurate RTC: DS3231. It can be also synchronized with NTP.
+The clock is configurable over web inteface. The time is provided by extremaly accurate RTC DS3231. It can be also synchronized with NTP server.
 It receives and display meteo data from external LORA sensor.
+You can also configure [openweather map API](https://openweathermap.org/) to get and display latest weather forecast for your city.
 
 ## Some pics
 Device
+* Printed Case:
+![](docs/pics/dev-case1.jpg)
+![](docs/pics/dev-case2.jpg)
+![](docs/pics/dev-case3.jpg)
+![](docs/pics/dev-case4.jpg)
+
+* LoRa meteo sensor:
+![](docs/pics/dev-sensor.jpg)
+
 * Custom Case:
 ![](docs/pics/dev-custom-case1.jpg)
 ![](docs/pics/dev-custom-case2.jpg)
 ![](docs/pics/dev-custom-case3.jpg)
 ![](docs/pics/dev-custom-case.jpg)
-* LoRa meteo sensor:
-![](docs/pics/dev-sensor.jpg)
+
+* Prototype:
+![](docs/pics/dev-case-raw1.jpg)
+![](docs/pics/dev-case-raw2.jpg)
+![](docs/pics/dev-prototype.jpg)
 
 Web app
 ![](docs/pics/web-app-info-ui.png)
