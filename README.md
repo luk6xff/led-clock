@@ -28,6 +28,13 @@ Device
 ![](docs/pics/dev-custom-case.jpg)
 
 * Prototype:
+![](docs/case/images/back.png)
+![](docs/case/images/front1.png)
+![](docs/case/images/front2.png)
+![](docs/case/images/back_1.png)
+![](docs/case/images/front_1.png)
+![](docs/case/images/front_2.png)
+
 ![](docs/pics/dev-case-raw1.jpg)
 ![](docs/pics/dev-case-raw2.jpg)
 ![](docs/pics/dev-prototype.jpg)
