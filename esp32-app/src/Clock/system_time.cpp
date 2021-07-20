@@ -87,7 +87,7 @@ DateTime SystemTime::checkTimezoneChange(const DateTime& dt)
         if (m_timezone.locIsDST(time + (m_timeSettings.stdStart.offset * toSecs)))
         {
             // Check if time was not moved back one hour before
-            utils::inf(">>> Timezone changed from STD to DST");
+            utils::inf("Timezone changed from STD to DST");
             m_lastTimezone = TimezoneType::TIMEZONE_DST;
             DateTime newDt(utc + (m_timeSettings.dstStart.offset + 60) * toSecs);
             setTime(newDt);
