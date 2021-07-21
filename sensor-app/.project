@@ -36,10 +36,5 @@
 			<type>2</type>
 			<location>/home/luk6xff/Projects/led-clock/esp32-app/lib/LORA</location>
 		</link>
-		<link>
-			<name>SX1278</name>
-			<type>2</type>
-			<location>/home/luk6xff/Projects/led-clock/esp32-app/lib/SX1278</location>
-		</link>
 	</linkedResources>
 </projectDescription>
