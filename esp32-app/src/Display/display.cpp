@@ -56,9 +56,9 @@ void Display::reset()
 void Display::clear()
 {
    m_mx.displayClear();
-   memset(getDispTxtBuffer(), sizeof(m_dispZone0Buf), 0);
-   memset(getDispTxtBuffer(), sizeof(m_dispZone1Buf), 0);
-   memset(getDispTxtBuffer(), sizeof(m_dispFullBuf), 0);
+   memset(m_dispZone0Buf, 0, sizeof(m_dispZone0Buf));
+   memset(m_dispZone1Buf, 0, sizeof(m_dispZone1Buf));
+   memset(m_dispFullBuf, 0, sizeof(m_dispFullBuf));
 }
 
 //------------------------------------------------------------------------------
