@@ -12,7 +12,7 @@ You can check below the videos to see how it works in action:
 * [![video1](https://img.youtube.com/vi/WqVvntWIiOE/0.jpg)](https://www.youtube.com/watch?v=WqVvntWIiOE)
 
 ## Some pics
-Device
+### Device
 * Printed Case:
 ![](docs/pics/dev-case1.jpg)
 ![](docs/pics/dev-case2.jpg)
@@ -20,13 +20,15 @@ Device
 ![](docs/pics/dev-case4.jpg)
 
 * LoRa meteo sensor:
-![](docs/pics/dev-sensor.jpg)
+![](docs/pics/dev-sensor7.jpg)
+![](docs/pics/dev-sensor12.jpg)
+![](docs/pics/dev-sensor11.jpg)
+![](docs/pics/dev-sensor15.jpg)
 
 * Custom Case:
 ![](docs/pics/dev-custom-case1.jpg)
 ![](docs/pics/dev-custom-case2.jpg)
 ![](docs/pics/dev-custom-case3.jpg)
-![](docs/pics/dev-custom-case.jpg)
 
 * Prototype:
 ![](case/images/back.png)
@@ -39,14 +41,14 @@ Device
 ![](docs/pics/dev-case-raw2.jpg)
 ![](docs/pics/dev-prototype.jpg)
 
-Web app
+### Web app
 ![](docs/pics/web-app-info-ui.png)
 ![](docs/pics/web-config-ui.png)
 ![](docs/pics/web-config-ui2.png)
 ![](docs/pics/web-ota-ui.png)
 ![](docs/pics/web-ui.png)
 
-Schematics
+### Schematics
 * Clock:
 ![](docs/schematics/clock/led-clock_schematic.png)
 * LoRa external sensor:
