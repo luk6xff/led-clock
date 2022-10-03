@@ -20,7 +20,7 @@ def http_date(epoch_seconds=None):
 
 
 def update_app_vars(source, target, env):
-    app_header_file_path = os.path.join(env.get('PROJECTSRC_DIR'), "App", "app_vars.h")
+    app_header_file_path = os.path.join(env.get('PROJECT_SRC_DIR'), "App", "app_vars.h")
     print("APP_UPDATE: ",app_header_file_path)
     print(http_date())
     for line in fileinput.input(app_header_file_path, inplace=True):

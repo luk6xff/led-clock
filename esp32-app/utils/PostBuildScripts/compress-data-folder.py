@@ -22,9 +22,9 @@ def gzip_webfiles(source, target, env):
     filetypes_to_gzip = ('js', 'css', 'html', 'jpg', 'ico', 'svg')
 
     print( '\nGZIP: INITIATED GZIP FOR SPIFFS...\n' )
-    data_dir_path = os.path.join(env.get('PROJECTSRC_DIR'), "WebServer", "data")
-    print(data_dir_path)
-    gzip_dir_path = os.path.join(env.get('PROJECTDATA_DIR'))
+    data_dir_path = os.path.join(env.get('PROJECT_SRC_DIR'), "WebServer", "data")
+    print("DATA_PATH::::::", data_dir_path)
+    gzip_dir_path = os.path.join(env.get('PROJECT_DATA_DIR'))
 
     # CHECK DATA DIR
     if not os.path.exists(data_dir_path):

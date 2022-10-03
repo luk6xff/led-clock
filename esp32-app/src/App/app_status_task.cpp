@@ -33,8 +33,13 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
         RTC_ERROR, []()
         {
             const String msg(tr(M_ERROR) + col + spc + tr(M_RTC_ERROR));
-            AppCtx.clearDisplayMsgQueue();
-            AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
+            static int error_cnt = 0;
+            if ((error_cnt++ % 10) == 0)
+            {
+                AppCtx.clearDisplayMsgQueue();
+                AppCtx.putDisplayCmd(APP_DISPLAY_CLEAR_CMD);
+                AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
+            }
             utils::err("APP_STATUS: RTC_ERROR-%s",tr(M_RTC_ERROR));
         }
     },

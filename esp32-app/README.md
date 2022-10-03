@@ -38,7 +38,7 @@ pio test --environment native
 
 ## Debug monitor
 ```
-pio device monitor -f esp32_exception_decoder -b 115200 -p /dev/ttyUSB0
+pio device monitor -f esp32_exception_decoder -b 115200 -p /dev/ttyUSB1
 ```
 
 ## HARDWARE
