@@ -9,7 +9,7 @@ LightSensor::LightSensor()
     bh1750_dev_arduino.sda_pin = BH1750_SDA_PIN;
     bh1750_dev_arduino.scl_pin = BH1750_SCL_PIN;
     bh1750_dev.i2c_addr = BH1750_I2C_ADDRESS1;
-    
+
     // Not needed, So far only BH1750 uses Wire1
     //rtos::LockGuard<rtos::Mutex> lock(g_i2c1Mutex);
     bh1750_arduino_init(&bh1750_dev, &bh1750_dev_arduino);

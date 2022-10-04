@@ -60,9 +60,10 @@ public:
     bool saveDisplaySettings(const DisplaySettings& cfg);
     bool saveAppSettings(const AppSettings& cfg);
 
-private:
     bool saveSettings(const Settings &settings);
     bool readSettings();
+
+private:
     void setDefaults();
     void printCurrentSettings();
 

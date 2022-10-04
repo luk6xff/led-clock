@@ -1,9 +1,9 @@
 #include "wifi_task.h"
 #include "App/rtos_utils.h"
 #include "App/utils.h"
-#include "App/app_ctx.h"
+#include "App/app_context.h"
 
-#include "wifi_manager.h"
+#include "WebServer/webserver.h"
 
 //------------------------------------------------------------------------------
 #define WIFI_TASK_STACK_SIZE (8192*2)
@@ -36,20 +36,22 @@ const EventGroupHandle_t& WifiTask::getWifiEvtHandle()
 void WifiTask::run()
 {
     const TickType_t sleepTime = (1000 / portTICK_PERIOD_MS);
+    uint8_t wifiConnectionFailureCnt = 0;
     const size_t captivePortalTimeout = 600; //seconds
     size_t captivePortalTimeoutCnt = 0; //seconds
 
-    WifiManager wifiMgr(m_wifiCfg.ap_hostname);
-    if (wifiMgr.start())
+    WebServer server(m_wifiCfg.ap_hostname);
+    if (server.start())
     {
         xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
     }
 
     for(;;)
     {
-        if (wifiMgr.isConnected())
+        if (server.wifiConnected())
         {
             vTaskDelay(5000 / portTICK_PERIOD_MS);
+            wifiConnectionFailureCnt = 0;
             continue;
         }
 
@@ -62,13 +64,13 @@ void WifiTask::run()
 
         xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_DISCONNECTED);
 
-        // Try to reconnect to station mode after timeout
-        if (wifiMgr.isAPModeActive())
+        // Try to recconnect after timeout to AP
+        if (server.isAPModeActive())
         {
             if (captivePortalTimeoutCnt++ > captivePortalTimeout)
             {
                 captivePortalTimeoutCnt = 0;
-                if (wifiMgr.start())
+                if (server.start())
                 {
                     utils::inf("%s Succesfully connected to wifi, server is running", MODULE_NAME);
                     xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
@@ -76,20 +78,38 @@ void WifiTask::run()
             }
         }
 
-        // Lost wifi connection, try to reconnect
-        if (wifiMgr.isStationModeActive() && !wifiMgr.isConnected())
+        // Lost connection, try to reconnect
+        if (server.isStationModeActive() && !server.wifiConnected())
         {
             utils::err("%s Connection failed, waiting for %d seconds...",
                         MODULE_NAME, WIFI_TIMEOUT_MS/1000);
-            if (wifiMgr.start())
+            vTaskDelay(WIFI_TIMEOUT_MS / portTICK_PERIOD_MS);
+            wifiConnectionFailureCnt++;
+            if (wifiConnectionFailureCnt >= 3)
             {
-                utils::inf("%s Wifi reconnected!", MODULE_NAME);
+                utils::inf("%s Starting CaptivePortal...", MODULE_NAME);
+                if (server.runCaptivePortal())
+                {
+                    utils::inf("%s CaptivePortal is running", MODULE_NAME);
+                }
+                else
+                {
+                    utils::dbg("%s CaptivePortal start failure!", MODULE_NAME);
+                }
+
+                wifiConnectionFailureCnt = 0;
+            }
+            else
+            {
+                continue;
             }
         }
 
-        wifiMgr.process();
+        server.process();
+
         vTaskDelay(sleepTime);
     }
 }
+
 
 //------------------------------------------------------------------------------

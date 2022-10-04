@@ -1,5 +1,4 @@
 #pragma once
-
 #include "App/task.h"
 #include "wifi_settings.h"
 #include <WiFiMulti.h>
@@ -18,6 +17,7 @@ public:
 
 public:
     explicit WifiTask(const WifiSettings& wifiCfg);
+
     const EventGroupHandle_t& getWifiEvtHandle();
 
 private:
