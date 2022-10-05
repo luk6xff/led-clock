@@ -8,7 +8,6 @@
 #include <stdexcept>
 
 
-#define TIME_CFG_KEY                    "dev-cfg-time"
 #define TIME_CFG_VAL_TZ_NUM             "time-timezone-num"
 #define TIME_CFG_VAL_TZ_1               "time-timezone-1"
 #define TIME_CFG_VAL_TZ_2               "time-timezone-2"

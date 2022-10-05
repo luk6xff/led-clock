@@ -1,7 +1,7 @@
 #include "wifi_task.h"
 #include "App/rtos_utils.h"
 #include "App/utils.h"
-#include "App/app_ctx.h"
+#include "App/app_context.h"
 
 #include "wifi_manager.h"
 

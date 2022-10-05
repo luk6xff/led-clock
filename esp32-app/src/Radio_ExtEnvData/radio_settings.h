@@ -6,7 +6,7 @@
 #include "App/utils.h"
 
 
-#define RADIO_CFG_KEY                               "dev-cfg-radio"
+
 #define RADIO_CFG_VAL_UPDATE_INTERVAL               "radio-update-interval"
 #define RADIO_CFG_VAL_CRIT_VBATT                    "radio-crit-vbatt"
 #define RADIO_CFG_VAL_MSG_DISP_REPEAT_NUM           "radio-msg-disp-repeat-num"

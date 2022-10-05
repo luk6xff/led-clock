@@ -6,7 +6,7 @@
 #include "App/utils.h"
 
 
-#define DISPLAY_CFG_KEY                 "dev-cfg-display"
+
 #define DISPLAY_CFG_VAL_AUTO_INTENSITY  "display-auto-intensity"
 #define DISPLAY_CFG_VAL_INTENSITY_VALUE "display-intensity-val"
 #define DISPLAY_CFG_VAL_ANIM_SPEED      "display-anim-speed"

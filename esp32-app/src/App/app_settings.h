@@ -7,7 +7,6 @@
 #include "App/i18n.h"
 
 
-#define APP_CFG_KEY   "dev-cfg-app"
 #define APP_LANGUAGE  "app-lang"
 
 

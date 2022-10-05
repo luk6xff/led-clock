@@ -22,7 +22,7 @@ def gzip_webfiles(source, target, env):
     filetypes_to_gzip = ('js', 'css', 'html', 'jpg', 'ico', 'svg')
 
     print( '\nGZIP: INITIATED GZIP FOR SPIFFS...\n' )
-    data_dir_path = os.path.join(env.get('PROJECT_SRC_DIR'), "WebServer", "data")
+    data_dir_path = os.path.join(env.get('PROJECT_SRC_DIR'), "Wifi/WebServer", "data")
     print("DATA_PATH::::::", data_dir_path)
     gzip_dir_path = os.path.join(env.get('PROJECT_DATA_DIR'))
 

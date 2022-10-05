@@ -7,7 +7,7 @@
 
 
 
-#define WEATHER_CFG_KEY                 "dev-cfg-weather"
+
 #define WEATHER_CFG_VAL_ENABLE          "weather-update-enable"
 #define WEATHER_CFG_VAL_SYNC_INTERVAL   "weather-sync-interval"
 #define WEATHER_CFG_VAL_OWM_APIKEY      "weather-owm-api-key"

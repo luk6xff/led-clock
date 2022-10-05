@@ -6,7 +6,6 @@
 #include "App/utils.h"
 
 
-#define INTENV_CFG_KEY                               "dev-cfg-intenv"
 #define INTENV_CFG_VAL_UPDATE_INTERVAL               "intenv-update-interval"
 #define INTENV_CFG_VAL_MSG_DISP_REPEAT_NUM           "intenv-msg-disp-repeat-num"
 

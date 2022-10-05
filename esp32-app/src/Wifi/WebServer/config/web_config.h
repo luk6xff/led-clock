@@ -18,9 +18,6 @@ public:
         WIFI_PASSWD,
         WIFI_AP_HOSTNAME,
         WIFI_AP_PASSWD,
-        API_IP_ADDRESS,
-        API_IP_PORT,
-        API_ACCESS_TOKEN,
     };
 
     using ParamsMap = std::map<WebConfig::ParamsKey, const char*>;
@@ -33,13 +30,23 @@ public:
      */
     struct WebConfigData
     {
+        // WIFI
         char wifiSsid[WEB_CONFIG_LEN];
         char wifiPasswd[WEB_CONFIG_LEN];
         char wifiApHostname[WEB_CONFIG_LEN];
         char wifiApPasswd[WEB_CONFIG_LEN];
-        char apiIpAddress[WEB_CONFIG_LEN];
-        uint16_t apiIpPort;
-        char apiAccessToken[WEB_CONFIG_LEN];
+        // TIME
+        uint32_t timezoneNum;
+        uint32_t timezone1;
+        uint32_t timezone2;
+        bool enableNtpSynchronization;
+        uint32_t ntpTimeOffsetInMinutes;
+        uint32_t ntpTimeSyncIntervalInMinutes;
+        // WEATHER
+        bool weatherEnable;
+        uint32_t weatherSyncIntervalInMinutes;
+        String weatherOwmApiKey;
+        String weatherOwmCityLongitude;
     };
 
 public:
