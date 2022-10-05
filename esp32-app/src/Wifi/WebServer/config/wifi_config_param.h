@@ -8,14 +8,13 @@
 struct WifiConfigData
 {
     // WIFI
-    char wifiSsid[WIFI_CONFIG_LEN];
-    char wifiPasswd[WIFI_CONFIG_LEN];
-    char wifiApHostname[WIFI_CONFIG_LEN];
-    char wifiApPasswd[WIFI_CONFIG_LEN];
+    char ssid[WIFI_CONFIG_LEN];
+    char passwd[WIFI_CONFIG_LEN];
+    char apHostname[WIFI_CONFIG_LEN];
+    char apPasswd[WIFI_CONFIG_LEN];
 };
 
-class WifiConfigParam:
-public WebConfigParam<WifiConfigData>
+class WifiConfigParam : public WebConfigParam<WifiConfigData>
 {
 public:
 
@@ -27,35 +26,13 @@ public:
         WIFI_AP_PASSWD,
     };
 
-    WifiConfigParam() : WebConfigParam(WIFI_CFG_KEY)
-    {
-        setCfgParamsMap();
-    }
-
+    WifiConfigParam();
     bool setConfig(const JsonObject& json) override;
-
     void getConfig(String& configPayload) override;
 
 
 private:
-
-    void setCfgParamsMap() override
-    {
-        m_cfgParamsMap = {
-            { WifiKeys::WIFI_SSID, "wifi-ssid" },
-            { WifiKeys::WIFI_PASSWD, "wifi-pass" },
-            { WifiKeys::WIFI_AP_HOSTNAME, "wifi-ap-hostname" },
-            { WifiKeys::WIFI_AP_PASSWD, "wifi-ap-pass" },
-        };
-    }
-
-    bool unpackFromJson(WifiConfigData& cfgData, const JsonObject& json) override
-    {
-        return true;
-    }
-
-    String packToJson(const WifiConfigData& data) override
-    {
-        return "";
-    }
+    void setCfgParamsMap();
+    bool unpackFromJson(WifiConfigData& cfgData, const JsonObject& json) override;
+    String packToJson(const WifiConfigData& data) override;
 };
