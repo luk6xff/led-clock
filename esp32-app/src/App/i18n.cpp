@@ -78,7 +78,7 @@ const std::string& I18N::translate(i18n_msg_id msg_id)
 {
     if (k_i18n.size() <= msg_id)
     {
-        utils::err("Error can't find: %d msgid in language file!", msg_id);
+        log::err("Error can't find: %d msgid in language file!", msg_id);
         return k_i18n[M_COMMON_EMPTY][0];
     }
     if (msg_id <= M_COMMON_LAST)

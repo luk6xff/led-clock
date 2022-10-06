@@ -33,7 +33,7 @@ void IntEnvDataTask::run()
 
         if (m_intEnvCfg.update_data_interval == 0) // If internal env data sensor disabled
         {
-            utils::inf("%s IntEnvData task not active! update_data_interval=0", MODULE_NAME);
+            log::inf("%s IntEnvData task not active! update_data_interval=0", MODULE_NAME);
             // Sleep longer
             vTaskDelay(k_waitForDataSecs);
         }
@@ -42,7 +42,7 @@ void IntEnvDataTask::run()
             InternalEnvData msg;
             if (m_intEnvDataSensor.getData(msg))
             {
-                utils::inf("%s IntEnvData received: temperature:%3.2f, humidity:%3.2f, pressure:%3.2f", MODULE_NAME, msg.temperature, msg.humidity, msg.pressure);
+                log::inf("%s IntEnvData received: temperature:%3.2f, humidity:%3.2f, pressure:%3.2f", MODULE_NAME, msg.temperature, msg.humidity, msg.pressure);
                 pushIntEnvDataMsg(msg);
             }
 

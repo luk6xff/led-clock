@@ -55,7 +55,7 @@ void DisplayTask::run()
                                     &m_lightSensorTimerTask.timerTask);
         if (ret != pdPASS)
         {
-            utils::err("%s DT:%s", MODULE_NAME, "m_lightSensorTimerTask start failed");
+            log::err("%s DT:%s", MODULE_NAME, "m_lightSensorTimerTask start failed");
         }
     }
 
@@ -83,7 +83,7 @@ void DisplayTask::run()
                 {
                     timeMsgUnlockTimer++;
                 }
-                utils::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
+                log::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
             }
         }
 
@@ -94,7 +94,7 @@ void DisplayTask::run()
         {
             switch (cmd)
             {
-                utils::dbg("%s APP_DISPLAY_CMD received: 0x%x", MODULE_NAME, cmd);
+                log::dbg("%s APP_DISPLAY_CMD received: 0x%x", MODULE_NAME, cmd);
                 case APP_DISPLAY_CLEAR_CMD:
                 {
                     m_disp.clear();
@@ -126,7 +126,7 @@ void DisplayTask::run()
             {
                 if (m_disp.printMsg(dispMsg.msg, dispMsg.msgLen))
                 {
-                    utils::dbg("%s MSG removed from DISP queue:%s", MODULE_NAME, dispMsg.msg);
+                    log::dbg("%s MSG removed from DISP queue:%s", MODULE_NAME, dispMsg.msg);
                     // Clear the print time counter
                     timeMsgUnlockTimer = 0;
 

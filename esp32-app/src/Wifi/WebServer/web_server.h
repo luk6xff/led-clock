@@ -11,7 +11,7 @@
 #include <DNSServer.h>
 #include <ArduinoJson.h>
 #include <OtaUpdate/ota.h>
-#include "webconfig.h"
+#include "Config.h"
 
 #include <functional>
 #include <map>
@@ -43,7 +43,7 @@ private:
 private:
     const char *k_apHostname;
     AsyncWebServer m_server;
-    WebConfig m_webConfig;
+    Config m_Config;
     size_t m_otaFileContentLen;
     bool m_webServerRunning;
     OtaUpdate m_ota;

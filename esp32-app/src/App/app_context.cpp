@@ -30,7 +30,7 @@ bool AppContext::putDisplayMsg(const char *msg, size_t msgLen, uint8_t msgRepeat
 
     if (!m_displayMsgQ)
     {
-        utils::err("%s m_displayMsgQ has not been created!.", MODULE_NAME);
+        log::err("%s m_displayMsgQ has not been created!.", MODULE_NAME);
         return ret;
     }
 
@@ -54,14 +54,14 @@ bool AppContext::putDisplayMsg(const char *msg, size_t msgLen, uint8_t msgRepeat
             ret = xQueueSendToBack(m_displayMsgQ, &dispMsg, 0) == pdPASS;
             if (!ret)
             {
-                utils::err("%s dispMsg queue is full!, available space %d.", MODULE_NAME, uxQueueSpacesAvailable(m_displayMsgQ));
+                log::err("%s dispMsg queue is full!, available space %d.", MODULE_NAME, uxQueueSpacesAvailable(m_displayMsgQ));
                 free((void*)msgData);
                 break;
             }
             else
             {
                 ret = true;
-                utils::inf("%s dispMsg: %s sent succesfully!", MODULE_NAME, msgData);
+                log::inf("%s dispMsg: %s sent succesfully!", MODULE_NAME, msgData);
             }
         }
     }
@@ -97,19 +97,19 @@ bool AppContext::putDisplayCmd(const AppDisplayCmd cmd)
 
     if (!m_displayCmdQ)
     {
-        utils::err("%s m_displayCmdQ has not been created!.", MODULE_NAME);
+        log::err("%s m_displayCmdQ has not been created!.", MODULE_NAME);
         return ret;
     }
 
     ret = xQueueSendToBack(m_displayCmdQ, &cmd, 0) == pdPASS;
     if (!ret)
     {
-        utils::err("%s dispCmd queue is full!", MODULE_NAME);
+        log::err("%s dispCmd queue is full!", MODULE_NAME);
     }
     else
     {
         ret = true;
-        utils::inf("%s dispCmd: %d sent succesfully!", MODULE_NAME, cmd);
+        log::inf("%s dispCmd: %d sent succesfully!", MODULE_NAME, cmd);
     }
 
     return ret;
@@ -127,16 +127,16 @@ bool AppContext::putDateTimeMsg(const DateTime& dt)
     rtos::LockGuard<rtos::Mutex> lock(m_timeDataMtx);
     if (!m_timeDataQ)
     {
-        utils::err("%s m_timeDataQ has not been created!.", MODULE_NAME);
+        log::err("%s m_timeDataQ has not been created!.", MODULE_NAME);
         return false;
     }
     if (!const_cast<DateTime&>(dt).isValid())
     {
-        utils::err("%s timeData:%s is invalid, sending skipped", MODULE_NAME,
+        log::err("%s timeData:%s is invalid, sending skipped", MODULE_NAME,
                     const_cast<DateTime&>(dt).timestamp().c_str());
         return false;
     }
-    utils::err("%s timeData: %s.", MODULE_NAME, const_cast<DateTime&>(dt).timestamp().c_str());
+    log::err("%s timeData: %s.", MODULE_NAME, const_cast<DateTime&>(dt).timestamp().c_str());
     return xQueueSendToBack(m_timeDataQ, &dt, 0) == pdPASS;
 }
 

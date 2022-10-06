@@ -119,7 +119,7 @@ struct WeatherSettings
                 }
                 else
                 {
-                    utils::err("Invalid settings for Weather City");
+                    log::err("Invalid settings for Weather City");
                 }
             }
         }
@@ -153,11 +153,11 @@ struct WeatherSettings
 
         if (data.size() != 3)
         {
-            utils::err("Not enough data in Weather city cfg: %d", data.size());
-            utils::dbg("City cfg:");
+            log::err("Not enough data in Weather city cfg: %d", data.size());
+            log::dbg("City cfg:");
             for (auto& d : data)
             {
-                utils::dbg("%s", d.c_str());
+                log::dbg("%s", d.c_str());
             }
             return false;
         }

@@ -20,7 +20,7 @@ NtpTask::NtpTask(NtpSettings& ntpCfg, const EventGroupHandle_t& wifiEvtHandle)
     m_ntpTimeQ = xQueueCreate(1, sizeof(DateTime));
     if (!m_ntpTimeQ)
     {
-        utils::err("%s m_ntpTimeQ has not been created!.", MODULE_NAME);
+        log::err("%s m_ntpTimeQ has not been created!.", MODULE_NAME);
     }
 }
 
@@ -81,7 +81,7 @@ void NtpTask::run()
             if (ntp.updateTime())
             {
                 DateTime dt(ntp.getCurrentTime());
-                utils::dbg("%s UTC:%s", MODULE_NAME, dt.timestamp().c_str());
+                log::dbg("%s UTC:%s", MODULE_NAME, dt.timestamp().c_str());
                 // Update in Systime clock task
                 if (m_ntpTimeQ)
                 {

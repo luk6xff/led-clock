@@ -22,7 +22,7 @@ WifiTask::WifiTask(const WifiSettings& wifiCfg)
     m_wifiEvt = xEventGroupCreate();
     if (!m_wifiEvt)
     {
-        utils::err("%s event group create failed!", MODULE_NAME);
+        log::err("%s event group create failed!", MODULE_NAME);
     }
 }
 
@@ -70,7 +70,7 @@ void WifiTask::run()
                 captivePortalTimeoutCnt = 0;
                 if (wifiMgr.start())
                 {
-                    utils::inf("%s Succesfully connected to wifi, server is running", MODULE_NAME);
+                    log::inf("%s Succesfully connected to wifi, server is running", MODULE_NAME);
                     xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
                 }
             }
@@ -79,11 +79,11 @@ void WifiTask::run()
         // Lost wifi connection, try to reconnect
         if (wifiMgr.isStationModeActive() && !wifiMgr.isConnected())
         {
-            utils::err("%s Connection failed, waiting for %d seconds...",
+            log::err("%s Connection failed, waiting for %d seconds...",
                         MODULE_NAME, WIFI_TIMEOUT_MS/1000);
             if (wifiMgr.start())
             {
-                utils::inf("%s Wifi reconnected!", MODULE_NAME);
+                log::inf("%s Wifi reconnected!", MODULE_NAME);
             }
         }
 

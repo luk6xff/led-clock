@@ -42,7 +42,7 @@ App& App::instance()
 //------------------------------------------------------------------------------
 void App::setup()
 {
-    utils::init();
+    log::init();
     printMotd();
     AppCfg.init();
     AppCtx.setAppLang(AppCfg.getCurrent().other.appLang);
@@ -120,7 +120,7 @@ void App::runTasks()
 //------------------------------------------------------------------------------
 void App::printMotd()
 {
-    utils::inf("\r\nStarting <LUK6XFF LED_CLOCK 2020>\r\nSystem running on CPU %d at %d MHz.\r\nApp Version %s.\r\nFree heap memory %d\r\n",
+    log::inf("\r\nStarting <LUK6XFF LED_CLOCK 2020>\r\nSystem running on CPU %d at %d MHz.\r\nApp Version %s.\r\nFree heap memory %d\r\n",
         xPortGetCoreID(),
         ESP.getCpuFreqMHz(),
         APP_VERSION,

@@ -1,24 +1,13 @@
-#include "utils.h"
 
+#include "i2c_scanner.h"
 #include <driver/i2c.h>
 #include "sdkconfig.h"
 
-
-#define DBG_BAUDRATE 115200
-#define DBG_VERBOSITY_LEVEL DBG_VERBOSE
-
-//------------------------------------------------------------------------------
-void utils::init()
+namespace i2c
 {
-    Serial.begin(DBG_BAUDRATE);
-    Debug.setDebugOutputStream(&Serial);
-    Debug.setDebugLevel(DBG_VERBOSITY_LEVEL);
-    Debug.timestampOff();
-    utils::inf(">>> LED-CLOCK by luk6xff 2020 <<<\r\n");
-}
 
 //------------------------------------------------------------------------------
-void utils::util_i2c_scanner(uint8_t bus_num)
+void i2c_scanner(uint8_t bus_num)
 {
     int SDA_PIN = GPIO_NUM_21;
     int SCL_PIN = GPIO_NUM_22;
@@ -30,9 +19,9 @@ void utils::util_i2c_scanner(uint8_t bus_num)
         I2C_NUM = I2C_NUM_1;
     }
 
-    static const char TAG[] = "util_i2c_scanner";
+    static const char TAG[] = "i2c_scanner";
     esp_log_level_set(TAG, ESP_LOG_DEBUG);
-    ESP_LOGD(TAG, ">> util_i2c_scanner");
+    ESP_LOGD(TAG, ">> i2c_scanner");
     i2c_config_t conf;
     conf.mode = I2C_MODE_MASTER;
     conf.sda_io_num = (gpio_num_t)SDA_PIN;
@@ -68,6 +57,4 @@ void utils::util_i2c_scanner(uint8_t bus_num)
     }
     printf("\n");
 }
-
-//------------------------------------------------------------------------------
-
+}

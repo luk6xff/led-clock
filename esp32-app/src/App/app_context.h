@@ -8,7 +8,7 @@
  * @date   2020-11-18
  */
 
-#include "rtos_utils.h"
+#include "Rtos/rtos_utils.h"
 #include "Clock/system_time.h" // For DateTime structure
 #include "i18n.h"
 #include "app_status.h"

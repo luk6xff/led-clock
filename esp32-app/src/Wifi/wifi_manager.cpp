@@ -35,19 +35,19 @@ bool WifiManager::start()
     while (attempt < wifiConnectAttempts && !success)
     {
         attempt++;
-        utils::inf("\nWifi connection attempt num: %d", attempt);
+        log::inf("\nWifi connection attempt num: %d", attempt);
         success = wifiConnect(AppCfg.getCurrent().wifi.ssid, AppCfg.getCurrent().wifi.pass);
     }
 
     if (success)
     {
-        utils::inf("Wifi WebServer/Portal starting...");
+        log::inf("Wifi WebServer/Portal starting...");
         startWebPortal();
     }
     else
     {
-        utils::inf("\nWifi connection could not be established");
-        utils::inf("WifiMode AP (Captive Portal) starting...");
+        log::inf("\nWifi connection could not be established");
+        log::inf("WifiMode AP (Captive Portal) starting...");
         startCaptivePortal();
     }
 
@@ -84,7 +84,7 @@ bool WifiManager::isConnected()
 //------------------------------------------------------------------------------
 bool WifiManager::wifiConnect(const char *ssid, const char *password)
 {
-    utils::inf("%s Waiting for WiFi to connect", MODULE_NAME);
+    log::inf("%s Waiting for WiFi to connect", MODULE_NAME);
 
     bool connected = false;
     int retry = 0;
@@ -94,11 +94,11 @@ bool WifiManager::wifiConnect(const char *ssid, const char *password)
 
     while (retry < wifiConnectRetries && !connected)
     {
-        utils::inf(".");
+        log::inf(".");
         connected = isConnected();
         if (connected)
         {
-            utils::inf("%s Connected to:%s, IPaddress:%s", MODULE_NAME,
+            log::inf("%s Connected to:%s, IPaddress:%s", MODULE_NAME,
                 WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
             WiFi.mode(WIFI_STA);
         }
@@ -116,7 +116,7 @@ bool WifiManager::startCaptivePortal()
 {
     bool ret;
 
-    utils::inf("Starting Access Point");
+    log::inf("Starting Access Point");
 
     // Reset Wifi and set to AP mode
     reset();
@@ -130,26 +130,26 @@ bool WifiManager::startCaptivePortal()
     }
     if (apPass == "" || apPass.length() < 8 || apPass.length() > 63)
     {
-        utils::inf("AccessPoint set password is INVALID or <8 or >63 chars, default `admin123` set instead");
+        log::inf("AccessPoint set password is INVALID or <8 or >63 chars, default `admin123` set instead");
         apPass = "admin123";
     }
 
     ret = WiFi.softAP(apHostname.c_str(), apPass.c_str());
     if (!ret)
     {
-        utils::err("Error occured during setting Wifi.softAP!");
+        log::err("Error occured during setting Wifi.softAP!");
         return false;
     }
 
-    utils::inf("Setting softAP Hostname: %s", apHostname.c_str());
+    log::inf("Setting softAP Hostname: %s", apHostname.c_str());
     ret = WiFi.softAPsetHostname(apHostname.c_str());
     if (!ret)
     {
-        utils::err("Hostname: AP set failed!");
+        log::err("Hostname: AP set failed!");
     }
     else
     {
-        utils::inf("Hostname: AP: %s", WiFi.softAPgetHostname());
+        log::inf("Hostname: AP: %s", WiFi.softAPgetHostname());
     }
 
     IPAddress localIp(192,168,4,1);
@@ -158,19 +158,19 @@ bool WifiManager::startCaptivePortal()
     ret = WiFi.softAPConfig(localIp, gateway, subnetMask);
     if (!ret)
     {
-        utils::err("WiFi.softAPConfig set failed!");
+        log::err("WiFi.softAPConfig set failed!");
         return false;
     }
 
     delay(500);  // Need to wait to get IP
-    utils::inf("AP Name: %s", k_apHostname);
-    utils::inf("AP IP address: %s", WiFi.softAPIP().toString().c_str());
+    log::inf("AP Name: %s", k_apHostname);
+    log::inf("AP IP address: %s", WiFi.softAPIP().toString().c_str());
 
     m_dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     ret = m_dnsServer.start(k_dnsPort, "*", localIp);
     if (!ret)
     {
-        utils::err("dnsServer.start failed!");
+        log::err("dnsServer.start failed!");
         return false;
     }
 

@@ -23,17 +23,17 @@ SystemTime::SystemTime(SystemTimeSettings& timeSettings)
     rtos::LockGuard<rtos::Mutex> lock(g_i2c0Mutex);
     if (!m_rtc.begin())
     {
-        utils::err("Couldn't find RTC");
+        log::err("Couldn't find RTC");
     }
 
     if (m_rtc.lostPower())
     {
-        utils::err("RTC lost power, let set the default time!");
+        log::err("RTC lost power, let set the default time!");
         m_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     }
 
     m_lastTimezone = (m_timezone.locIsDST(m_rtc.now().unixtime())) ? TimezoneType::TIMEZONE_DST : TimezoneType::TIMEZONE_STD;
-    utils::dbg("RTC current timezone: %d", m_lastTimezone);
+    log::dbg("RTC current timezone: %d", m_lastTimezone);
 }
 
 //------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ DateTime SystemTime::checkTimezoneChange(const DateTime& dt)
     DateTime resultDt = dt;
     if (!m_timezone.locIsDST(time) && m_lastTimezone == TimezoneType::TIMEZONE_DST)
     {
-        utils::inf("Timezone changed from DST to STD");
+        log::inf("Timezone changed from DST to STD");
         m_lastTimezone = TimezoneType::TIMEZONE_STD;
         DateTime newDt(utc + (m_timeSettings.stdStart.offset - 60) * toSecs);
         setTime(newDt);
@@ -87,7 +87,7 @@ DateTime SystemTime::checkTimezoneChange(const DateTime& dt)
         if (m_timezone.locIsDST(time + (m_timeSettings.stdStart.offset * toSecs)))
         {
             // Check if time was not moved back one hour before
-            utils::inf("Timezone changed from STD to DST");
+            log::inf("Timezone changed from STD to DST");
             m_lastTimezone = TimezoneType::TIMEZONE_DST;
             DateTime newDt(utc + (m_timeSettings.dstStart.offset + 60) * toSecs);
             setTime(newDt);

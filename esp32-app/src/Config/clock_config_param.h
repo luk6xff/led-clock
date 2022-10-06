@@ -148,7 +148,7 @@ struct SystemTimeSettings
                 }
                 else
                 {
-                    utils::err("Invalid settings for Timezone1");
+                    log::err("Invalid settings for Timezone1");
                 }
             }
             else if (v[TIME_CFG_VAL_TZ_2])
@@ -162,7 +162,7 @@ struct SystemTimeSettings
                 }
                 else
                 {
-                    utils::err("Invalid settings for Timezone2");
+                    log::err("Invalid settings for Timezone2");
                 }
             }
             else if (v[TIME_CFG_VAL_NTP_ON])
@@ -218,11 +218,11 @@ struct SystemTimeSettings
 
         if (data.size() != 6)
         {
-            utils::err("Not enough data in TZ cfg: %d", data.size());
-            utils::dbg("TZ cfg:");
+            log::err("Not enough data in TZ cfg: %d", data.size());
+            log::dbg("TZ cfg:");
             for (auto& d : data)
             {
-                utils::dbg("%s", d.c_str());
+                log::dbg("%s", d.c_str());
             }
             return false;
         }

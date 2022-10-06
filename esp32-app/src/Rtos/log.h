@@ -2,7 +2,7 @@
 
 #include "DebugUtils.h"
 
-namespace utils
+namespace log
 {
 
     /**
@@ -56,13 +56,8 @@ namespace utils
 
 
     /**
-     * @brief Updates all the needed global utils state
+     * @brief Updates all the needed global log state
      * @note Must be called in the main.cpp in the loop function
      */
     void update();
-
-    /**
-     * @brief Searches for i2c devices on the bus
-     */
-    void util_i2c_scanner(uint8_t bus_num);
 };

@@ -20,7 +20,7 @@ void OtaUpdate::handleOtaRequest(AsyncWebServerRequest *request, const String& f
     if (!index)
     {
         AppCtx.setAppStatus(AppStatusType::OTA_UPDATE_RUNNING);
-        utils::inf("OTA Update starting...");
+        log::inf("OTA Update starting...");
         m_otaFileContentLen = request->contentLength();
         // If filename includes spiffs, update the spiffs partition
         const int storageType = (filename.indexOf("spiffs") > -1) ? U_SPIFFS : U_FLASH;
@@ -48,7 +48,7 @@ void OtaUpdate::handleOtaRequest(AsyncWebServerRequest *request, const String& f
         }
         else
         {
-            utils::inf("OTA Update completed!");
+            log::inf("OTA Update completed!");
             AppCtx.clearAppStatus(AppStatusType::OTA_UPDATE_RUNNING);
             ESP.restart();
         }
@@ -58,7 +58,7 @@ void OtaUpdate::handleOtaRequest(AsyncWebServerRequest *request, const String& f
 //------------------------------------------------------------------------------
 void OtaUpdate::printOtaUpdateProgress(size_t prg, size_t sz)
 {
-    utils::inf("Progress: %d%%\n", (prg*100) / m_otaFileContentLen);
+    log::inf("Progress: %d%%\n", (prg*100) / m_otaFileContentLen);
 }
 
 

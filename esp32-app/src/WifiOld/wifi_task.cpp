@@ -22,7 +22,7 @@ WifiTask::WifiTask(const WifiSettings& wifiCfg)
     m_wifiEvt = xEventGroupCreate();
     if (!m_wifiEvt)
     {
-        utils::err("%s event group create failed!", MODULE_NAME);
+        log::err("%s event group create failed!", MODULE_NAME);
     }
 }
 
@@ -72,7 +72,7 @@ void WifiTask::run()
                 captivePortalTimeoutCnt = 0;
                 if (server.start())
                 {
-                    utils::inf("%s Succesfully connected to wifi, server is running", MODULE_NAME);
+                    log::inf("%s Succesfully connected to wifi, server is running", MODULE_NAME);
                     xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
                 }
             }
@@ -81,20 +81,20 @@ void WifiTask::run()
         // Lost connection, try to reconnect
         if (server.isStationModeActive() && !server.wifiConnected())
         {
-            utils::err("%s Connection failed, waiting for %d seconds...",
+            log::err("%s Connection failed, waiting for %d seconds...",
                         MODULE_NAME, WIFI_TIMEOUT_MS/1000);
             vTaskDelay(WIFI_TIMEOUT_MS / portTICK_PERIOD_MS);
             wifiConnectionFailureCnt++;
             if (wifiConnectionFailureCnt >= 3)
             {
-                utils::inf("%s Starting CaptivePortal...", MODULE_NAME);
+                log::inf("%s Starting CaptivePortal...", MODULE_NAME);
                 if (server.runCaptivePortal())
                 {
-                    utils::inf("%s CaptivePortal is running", MODULE_NAME);
+                    log::inf("%s CaptivePortal is running", MODULE_NAME);
                 }
                 else
                 {
-                    utils::dbg("%s CaptivePortal start failure!", MODULE_NAME);
+                    log::dbg("%s CaptivePortal start failure!", MODULE_NAME);
                 }
 
                 wifiConnectionFailureCnt = 0;

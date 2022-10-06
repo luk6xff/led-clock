@@ -3,9 +3,26 @@
 #include <map>
 #include <ArduinoJson.h>
 
+class ConfigParamBase
+{
+public:
 
-template<typename WebConfigDataType>
-class WebConfigParam
+    ConfigParamBase(const char* key)
+    : m_key(key)
+    {
+    }
+
+    const char* key()
+    {
+        return m_key;
+    }
+
+protected:
+    const char* m_key;
+};
+
+template<typename ConfigDataType, typename ConfigHndlType>
+class ConfigParam : public ConfigParamBase
 {
 
 public:
@@ -13,20 +30,25 @@ public:
     using ParamsKey = uint32_t;
     using ParamsMap = std::map<uint32_t, const char*>;
 
-    WebConfigParam(const char* key)
-    : m_key(key)
+    ConfigParam(const char* key, ConfigHndlType& cfgHndl),
+        : ConfigParamBase(key)
+        , m_cfgHndl(cfgHndl)
     {}
 
     virtual bool setConfig(const JsonObject& json) = 0;
 
     virtual void getConfig(String& configPayload) = 0;
 
+    virtual String toStr() = 0;
+
+
 protected:
+
     virtual void setCfgParamsMap() = 0;
 
-    virtual bool unpackFromJson(WebConfigDataType& cfgData, const JsonObject& json) = 0;
+    virtual bool unpackFromJson(ConfigDataType& cfgData, const JsonObject& json) = 0;
 
-    virtual String packToJson(const WebConfigDataType& data) = 0;
+    virtual String packToJson(const ConfigDataType& data) = 0;
 
     const char* cfgParamKey(ParamsKey key)
     {
@@ -52,7 +74,7 @@ protected:
     }
 
 protected:
-    const char* m_key;
-    WebConfigDataType m_cfgData;
+    ConfigDataType m_cfgData;
+    ConfigHndlType& m_cfgHndl;
     ParamsMap m_cfgParamsMap;
 };

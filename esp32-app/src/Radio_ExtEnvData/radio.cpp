@@ -37,7 +37,7 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
     uint8_t attempts = 0;
     while (!lora_arduino_init(&dev, &arduino_dev) && (attempts++ < attempts_num))
     {
-        utils::dbg("LORA Radio cannot be detected!, check your connections.");
+        log::dbg("LORA Radio cannot be detected!, check your connections.");
         lora_delay_ms(2000);
     }
     lora_on_receive(&dev, &Radio::on_rx_done);
@@ -54,7 +54,7 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
     msgSensorDataQ = xQueueCreate(4, sizeof(radio_msg_queue_data));
     if (!msgSensorDataQ)
     {
-        utils::err("RADIO: msgSensorDataQ has not been created!.");
+        log::err("RADIO: msgSensorDataQ has not been created!.");
     }
 
     // Switch into RX mode
@@ -93,7 +93,7 @@ void Radio::restart()
     uint8_t attempts = 0;
     while (!lora_arduino_init(&dev, &arduino_dev) && (attempts++ < attempts_num))
     {
-        utils::dbg("LORA Radio cannot be detected!, check your connections.");
+        log::dbg("LORA Radio cannot be detected!, check your connections.");
         lora_delay_ms(2000);
     }
 
@@ -123,29 +123,29 @@ radio_msg_sensor_frame_status Radio::parse_incoming_msg_sensor(uint8_t *payload,
     radio_msg_sensor_frame_status status = MSG_NO_ERROR;
     if (mf->checksum != checksum)
     {
-        utils::err("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x", mf->checksum, checksum);
+        log::err("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x", mf->checksum, checksum);
         status = MSG_CHECKSUM_ERROR;
     }
     else
     {
         if (~(mf->status & MSG_NO_ERROR))
         {
-            utils::dbg("MSG_NO_ERROR");
-            utils::dbg("VBATT:%d[mV], T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]", mf->vbatt, mf->temperature, mf->pressure, mf->humidity);
+            log::dbg("MSG_NO_ERROR");
+            log::dbg("VBATT:%d[mV], T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]", mf->vbatt, mf->temperature, mf->pressure, mf->humidity);
         }
         else if (mf->status & MSG_READ_ERROR)
         {
-            utils::err("MSG_READ_ERROR");
+            log::err("MSG_READ_ERROR");
             status = MSG_READ_ERROR;
         }
         else if (mf->status & MSG_INIT_ERROR)
         {
-            utils::err("MSG_INIT_ERROR");
+            log::err("MSG_INIT_ERROR");
             status = MSG_INIT_ERROR;
         }
         if (mf->status & MSG_BATT_LOW)
         {
-            utils::err("MSG_BATT_LOW");
+            log::err("MSG_BATT_LOW");
             status = MSG_BATT_LOW;
         }
     }
@@ -156,7 +156,7 @@ radio_msg_sensor_frame_status Radio::parse_incoming_msg_sensor(uint8_t *payload,
 //------------------------------------------------------------------------------
 void Radio::on_tx_done(void *args)
 {
-    utils::dbg("> on_tx_done");
+    log::dbg("> on_tx_done");
 }
 
 //-----------------------------------------------------------------------------
@@ -218,17 +218,17 @@ err:
 //-----------------------------------------------------------------------------
 void Radio::on_tx_timeout(void *args)
 {
-    utils::dbg("> on_tx_timeout");
+    log::dbg("> on_tx_timeout");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_timeout(void *args)
 {
-    utils::dbg("> on_rx_timeout");
+    log::dbg("> on_rx_timeout");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_error(void *args)
 {
-    utils::dbg("> on_rx_error");
+    log::dbg("> on_rx_error");
 }

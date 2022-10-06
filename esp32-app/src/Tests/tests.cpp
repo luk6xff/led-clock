@@ -196,12 +196,12 @@
 void tests_setup()
 {
     // Utils init
-    utils::init();
+    log::init();
 #ifdef TEST_I2C_SCANNER
-    utils::dbg("SCANNING I2C_BUS_0...");
-    utils::util_i2c_scanner(0);
-    utils::dbg("SCANNING I2C_BUS_1...");
-    utils::util_i2c_scanner(1);
+    log::dbg("SCANNING I2C_BUS_0...");
+    i2c::i2c_scanner(0);
+    log::dbg("SCANNING I2C_BUS_1...");
+    i2c::i2c_scanner(1);
 #endif
 
 #ifdef TEST_RTOS_TASK
@@ -388,7 +388,7 @@ void tests_run()
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(500);
-        utils::dbg(".");
+        log::dbg(".");
     }
     NtpSettings ntpConfig(0, 10000, "time.google.com");//"pl.pool.ntp.org");
     Ntp ntp(ntpConfig);
@@ -445,14 +445,14 @@ void tests_run()
 
 
 #ifdef TEST_LIGHT_SENSOR
-        utils::dbg("BH1750 Light: %3.2f [lx]", light.getIlluminance());
+        log::dbg("BH1750 Light: %3.2f [lx]", light.getIlluminance());
 #endif // TEST_LIGHT_SENSOR
 
 
 #ifdef TEST_RTC
-        utils::dbg("SystemTime temperature: %3.2f", time.getTemperature());
-        utils::dbg("SystemTime time: %s", SystemTime::timeToStr(time.getTime()));
-        utils::dbg("SystemTime date: %s", SystemTime::dateToStr(time.getTime()));
+        log::dbg("SystemTime temperature: %3.2f", time.getTemperature());
+        log::dbg("SystemTime time: %s", SystemTime::timeToStr(time.getTime()));
+        log::dbg("SystemTime date: %s", SystemTime::dateToStr(time.getTime()));
 #endif // TEST_RTC
 
 
@@ -479,7 +479,7 @@ void tests_run()
         if (ntp.updateTime())
         {
             DateTime dt(ntp.getCurrentTime());
-            utils::dbg("NTP UTC:%s", dt.timestamp().c_str());
+            log::dbg("NTP UTC:%s", dt.timestamp().c_str());
             time.setUtcTime(dt);
         }
 #endif

@@ -18,7 +18,7 @@ WeatherTask::WeatherTask(const WeatherSettings& weatherCfg)
     m_weatherQ = xQueueCreate(1, sizeof(WeatherData));
     if (!m_weatherQ)
     {
-        utils::err("%s m_weatherQ has not been created!.", MODULE_NAME);
+        log::err("%s m_weatherQ has not been created!.", MODULE_NAME);
     }
 }
 
@@ -70,18 +70,18 @@ void WeatherTask::run()
         {
             String msg;
 
-            utils::dbg("Current Weather: ");
-            utils::dbg("%s %s", String(openWeatherMapOneCallData.current.temp, 1).c_str(), (true ? "°C" : "°F") );
-            utils::dbg("%s", openWeatherMapOneCallData.current.weatherDescription.c_str());
-            utils::dbg("Forecasts: ");
+            log::dbg("Current Weather: ");
+            log::dbg("%s %s", String(openWeatherMapOneCallData.current.temp, 1).c_str(), (true ? "°C" : "°F") );
+            log::dbg("%s", openWeatherMapOneCallData.current.weatherDescription.c_str());
+            log::dbg("Forecasts: ");
 
             for (int i = 0; i < 2; i++)
             {
                 if (openWeatherMapOneCallData.daily[i].dt > 0)
                 {
-                    utils::dbg("dt: %s", String(openWeatherMapOneCallData.daily[i].dt).c_str());
-                    utils::dbg("temp: %s %s",String(openWeatherMapOneCallData.daily[i].tempDay, 1).c_str(), (true ? "°C" : "°F") );
-                    utils::dbg("desc: %s",  openWeatherMapOneCallData.daily[i].weatherDescription.c_str());
+                    log::dbg("dt: %s", String(openWeatherMapOneCallData.daily[i].dt).c_str());
+                    log::dbg("temp: %s %s",String(openWeatherMapOneCallData.daily[i].tempDay, 1).c_str(), (true ? "°C" : "°F") );
+                    log::dbg("desc: %s",  openWeatherMapOneCallData.daily[i].weatherDescription.c_str());
                 }
             }
 
@@ -108,7 +108,7 @@ void WeatherTask::run()
         }
         else
         {
-            utils::err("%s Weather forecasts read failed!", MODULE_NAME);
+            log::err("%s Weather forecasts read failed!", MODULE_NAME);
         }
 
 
