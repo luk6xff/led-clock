@@ -149,14 +149,19 @@ void Config::setDefaults()
     memcpy(wifi.apPasswd, "admin123", sizeof(wifi.apPasswd));
     m_defaultCfgData.wifi = wifi;
 
-//     // SYSTEM TIME
-//     SystemTimeSystemConfig timeCfg = {
-//         2,
-//         {"CET", Last, Sun, Oct, 3, 60},  // Central European Standard Time
-//         {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
-//         {true, 0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org"}
-//     };
-//     m_defaultCfgData.time = timeCfg;
+    // TIME
+    TimeConfigData time = {
+        2,
+        {"CET", Last, Sun, Oct, 3, 60},  // Central European Standard Time
+        {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
+        true,
+        0,
+        (1000*3600),
+        "time.google.com",
+        "pl.pool.ntp.org",
+        "pool.ntp.org"}
+    };
+    m_defaultCfgData.time = time;
 
 //     // WEATHER
 //     WeatherSystemConfig weatherCfg;
