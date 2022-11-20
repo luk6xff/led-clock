@@ -1,7 +1,5 @@
 #include "config.h"
 #include "RtosUtils/utils.h"
-// Add all the params
-#include "wifi_config_param.h"
 
 
 #undef USE_DEVEL_CFG
@@ -14,13 +12,13 @@
 //-----------------------------------------------------------------------------
 Config::Config()
 {
-
     // Set defaults
     setDefaults();
     // Create config map
     m_cfgMap =
     {
         { WIFI_CFG_KEY, std::unique_ptr<WifiConfigParam>(new WifiConfigParam()) },
+        { TIME_CFG_KEY, std::unique_ptr<TimeConfigParam>(new TimeConfigParam()) },
     }
 }
 
@@ -53,7 +51,7 @@ void Config::init()
         if (!save(getDefaults()))
         {
             log::inf("Updating SysCfg with defaults failed!, setting current as defaults\r\n");
-            m_currentSysCfg = m_defaultSysCfg;
+            m_currentCfgData = m_defaultCfgData;
         }
         else
         {
@@ -69,17 +67,17 @@ void Config::close()
 }
 
 //------------------------------------------------------------------------------
-const Config::SystemConfig& Config::getDefaults()
+const Config::ConfigData& Config::getDefaults()
 {
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
-    return m_defaultSysCfg;
+    return m_defaultCfgData;
 }
 
 //------------------------------------------------------------------------------
-Config::SystemConfig& Config::getCurrent()
+Config::ConfigData& Config::getCurrent()
 {
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
-    return m_currentSysCfg;
+    return m_currentCfgData;
 }
 
 //------------------------------------------------------------------------------
@@ -90,14 +88,14 @@ const ConfigParamMap& Config::getCfgMap()
 }
 
 //------------------------------------------------------------------------------
-bool Config::save(const SystemConfig& sysCfg)
+bool Config::save(const ConfigData& sysCfg)
 {
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
     // Check if sysCfg are upto date, do not write them
-    if (memcmp(&sysCfg, &m_currentSysCfg, sizeof(SystemConfig)) == 0)
+    if (memcmp(&sysCfg, &m_currentCfgData, sizeof(ConfigData)) == 0)
     {
         log::inf("Current Cfg is equal to provided sysCfg, NVS save skipped!\r\n");
-        m_currentSysCfg = sysCfg;
+        m_currentCfgData = sysCfg;
         return false;
     }
     // Set the NVS data ready for writing
@@ -107,7 +105,7 @@ bool Config::save(const SystemConfig& sysCfg)
     if (ret == sizeof(sysCfg))
     {
         log::inf("SysCfg saved in NVS succesfully\r\n");
-        m_currentSysCfg = sysCfg;
+        m_currentCfgData = sysCfg;
         return true;
     }
     return false;
@@ -117,8 +115,8 @@ bool Config::save(const SystemConfig& sysCfg)
 bool Config::read()
 {
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
-    size_t ret = prefs.getBytes("syscfg", &m_currentSysCfg, sizeof(m_currentSysCfg));
-    if (ret == sizeof(m_currentSysCfg))
+    size_t ret = prefs.getBytes("syscfg", &m_currentCfgData, sizeof(m_currentCfgData));
+    if (ret == sizeof(m_currentCfgData))
     {
         log::inf("SysCfg read from NVS succesfully\r\n");
         return true;
@@ -132,7 +130,7 @@ void Config::setDefaults()
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
     // Modify according to your application
     // MAGIC
-    m_defaultSysCfg =
+    m_defaultCfgData =
     {
         .magic   = 0x4C554B36,  // LUK6
         .version = 0x00000007,
@@ -149,7 +147,7 @@ void Config::setDefaults()
 #endif
     memcpy(wifi.apHostname, "ledclock", sizeof(wifi.apHostname));
     memcpy(wifi.apPasswd, "admin123", sizeof(wifi.apPasswd));
-    m_defaultSysCfg.wifi = wifi;
+    m_defaultCfgData.wifi = wifi;
 
 //     // SYSTEM TIME
 //     SystemTimeSystemConfig timeCfg = {
@@ -158,30 +156,30 @@ void Config::setDefaults()
 //         {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
 //         {true, 0, (1000*3600), "time.google.com", "pl.pool.ntp.org", "pool.ntp.org"}
 //     };
-//     m_defaultSysCfg.time = timeCfg;
+//     m_defaultCfgData.time = timeCfg;
 
 //     // WEATHER
 //     WeatherSystemConfig weatherCfg;
 // #ifdef DEV_CFG
 //     memcpy(weatherCfg.owmAppid, DEV_CFG_WEATHER_OWM_APPID, OWM_APPID_MAXLEN);
 // #endif
-//     m_defaultSysCfg.weather = weatherCfg;
+//     m_defaultCfgData.weather = weatherCfg;
 
 //     // RADIO_SENSOR
 //     RadioSensorSystemConfig radioSensorCfg = {1800, 3000, 1, 5};
-//     m_defaultSysCfg.radioSensor = radioSensorCfg;
+//     m_defaultCfgData.radioSensor = radioSensorCfg;
 
 //     // INTERNAL ENVIRONMENT DATA
 //     InternalEnvDataSystemConfig intEnvCfg = {900, 1};
-//     m_defaultSysCfg.intEnv = intEnvCfg;
+//     m_defaultCfgData.intEnv = intEnvCfg;
 
 //     // DISPLAY
 //     DisplaySystemConfig displayCfg = {false, 0, 30, 1};
-//     m_defaultSysCfg.display = displayCfg;
+//     m_defaultCfgData.display = displayCfg;
 
 //     // OTHER
 //     AppSystemConfig otherCfg = { I18N_POLISH };
-//     m_defaultSysCfg.other = otherCfg;
+//     m_defaultCfgData.other = otherCfg;
 
 }
 

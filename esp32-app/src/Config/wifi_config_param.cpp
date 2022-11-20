@@ -15,17 +15,17 @@ bool WifiConfigParam::setConfig(const JsonObject& json)
 
     if (unpackFromJson(dataFromServer, json))
     {
-        log::dbg("unpackFromJson - SUCCESS");
-        auto cfg = m_cfgHndl.getCurrent();
-        memcpy(cfg.wifi.ssid, dataFromServer.ssid, sizeof(m_cfgHndl.getCurrent().wifi.ssid));
-        memcpy(cfg.wifi.passwd, dataFromServer.passwd, sizeof(m_cfgHndl.getCurrent().wifi.passwd));
-        memcpy(cfg.wifi.apHostname, dataFromServer.apHostname, sizeof(m_cfgHndl.getCurrent().wifi.apHostname));
-        memcpy(cfg.wifi.apPasswd, dataFromServer.apPasswd, sizeof(m_cfgHndl.getCurrent().wifi.apPasswd));
-        // Save cfg
-        return m_cfgHndl.save(cfg);
+        log::dbg("WifiConfigParam::unpackFromJson - SUCCESS");
+        if (m_cfgHndl.getCurrent().wifi != dataFromServer)
+        {
+            log::dbg("Storing new WifiConfigParam settings");
+            return m_cfgHndl.save(cfg);
+        }
+        log::dbg("Storing WifiConfigParam settings skipped, no change detected");
+        return false;
     }
 
-    log::err("unpackFromJson - ERROR");
+    log::err("WifiConfigParam::unpackFromJson - ERROR");
     return false;
 }
 
@@ -33,12 +33,7 @@ bool WifiConfigParam::setConfig(const JsonObject& json)
 void WifiConfigParam::getConfig(String& configPayload)
 {
     // Extract config data from application
-    WifiConfigData cfgData;
-    memcpy(cfgData.ssid, m_cfgHndl.getCurrent().wifi.ssid, sizeof(cfgData.ssid));
-    memcpy(cfgData.passwd, m_cfgHndl.getCurrent().wifi.pass, sizeof(cfgData.passwd));
-    memcpy(cfgData.apHostname, m_cfgHndl.getCurrent().wifi.ap_hostname, sizeof(cfgData.apHostname));
-    memcpy(cfgData.apPasswd, m_cfgHndl.getCurrent().wifi.ap_pass, sizeof(cfgData.apPasswd));
-    configPayload = packToJson(cfgData);
+    configPayload = packToJson(m_cfgHndl.getCurrent().wifi);
 }
 
 //------------------------------------------------------------------------------

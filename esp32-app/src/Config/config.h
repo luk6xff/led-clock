@@ -10,7 +10,9 @@
 #include <memory>
 #include <Preferences.h>
 #include "RtosUtils/rtos_utils.h"
+// Add all the params
 #include "wifi_config_param.h"
+#include "TimeConfigParam.h"
 
 #define Cfg Config::instance()
 
@@ -21,12 +23,12 @@ class Config
 {
 public:
 
-    struct SystemConfig
+    struct ConfigData
     {
         uint32_t magic;
         uint32_t version;
         WifiConfigData wifi;
-        // SystemTimeSettings time;
+        TimeConfigData time;
         // WeatherSettings weather;
         // RadioSensorSettings radioSensor;
         // InternalEnvDataSettings intEnv;
@@ -44,11 +46,11 @@ public:
     void init();
     void close();
 
-    const SystemConfig& getDefaults();
-    SystemConfig& getCurrent();
+    const ConfigData& getDefaults();
+    ConfigData& getCurrent();
     const ConfigParamMap& getCfgMap();
 
-    bool save(const SystemConfig& sysCfg);
+    bool save(const ConfigData& sysCfg);
     bool read();
 
 private:
@@ -57,8 +59,8 @@ private:
 
 private:
 
-    SystemConfig m_defaultSysCfg;
-    SystemConfig m_currentSysCfg;
+    ConfigData m_defaultCfgData;
+    ConfigData m_currentCfgData;
     rtos::Mutex m_cfgMtx;
     // NVS preferences
     Preferences prefs;

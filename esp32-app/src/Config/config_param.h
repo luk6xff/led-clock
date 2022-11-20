@@ -33,7 +33,9 @@ public:
     ConfigParam(const char* key, ConfigHndlType& cfgHndl),
         : ConfigParamBase(key)
         , m_cfgHndl(cfgHndl)
-    {}
+    {
+        setCfgParamsMap();
+    }
 
     virtual bool setConfig(const JsonObject& json) = 0;
 
