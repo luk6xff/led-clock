@@ -2,7 +2,7 @@
 
 
 //------------------------------------------------------------------------------
-RadioConfigParam::RadioConfigParam() : ConfigParam(TIME_CFG_KEY, Cfg)
+RadioConfigParam::RadioConfigParam() : ConfigParam(RADIO_CFG_KEY, Cfg)
 {
     setCfgParamsMap();
 }

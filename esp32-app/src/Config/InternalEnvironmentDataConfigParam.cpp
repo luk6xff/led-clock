@@ -2,7 +2,7 @@
 
 
 //------------------------------------------------------------------------------
-InternalEnvironmentDataConfigParam::InternalEnvironmentDataConfigParam() : ConfigParam(TIME_CFG_KEY, Cfg)
+InternalEnvironmentDataConfigParam::InternalEnvironmentDataConfigParam() : ConfigParam(INTENV_CFG_KEY, Cfg)
 {
     setCfgParamsMap();
 }
@@ -33,7 +33,7 @@ bool InternalEnvironmentDataConfigParam::setConfig(const JsonObject& json)
 void InternalEnvironmentDataConfigParam::getConfig(String& configPayload)
 {
     // Extract config data from application
-    configPayload = packToJson(m_cfgHndl.getCurrent().time);
+    configPayload = packToJson(m_cfgHndl.getCurrent().internalEnvironmentData);
 }
 
 //------------------------------------------------------------------------------

@@ -10,25 +10,23 @@ struct DisplayConfigData
     DisplayConfigData()
         : enableAutoIntenisty(true)
         , intensityValue(0)
-        , animSpeed(70)
+        , animationSpeed(70)
         , timeFormat(1)
     {
-
     }
 
     DisplayConfigData(bool enableOnOff, uint8_t intensityValue,
-                    uint8_t animSpeed,  uint8_t timeFormat)
+                    uint8_t animationSpeed,  uint8_t timeFormat)
         : enableAutoIntenisty(enableOnOff)
         , intensityValue(intensityValue)
-        , animSpeed(animSpeed)
+        , animationSpeed(animationSpeed)
         , timeFormat(timeFormat)
     {
-
     }
 
     uint8_t enableAutoIntenisty;
     uint8_t intensityValue;
-    uint8_t animSpeed;
+    uint8_t animationSpeed;
     uint8_t timeFormat; // [s] in seconds
 };
 
@@ -38,10 +36,10 @@ public:
 
     enum DisplayKeys : ParamsKey
     {
-        WIFI_SSID,
-        WIFI_PASSWD,
-        WIFI_AP_HOSTNAME,
-        WIFI_AP_PASSWD,
+        DISPLAY_ENABLE_AUTO_INTENSITY,
+        DISPLAY_INTENSITY_VALUE,
+        DISPLAY_ANIMATION_SPEED,
+        DISPLAY_TIME_FORMAT,
     };
 
     DisplayConfigParam();

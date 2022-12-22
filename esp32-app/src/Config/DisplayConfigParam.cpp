@@ -1,10 +1,10 @@
 #pragma once
 
-#include "display_config_param.h"
+#include "DisplayConfigParam.h"
 
 
 //------------------------------------------------------------------------------
-DisplayConfigParam::DisplayConfigParam() : ConfigParam(WIFI_CFG_KEY, Cfg)
+DisplayConfigParam::DisplayConfigParam() : ConfigParam(DISPLAY_CFG_KEY, Cfg)
 {
     setCfgParamsMap();
 }
@@ -17,17 +17,17 @@ bool DisplayConfigParam::setConfig(const JsonObject& json)
 
     if (unpackFromJson(dataFromServer, json))
     {
-        log::dbg("unpackFromJson - SUCCESS");
-        auto cfg = m_cfgHndl.getCurrent();
-        cfg.display.enableAutoIntenisty = dataFromServer.enableAutoIntenisty;
-        cfg.display.intensityValue      = dataFromServer.intensityValue;
-        cfg.display.animSpeed           = dataFromServer.animSpeed;
-        cfg.display.timeFormat          = dataFromServer.timeFormat;
-        // Save cfg
-        return m_cfgHndl.save(cfg);
+        log::dbg("DisplayConfigParam::unpackFromJson - SUCCESS");
+        if (m_cfgHndl.getCurrent().time != dataFromServer)
+        {
+            log::dbg("Storing new DisplayConfigData settings");
+            return m_cfgHndl.save(cfg);
+        }
+        log::dbg("Storing DisplayConfigData settings skipped, no change detected");
+        return false;
     }
 
-    log::err("unpackFromJson - ERROR");
+    log::err("DisplayConfigParam::unpackFromJson - ERROR");
     return false;
 }
 
@@ -35,9 +35,7 @@ bool DisplayConfigParam::setConfig(const JsonObject& json)
 void DisplayConfigParam::getConfig(String& configPayload)
 {
     // Extract config data from application
-    DisplayConfigData cfgData;
-    cfgData = m_cfgHndl.getCurrent().display;
-    configPayload = packToJson(cfgData);
+    configPayload = packToJson(m_cfgHndl.getCurrent().display);
 }
 
 //------------------------------------------------------------------------------
@@ -46,9 +44,9 @@ String DisplayConfigParam::toStr()
     const String colon = ":";
     const String comma = ", ";
     return key()+colon+comma + \
-        cfgParamKey(DisplayKeys::DISPLAY_AUTO_INTENSITY)+colon+String(m_cfgData.enableAutoIntenisty)+comma + \
+        cfgParamKey(DisplayKeys::DISPLAY_ENABLE_AUTO_INTENSITY)+colon+String(m_cfgData.enableAutoIntenisty)+comma + \
         cfgParamKey(DisplayKeys::DISPLAY_INTENSITY_VALUE)+colon+String(m_cfgData.intensityValue)+comma  + \
-        cfgParamKey(DisplayKeys::DISPLAY_ANIM_SPEED)+colon+String(m_cfgData.animSpeed)+comma  + \
+        cfgParamKey(DisplayKeys::DISPLAY_ANIMATION_SPEED)+colon+String(m_cfgData.animationSpeed)+comma  + \
         cfgParamKey(DisplayKeys::DISPLAY_TIME_FORMAT)+colon+String(m_cfgData.timeFormat);
 }
 
@@ -56,10 +54,10 @@ String DisplayConfigParam::toStr()
 void DisplayConfigParam::setCfgParamsMap()
 {
     m_cfgParamsMap = {
-        { DisplayKeys::DISPLAY_AUTO_INTENSITY,  "display-auto-intensity" },
-        { DisplayKeys::DISPLAY_INTENSITY_VALUE, "display-intensity-val" },
-        { DisplayKeys::DISPLAY_ANIM_SPEED,      "display-anim-speed" },
-        { DisplayKeys::DISPLAY_TIME_FORMAT,     "display-time-format" },
+        { DisplayKeys::DISPLAY_ENABLE_AUTO_INTENSITY,   "display-auto-intensity" },
+        { DisplayKeys::DISPLAY_INTENSITY_VALUE,         "display-intensity-val" },
+        { DisplayKeys::DISPLAY_ANIMATION_SPEED,         "display-anim-speed" },
+        { DisplayKeys::DISPLAY_TIME_FORMAT,             "display-time-format" },
     };
 }
 
@@ -72,9 +70,9 @@ bool DisplayConfigParam::unpackFromJson(DisplayConfigData& cfgData, const JsonOb
     JsonArray arr = json[key()].as<JsonArray>();
     for (const auto& v : arr)
     {
-        if (v[cfgParamKey(DisplayKeys::DISPLAY_AUTO_INTENSITY)])
+        if (v[cfgParamKey(DisplayKeys::DISPLAY_ENABLE_AUTO_INTENSITY)])
         {
-            cfgData.enableAutoIntenisty = v[cfgParamKey(DisplayKeys::DISPLAY_AUTO_INTENSITY)].as<uint8_t>();
+            cfgData.enableAutoIntenisty = v[cfgParamKey(DisplayKeys::DISPLAY_ENABLE_AUTO_INTENSITY)].as<uint8_t>();
         }
         else if (v[cfgParamKey(DisplayKeys::DISPLAY_INTENSITY_VALUE)])
         {
@@ -84,12 +82,12 @@ bool DisplayConfigParam::unpackFromJson(DisplayConfigData& cfgData, const JsonOb
                 cfgData.intensityValue = 0;
             }
         }
-        else if (v[cfgParamKey(DisplayKeys::DISPLAY_ANIM_SPEED)])
+        else if (v[cfgParamKey(DisplayKeys::DISPLAY_ANIMATION_SPEED)])
         {
-            cfgData.animSpeed = v[cfgParamKey(DisplayKeys::DISPLAY_ANIM_SPEED)].as<uint8_t>();
-            if (cfgData.animSpeed < 1 || cfgData.animSpeed > 1000)
+            cfgData.animationSpeed = v[cfgParamKey(DisplayKeys::DISPLAY_ANIMATION_SPEED)].as<uint8_t>();
+            if (cfgData.animationSpeed < 1 || cfgData.animationSpeed > 1000)
             {
-                cfgData.animSpeed = 50;
+                cfgData.animationSpeed = 50;
             }
         }
         else if (v[cfgParamKey(DisplayKeys::DISPLAY_TIME_FORMAT)])
@@ -108,11 +106,11 @@ String DisplayConfigParam::packToJson(const DisplayConfigData& data)
     String json;
     JsonArray arr = doc.createNestedArray(DISPLAY_CFG_KEY);
     JsonObject obj = arr.createNestedObject();
-    obj[cfgParamKey(DisplayKeys::DisplayKeys::DISPLAY_AUTO_INTENSITY)] = data.enableAutoIntenisty;
+    obj[cfgParamKey(DisplayKeys::DisplayKeys::DISPLAY_ENABLE_AUTO_INTENSITY)] = data.enableAutoIntenisty;
     obj = arr.createNestedObject();
     obj[cfgParamKey(DisplayKeys::DisplayKeys::DISPLAY_INTENSITY_VALUE)] = data.intensityValue;
     obj = arr.createNestedObject();
-    obj[cfgParamKey(DisplayKeys::DisplayKeys::DISPLAY_ANIM_SPEED)] = data.animSpeed;
+    obj[cfgParamKey(DisplayKeys::DisplayKeys::DISPLAY_ANIMATION_SPEED)] = data.animationSpeed;
     obj = arr.createNestedObject();
     obj[cfgParamKey(DisplayKeys::DisplayKeys::DISPLAY_TIME_FORMAT)] = data.timeFormat;
     serializeJson(doc, json);
