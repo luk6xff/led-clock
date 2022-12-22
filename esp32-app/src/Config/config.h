@@ -11,8 +11,12 @@
 #include <Preferences.h>
 #include "RtosUtils/rtos_utils.h"
 // Add all the params
-#include "wifi_config_param.h"
+#include "WifiConfigParam.h"
 #include "TimeConfigParam.h"
+#include "DisplayConfigParam.h"
+#include "RadioConfigParam.h"
+#include "InternalEnvironmentDataConfigParam.h"
+
 
 #define Cfg Config::instance()
 
@@ -29,10 +33,10 @@ public:
         uint32_t version;
         WifiConfigData wifi;
         TimeConfigData time;
-        // WeatherSettings weather;
-        // RadioSensorSettings radioSensor;
-        // InternalEnvDataSettings intEnv;
-        // DisplaySettings display;
+        DisplayConfigData display;
+        RadioConfigData radio;
+        InternalEnvironmentDataConfigData intEnv;
+        // WeatherSettins weather;
         // AppSettings other;
     };
 

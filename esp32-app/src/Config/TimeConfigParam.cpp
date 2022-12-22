@@ -43,8 +43,8 @@ String TimeConfigParam::toStr()
     const String comma = ", ";
     return key()+colon+comma + \
             cfgParamKey(TimeKeys::TIME_TIMEZONES_NUMBER)+colon+String(m_cfgData.timezoneNum)+comma + \
-            cfgParamKey(TimeKeys::TIME_TIMEZONE_1)+colon+String(m_cfgData.stdStart)+comma  + \
-            cfgParamKey(TimeKeys::TIME_TIMEZONE_2)+colon+String(m_cfgData.dstStart)+comma  + \
+            cfgParamKey(TimeKeys::TIME_TIMEZONE_1_UTC_OFFSET)+colon+String(m_cfgData.stdTimezone1UtcOffset)+comma  + \
+            cfgParamKey(TimeKeys::TIME_TIMEZONE_2_UTC_OFFSET)+colon+String(m_cfgData.dstTimezone2UtcOffset)+comma  + \
             cfgParamKey(TimeKeys::TIME_NTP_ENABLED)+colon+String(m_cfgData.ntpEnabled)+comma + \
             cfgParamKey(TimeKeys::TIME_NTP_TIME_OFFSET)+colon+String(m_cfgData.ntpTimeOffset)+comma  + \
             cfgParamKey(TimeKeys::TIME_NTP_SYNC_INTERVAL)+colon+String(m_cfgData.ntpUpdateInterval)+comma  + \
@@ -57,15 +57,15 @@ String TimeConfigParam::toStr()
 void TimeConfigParam::setCfgParamsMap()
 {
     m_cfgParamsMap = {
-        { TimeKeys::TIME_TIMEZONES_NUMBER,  "time-timezone-num" },
-        { TimeKeys::TIME_TIMEZONE_1,        "time-timezone-1" },
-        { TimeKeys::TIME_TIMEZONE_2,        "time-timezone-2" },
-        { TimeKeys::TIME_NTP_ENABLED,       "time-ntp-enable" },
-        { TimeKeys::TIME_NTP_TIME_OFFSET,   "time-ntp-time-offset" },
-        { TimeKeys::TIME_NTP_SYNC_INTERVAL, "time-ntp-sync-interval" },
-        { TimeKeys::TIME_NTP_SERVER_1,      "time-ntp-server-1" },
-        { TimeKeys::TIME_NTP_SERVER_2,      "time-ntp-server-2" },
-        { TimeKeys::TIME_NTP_SERVER_3,      "time-ntp-server-3" },
+        { TimeKeys::TIME_TIMEZONES_NUMBER,      "time-timezone-num" },
+        { TimeKeys::TIME_TIMEZONE_1_UTC_OFFSET, "time-timezone-1-utc-offset" },
+        { TimeKeys::TIME_TIMEZONE_2_UTC_OFFSET, "time-timezone-2-utc-offset" },
+        { TimeKeys::TIME_NTP_ENABLED,           "time-ntp-enable" },
+        { TimeKeys::TIME_NTP_TIME_OFFSET,       "time-ntp-time-offset" },
+        { TimeKeys::TIME_NTP_SYNC_INTERVAL,     "time-ntp-sync-interval" },
+        { TimeKeys::TIME_NTP_SERVER_1,          "time-ntp-server-1" },
+        { TimeKeys::TIME_NTP_SERVER_2,          "time-ntp-server-2" },
+        { TimeKeys::TIME_NTP_SERVER_3,          "time-ntp-server-3" },
     };
 }
 
@@ -86,37 +86,39 @@ bool TimeConfigParam::unpackFromJson(TimeConfigData& cfgData, const JsonObject& 
                 cfgData.timezoneNum = 1;
             }
         }
-        else if (v[cfgParamKey(TimeKeys::TIME_TIMEZONE_1)])
+        else if (v[cfgParamKey(TimeKeys::TIME_TIMEZONE_1_UTC_OFFSET)])
         {
-            int tzHoursOffset = v[cfgParamKey(TimeKeys::TIME_TIMEZONE_1)].as<int>();
+            int tzHoursOffset = v[cfgParamKey(TimeKeys::TIME_TIMEZONE_1_UTC_OFFSET)].as<int>();
             if (tzHoursOffset > 12 || tzHoursOffset < -12)
             {
                 tzHoursOffset = 0;
             }
-            TimeChangeRule tzRule;
-            memcpy(tzRule.abbrev, "STD", 6);
-            tzRule.week = 0;
-            tzRule.dow = 1;
-            tzRule.month = 10;
-            tzRule.hour = 3;
-            tzRule.offset = tzHoursOffset*60;
-            cfgData.stdStart = tzRule;
+            // TimeChangeRule tzRule;
+            // memcpy(tzRule.abbrev, "STD", 6);
+            // tzRule.week = 0;
+            // tzRule.dow = 1;
+            // tzRule.month = 10;
+            // tzRule.hour = 3;
+            // tzRule.offset = tzHoursOffset*60;
+            // cfgData.stdTimezone1UtcOffset = tzRule;
+            cfgData.stdTimezone1UtcOffset = tzHoursOffset;
         }
-        else if (v[cfgParamKey(TimeKeys::TIME_TIMEZONE_2)])
+        else if (v[cfgParamKey(TimeKeys::TIME_TIMEZONE_2_UTC_OFFSET)])
         {
-            int tzHoursOffset = v[cfgParamKey(TimeKeys::TIME_TIMEZONE_2)].as<int>();
+            int tzHoursOffset = v[cfgParamKey(TimeKeys::TIME_TIMEZONE_2_UTC_OFFSET)].as<int>();
             if (tzHoursOffset > 12 || tzHoursOffset < -12)
             {
                 tzHoursOffset = 0;
             }
-            TimeChangeRule tzRule;
-            memcpy(tzRule.abbrev, "DST", 6);
-            tzRule.week = 0;
-            tzRule.dow = 1;
-            tzRule.month = 3;
-            tzRule.hour = 2;
-            tzRule.offset = tzHoursOffset*60;
-            cfgData.dstStart = tzRule;
+            // TimeChangeRule tzRule;
+            // memcpy(tzRule.abbrev, "DST", 6);
+            // tzRule.week = 0;
+            // tzRule.dow = 1;
+            // tzRule.month = 3;
+            // tzRule.hour = 2;
+            // tzRule.offset = tzHoursOffset*60;
+            // cfgData.dstTimezone2UtcOffset = tzRule;
+            cfgData.dstTimezone2UtcOffset = tzHoursOffset;
         }
         else if (v[cfgParamKey(TimeKeys::TIME_NTP_ENABLED)])
         {
@@ -156,9 +158,9 @@ String TimeConfigParam::packToJson(const TimeConfigData& data)
     JsonObject obj = arr.createNestedObject();
     obj[cfgParamKey(TimeKeys::TIME_TIMEZONES_NUMBER)] = data.timezoneNum;
     obj = arr.createNestedObject();
-    obj[cfgParamKey(TimeKeys::TIME_TIMEZONE_1)] = data.stdStart;
+    obj[cfgParamKey(TimeKeys::TIME_TIMEZONE_1_UTC_OFFSET)] = data.stdTimezone1UtcOffset;
     obj = arr.createNestedObject();
-    obj[cfgParamKey(TimeKeys::TIME_TIMEZONE_2)] = data.dstStart;
+    obj[cfgParamKey(TimeKeys::TIME_TIMEZONE_2_UTC_OFFSET)] = data.dstTimezone2UtcOffset;
     obj = arr.createNestedObject();
     obj[cfgParamKey(TimeKeys::TIME_NTP_ENABLED)] = data.ntpEnabled;
     obj = arr.createNestedObject();

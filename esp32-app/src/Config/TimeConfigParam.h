@@ -3,7 +3,6 @@
 #include "config_param.h"
 #include "config_types.h"
 #include "config.h"
-#include <ArduinoJson.h>
 #include <Timezone.h>
 
 
@@ -13,11 +12,11 @@
 struct TimeConfigData
 {
     uint32_t timezoneNum;
-    TimeChangeRule stdStart; // eg. CET  - Central European Time (UTC+1)
-    TimeChangeRule dstStart; // eg. CEST - Central European daylight saving time (summer UTC+2)
+    int32_t stdTimezone1UtcOffset;  // Standard time, difference in hours. eg. CET  - Central European Time (UTC+1)
+    int32_t dstTimezone2UtcOffset;  // Summer time, difference in hours. eg. CEST - Central European daylight saving time (summer UTC+2)
     uint32_t ntpEnabled;
-    int32_t ntpTimeOffset;      // in [min]
-    uint32_t ntpUpdateInterval; // in [ms]
+    int32_t ntpTimeOffset;          // in [min]
+    uint32_t ntpUpdateInterval;     // in [ms]
     char ntpPoolServerNames[3][NTP_SERVER_NAME_MAXLEN];
 };
 
@@ -29,8 +28,8 @@ public:
     enum TimeKeys : ParamsKey
     {
         TIME_TIMEZONES_NUMBER,
-        TIME_TIMEZONE_1,
-        TIME_TIMEZONE_2,
+        TIME_TIMEZONE_1_UTC_OFFSET,
+        TIME_TIMEZONE_2_UTC_OFFSET,
         TIME_NTP_ENABLED,
         TIME_NTP_TIME_OFFSET,
         TIME_NTP_SYNC_INTERVAL,
