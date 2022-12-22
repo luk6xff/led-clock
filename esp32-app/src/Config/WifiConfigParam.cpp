@@ -8,7 +8,7 @@ WifiConfigParam::WifiConfigParam() : ConfigParam(WIFI_CFG_KEY, Cfg)
 }
 
 //------------------------------------------------------------------------------
-bool WifiConfigParam::setConfig(const JsonObject& json)
+bool WifiConfigParam::setConfigFromJson(const JsonObject& json)
 {
     WifiConfigData dataFromServer;
     memset(&dataFromServer, 0, sizeof(dataFromServer));
@@ -30,7 +30,7 @@ bool WifiConfigParam::setConfig(const JsonObject& json)
 }
 
 //------------------------------------------------------------------------------
-void WifiConfigParam::getConfig(String& configPayload)
+void WifiConfigParam::getConfigAsStr(String& configPayload)
 {
     // Extract config data from application
     configPayload = packToJson(m_cfgHndl.getCurrent().wifi);

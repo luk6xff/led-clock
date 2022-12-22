@@ -8,7 +8,7 @@ InternalEnvironmentDataConfigParam::InternalEnvironmentDataConfigParam() : Confi
 }
 
 //------------------------------------------------------------------------------
-bool InternalEnvironmentDataConfigParam::setConfig(const JsonObject& json)
+bool InternalEnvironmentDataConfigParam::setConfigFromJson(const JsonObject& json)
 {
     InternalEnvironmentDataConfigData dataFromServer;
     memset(&dataFromServer, 0, sizeof(dataFromServer));
@@ -30,7 +30,7 @@ bool InternalEnvironmentDataConfigParam::setConfig(const JsonObject& json)
 }
 
 //------------------------------------------------------------------------------
-void InternalEnvironmentDataConfigParam::getConfig(String& configPayload)
+void InternalEnvironmentDataConfigParam::getConfigAsStr(String& configPayload)
 {
     // Extract config data from application
     configPayload = packToJson(m_cfgHndl.getCurrent().intEnv);

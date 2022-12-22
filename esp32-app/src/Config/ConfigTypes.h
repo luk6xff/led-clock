@@ -108,7 +108,7 @@ struct AppConfigData
 {
 
     AppConfigData()
-        : appLang(I18N_POLISH)
+    : appLang(I18N_POLISH)
     {
     }
     i18n_lang appLang;

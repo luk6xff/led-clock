@@ -87,32 +87,37 @@ Config::ConfigData& Config::getCurrent()
 }
 
 //------------------------------------------------------------------------------
-const ConfigParamMap& Config::getCfgMap()
+const Config::ConfigParamMap& Config::getCfgMap()
 {
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
     return m_cfgMap;
 }
 
 //------------------------------------------------------------------------------
-bool Config::save(const ConfigData& sysCfg)
+bool Config::save(ConfigParamKey key, const void *cfg)
 {
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
-    // Check if sysCfg are upto date, do not write them
-    if (memcmp(&sysCfg, &m_currentCfgData, sizeof(ConfigData)) == 0)
-    {
-        logger::inf("Current Cfg is equal to provided sysCfg, NVS save skipped!\r\n");
-        m_currentCfgData = sysCfg;
-        return false;
-    }
-    // Set the NVS data ready for writing
-    size_t ret = prefs.putBytes("syscfg", (const void*)&sysCfg, sizeof(sysCfg));
 
-    // Write the data to NVS
-    if (ret == sizeof(sysCfg))
+    const auto cfgDataIt = m_cfgMap.find(key);
+    if (cfgDataIt != m_cfgMap.end())
     {
-        logger::inf("SysCfg saved in NVS succesfully\r\n");
-        m_currentCfgData = sysCfg;
-        return true;
+        // Check if cfg are upto date, do not write them
+        if (memcmp(cfgDataIt->second, &m_currentCfgData, sizeof(ConfigData)) == 0)
+        {
+            logger::inf("Current Cfg is equal to provided sysCfg, NVS save skipped!\r\n");
+            m_currentCfgData = sysCfg;
+            return false;
+        }
+        // Set the NVS data ready for writing
+        size_t ret = prefs.putBytes("syscfg", (const void*)&sysCfg, sizeof(sysCfg));
+
+        // Write the data to NVS
+        if (ret == sizeof(sysCfg))
+        {
+            logger::inf("SysCfg saved in NVS succesfully\r\n");
+            m_currentCfgData = sysCfg;
+            return true;
+        }
     }
     return false;
 }
@@ -165,7 +170,7 @@ void Config::setDefaults()
         (1000*3600),
         "time.google.com",
         "pl.pool.ntp.org",
-        "pool.ntp.org"}
+        "pool.ntp.org"
     };
     m_defaultCfgData.time = time;
 
@@ -189,7 +194,7 @@ void Config::setDefaults()
     m_defaultCfgData.weather = weather;
 
     // APP
-    AppConfigData app = { I18N_POLISH };
+    AppConfigData app;
     m_defaultCfgData.app = app;
 }
 
@@ -200,13 +205,10 @@ void Config::printCurrentSysCfg()
     logger::inf("SysCfg size: %d bytes", sizeof(getCurrent()));
     logger::inf("magic: 0x%08x", getCurrent().magic);
     logger::inf("version: 0x%08x", getCurrent().version);
-    logger::inf(getCurrent().wifi.toStr().c_str());
-    logger::inf(getCurrent().time.toStr().c_str());
-    logger::inf(getCurrent().display.toStr().c_str());
-    logger::inf(getCurrent().radio.toStr().c_str());
-    logger::inf(getCurrent().intEnv.toStr().c_str());
-    logger::inf(getCurrent().weather.toStr().c_str());
-    logger::inf(getCurrent().app.toStr().c_str());
+    for (auto& cfg: m_cfgMap)
+    {
+        logger::inf(cfg.second->toStr().c_str());
+    }
     logger::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
 }
 

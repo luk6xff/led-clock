@@ -21,6 +21,8 @@ public:
         return m_key;
     }
 
+    virtual String toStr() = 0;
+
 protected:
     const char* m_key;
 };
@@ -38,16 +40,16 @@ public:
         setCfgParamsMap();
     }
 
-    virtual bool setConfig(const JsonObject& json) = 0;
+    virtual bool setConfigFromJson(const JsonObject& json) = 0;
 
-    virtual void getConfig(String& configPayload) = 0;
+    virtual void getConfigAsStr(String& configPayload) = 0;
 
-    virtual String toStr() = 0;
+    virtual String toStr() override = 0;
 
 
 protected:
 
-    virtual void setCfgParamsMap() = 0;
+    virtual void setCfgParamsMap() {};
 
     virtual bool unpackFromJson(ConfigDataType& cfgData, const JsonObject& json) = 0;
 

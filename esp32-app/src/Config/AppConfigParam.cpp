@@ -8,7 +8,7 @@ AppConfigParam::AppConfigParam() : ConfigParam(INTENV_CFG_KEY, Cfg)
 }
 
 //------------------------------------------------------------------------------
-bool AppConfigParam::setConfig(const JsonObject& json)
+bool AppConfigParam::setConfigFromJson(const JsonObject& json)
 {
     AppConfigData dataFromServer;
     memset(&dataFromServer, 0, sizeof(dataFromServer));
@@ -30,7 +30,7 @@ bool AppConfigParam::setConfig(const JsonObject& json)
 }
 
 //------------------------------------------------------------------------------
-void AppConfigParam::getConfig(String& configPayload)
+void AppConfigParam::getConfigAsStr(String& configPayload)
 {
     // Extract config data from application
     configPayload = packToJson(m_cfgHndl.getCurrent().app);

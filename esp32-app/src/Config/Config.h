@@ -56,7 +56,7 @@ public:
     ConfigData& getCurrent();
     const ConfigParamMap& getCfgMap();
 
-    bool save(const ConfigData& sysCfg);
+    bool save(ConfigParamKey key, const void *cfg);
     bool read();
 
 private:

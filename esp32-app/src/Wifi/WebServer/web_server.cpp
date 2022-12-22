@@ -47,7 +47,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
     server.on("/dev-cfg-read", HTTP_GET, [this] (AsyncWebServerRequest *request)
     {
         String payload;
-        m_Config.getConfig(payload);
+        m_Config.getConfigAsStr(payload);
         WebServer::RequestResponseData resp = prepareJsonResponse(WebServer::RequestResponseType::SUCCESS, payload);
         request->send(resp.errorCode, resp.type, resp.payload);
         logger::dbg("/dev-cfg-read response: %s", resp.payload.c_str());
@@ -61,7 +61,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         String emptyPayload;
         WebServer::RequestResponseData resp;
 
-        if (m_Config.setConfig(jsonObj))
+        if (m_Config.setConfigFromJson(jsonObj))
         {
             resp = prepareJsonResponse(WebServer::RequestResponseType::SUCCESS, emptyPayload);
             logger::inf("/dev-cfg-save SUCCESS");

@@ -8,7 +8,7 @@ TimeConfigParam::TimeConfigParam() : ConfigParam(TIME_CFG_KEY, Cfg)
 }
 
 //------------------------------------------------------------------------------
-bool TimeConfigParam::setConfig(const JsonObject& json)
+bool TimeConfigParam::setConfigFromJson(const JsonObject& json)
 {
     TimeConfigData dataFromServer;
     memset(&dataFromServer, 0, sizeof(dataFromServer));
@@ -30,7 +30,7 @@ bool TimeConfigParam::setConfig(const JsonObject& json)
 }
 
 //------------------------------------------------------------------------------
-void TimeConfigParam::getConfig(String& configPayload)
+void TimeConfigParam::getConfigAsStr(String& configPayload)
 {
     // Extract config data from application
     configPayload = packToJson(m_cfgHndl.getCurrent().time);

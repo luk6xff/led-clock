@@ -21,8 +21,8 @@ public:
 
 
     RadioConfigParam();
-    bool setConfig(const JsonObject& json) override;
-    void getConfig(String& configPayload) override;
+    bool setConfigFromJson(const JsonObject& json) override;
+    void getConfigAsStr(String& configPayload) override;
     String toStr() override;
 
 private:

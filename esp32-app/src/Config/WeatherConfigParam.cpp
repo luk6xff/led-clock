@@ -8,7 +8,7 @@ WeatherConfigParam::WeatherConfigParam() : ConfigParam(RADIO_CFG_KEY, Cfg)
 }
 
 //------------------------------------------------------------------------------
-bool WeatherConfigParam::setConfig(const JsonObject& json)
+bool WeatherConfigParam::setConfigFromJson(const JsonObject& json)
 {
     WeatherConfigData dataFromServer;
     memset(&dataFromServer, 0, sizeof(dataFromServer));
@@ -30,7 +30,7 @@ bool WeatherConfigParam::setConfig(const JsonObject& json)
 }
 
 //------------------------------------------------------------------------------
-void WeatherConfigParam::getConfig(String& configPayload)
+void WeatherConfigParam::getConfigAsStr(String& configPayload)
 {
     // Extract config data from application
     configPayload = packToJson(m_cfgHndl.getCurrent().weather);

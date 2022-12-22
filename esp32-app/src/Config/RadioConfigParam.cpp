@@ -9,7 +9,7 @@ RadioConfigParam::RadioConfigParam() : ConfigParam(RADIO_CFG_KEY, Cfg)
 }
 
 //------------------------------------------------------------------------------
-bool RadioConfigParam::setConfig(const JsonObject& json)
+bool RadioConfigParam::setConfigFromJson(const JsonObject& json)
 {
     RadioConfigData dataFromServer;
     memset(&dataFromServer, 0, sizeof(dataFromServer));
@@ -31,7 +31,7 @@ bool RadioConfigParam::setConfig(const JsonObject& json)
 }
 
 //------------------------------------------------------------------------------
-void RadioConfigParam::getConfig(String& configPayload)
+void RadioConfigParam::getConfigAsStr(String& configPayload)
 {
     // Extract config data from application
     configPayload = packToJson(m_cfgHndl.getCurrent().radio);

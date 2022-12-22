@@ -8,7 +8,7 @@ DisplayConfigParam::DisplayConfigParam() : ConfigParam(DISPLAY_CFG_KEY, Cfg)
 }
 
 //------------------------------------------------------------------------------
-bool DisplayConfigParam::setConfig(const JsonObject& json)
+bool DisplayConfigParam::setConfigFromJson(const JsonObject& json)
 {
     DisplayConfigData dataFromServer;
     memset(&dataFromServer, 0, sizeof(dataFromServer));
@@ -30,7 +30,7 @@ bool DisplayConfigParam::setConfig(const JsonObject& json)
 }
 
 //------------------------------------------------------------------------------
-void DisplayConfigParam::getConfig(String& configPayload)
+void DisplayConfigParam::getConfigAsStr(String& configPayload)
 {
     // Extract config data from application
     configPayload = packToJson(m_cfgHndl.getCurrent().display);

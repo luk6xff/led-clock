@@ -27,7 +27,7 @@ enum month_t {Jan=1, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec};
 struct TimeChangeRule
 {
 
-    TimeChangeRule(char _abbrev[6], uint8_t _week, uint8_t _dow, uint8_t _month, uint8_t _hour, int _offset)
+    TimeChangeRule(const char* _abbrev, uint8_t _week, uint8_t _dow, uint8_t _month, uint8_t _hour, int _offset)
     : week(_week)
     , dow(_dow)
     , month(_month)
