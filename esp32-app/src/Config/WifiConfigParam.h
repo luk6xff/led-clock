@@ -1,9 +1,6 @@
 #pragma once
 
-#include "ConfigParam.h"
-#include "ConfigTypes.h"
 #include "Config.h"
-
 
 #undef USE_DEVEL_CFG
 
@@ -11,13 +8,7 @@
     #include "dev_cfg.h"
 #endif
 
-
-
-
-
-class Config;
-
-class WifiConfigParam : public ConfigParam<WifiConfigData, Config>
+class WifiConfigParam : public ConfigParam<WifiConfigData>
 {
 public:
 
@@ -31,7 +22,6 @@ public:
 
     WifiConfigParam();
     bool setConfigFromJson(const JsonObject& json) override;
-    void getConfigAsStr(String& configPayload) override;
     String toStr() override;
 
 private:

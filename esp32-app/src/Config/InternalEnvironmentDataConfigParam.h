@@ -1,12 +1,9 @@
 #pragma once
 
-#include "ConfigParam.h"
-#include "ConfigTypes.h"
 #include "Config.h"
 
-class Config;
 
-class InternalEnvironmentDataConfigParam : public ConfigParam<InternalEnvironmentDataConfigData, Config>
+class InternalEnvironmentDataConfigParam : public ConfigParam<InternalEnvironmentDataConfigData>
 {
 public:
 
@@ -19,7 +16,6 @@ public:
 
     InternalEnvironmentDataConfigParam();
     bool setConfigFromJson(const JsonObject& json) override;
-    void getConfigAsStr(String& configPayload) override;
     String toStr() override;
 
 private:

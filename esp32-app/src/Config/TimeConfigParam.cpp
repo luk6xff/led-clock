@@ -2,7 +2,7 @@
 #include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
-TimeConfigParam::TimeConfigParam() : ConfigParam(TIME_CFG_KEY, Cfg)
+TimeConfigParam::TimeConfigParam() : ConfigParam(CFG_KEY_TIME, Cfg)
 {
     setCfgParamsMap();
 }
@@ -16,10 +16,10 @@ bool TimeConfigParam::setConfigFromJson(const JsonObject& json)
     if (unpackFromJson(dataFromServer, json))
     {
         logger::dbg("TimeConfigParam::unpackFromJson - SUCCESS");
-        if (m_cfgHndl.getCurrent().time != dataFromServer)
+        if (std::memcmp(&m_cfgData, &dataFromServer, cfgDataSize()) != 0)
         {
             logger::dbg("Storing new TimeConfigData settings");
-            return m_cfgHndl.save(cfg);
+            return m_cfgHndl.save(key(), &dataFromServer);
         }
         logger::dbg("Storing TimeConfigData settings skipped, no change detected");
         return false;
@@ -27,13 +27,6 @@ bool TimeConfigParam::setConfigFromJson(const JsonObject& json)
 
     logger::err("TimeConfigParam::unpackFromJson - ERROR");
     return false;
-}
-
-//------------------------------------------------------------------------------
-void TimeConfigParam::getConfigAsStr(String& configPayload)
-{
-    // Extract config data from application
-    configPayload = packToJson(m_cfgHndl.getCurrent().time);
 }
 
 //------------------------------------------------------------------------------

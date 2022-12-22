@@ -2,7 +2,8 @@
 #include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
-WifiConfigParam::WifiConfigParam() : ConfigParam(WIFI_CFG_KEY, Cfg)
+WifiConfigParam::WifiConfigParam()
+: ConfigParam(CFG_KEY_WIFI, Cfg)
 {
     setCfgParamsMap();
 }
@@ -16,10 +17,10 @@ bool WifiConfigParam::setConfigFromJson(const JsonObject& json)
     if (unpackFromJson(dataFromServer, json))
     {
         logger::dbg("WifiConfigParam::unpackFromJson - SUCCESS");
-        if (m_cfgHndl.getCurrent().wifi != dataFromServer)
+        if (std::memcmp(&m_cfgData, &dataFromServer, cfgDataSize()) != 0)
         {
             logger::dbg("Storing new WifiConfigParam settings");
-            return m_cfgHndl.save(cfg);
+            return m_cfgHndl.save(key(), &dataFromServer);
         }
         logger::dbg("Storing WifiConfigParam settings skipped, no change detected");
         return false;
@@ -27,13 +28,6 @@ bool WifiConfigParam::setConfigFromJson(const JsonObject& json)
 
     logger::err("WifiConfigParam::unpackFromJson - ERROR");
     return false;
-}
-
-//------------------------------------------------------------------------------
-void WifiConfigParam::getConfigAsStr(String& configPayload)
-{
-    // Extract config data from application
-    configPayload = packToJson(m_cfgHndl.getCurrent().wifi);
 }
 
 //------------------------------------------------------------------------------

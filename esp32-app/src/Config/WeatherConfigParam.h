@@ -1,13 +1,8 @@
 #pragma once
 
-#include "ConfigParam.h"
-#include "ConfigTypes.h"
 #include "Config.h"
 
-
-class Config;
-
-class WeatherConfigParam : public ConfigParam<WeatherConfigData, Config>
+class WeatherConfigParam : public ConfigParam<WeatherConfigData>
 {
 public:
 
@@ -23,7 +18,6 @@ public:
 
     WeatherConfigParam();
     bool setConfigFromJson(const JsonObject& json) override;
-    void getConfigAsStr(String& configPayload) override;
     String toStr() override;
 
 private:

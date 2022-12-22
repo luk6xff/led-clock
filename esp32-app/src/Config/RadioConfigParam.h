@@ -1,12 +1,9 @@
 #pragma once
 
-#include "ConfigParam.h"
-#include "ConfigTypes.h"
 #include "Config.h"
 
-class Config;
 
-class RadioConfigParam : public ConfigParam<RadioConfigData, Config>
+class RadioConfigParam : public ConfigParam<RadioConfigData>
 {
 public:
 
@@ -22,7 +19,6 @@ public:
 
     RadioConfigParam();
     bool setConfigFromJson(const JsonObject& json) override;
-    void getConfigAsStr(String& configPayload) override;
     String toStr() override;
 
 private:

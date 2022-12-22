@@ -60,7 +60,8 @@
         "typeindex": "cpp",
         "valarray": "cpp",
         "string": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "optional": "cpp"
     },
     "cmake.configureOnOpen": false
 }

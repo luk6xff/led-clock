@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ConfigTypes.h"
 #include <map>
 #include <ArduinoJson.h>
 #include <cstring>
@@ -7,45 +8,52 @@
 using ParamsKey = uint32_t;
 using ParamsMap = std::map<uint32_t, const char*>;
 
-class ConfigParamBase
-{
-public:
-
-    explicit ConfigParamBase(const char* key)
-    : m_key(key)
-    {
-    }
-
-    const char* key()
-    {
-        return m_key;
-    }
-
-    virtual String toStr() = 0;
-
-protected:
-    const char* m_key;
-};
-
-template<typename ConfigDataType, typename ConfigHndlType>
+template<typename ConfigDataType>
 class ConfigParam : public ConfigParamBase
 {
 
 public:
 
-    ConfigParam(const char* key, ConfigHndlType& cfgHndl)
-        : ConfigParamBase(key)
-        , m_cfgHndl(cfgHndl)
+    ConfigParam(const char* key, IConfig& cfgHndl)
+    : ConfigParamBase(key)
+    , m_cfgHndl(cfgHndl)
     {
         setCfgParamsMap();
     }
 
     virtual bool setConfigFromJson(const JsonObject& json) = 0;
-
-    virtual void getConfigAsStr(String& configPayload) = 0;
-
     virtual String toStr() override = 0;
 
+    bool setConfigFromRaw(const void* data)
+    {
+        if (data)
+        {
+            std::memcpy(&m_cfgData, data, cfgDataSize());
+            return true;
+        }
+        return false;
+    }
+
+    void* getConfigAsRaw()
+    {
+        return (void*)&m_cfgData;
+    }
+
+    void getConfigAsStr(String& configPayload)
+    {
+        // Extract config data from application
+        configPayload = packToJson(m_cfgData);
+    }
+
+    const ConfigDataType& cfgData()
+    {
+        return m_cfgData;
+    }
+
+    size_t cfgDataSize() override
+    {
+        return sizeof(m_cfgData);
+    }
 
 protected:
 
@@ -80,6 +88,6 @@ protected:
 
 protected:
     ConfigDataType m_cfgData;
-    ConfigHndlType& m_cfgHndl;
+    IConfig& m_cfgHndl;
     ParamsMap m_cfgParamsMap;
 };

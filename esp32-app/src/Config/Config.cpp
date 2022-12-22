@@ -1,6 +1,6 @@
 #include "Config.h"
 #include "Rtos/logger.h"
-
+#include <exception>
 
 #undef USE_DEVEL_CFG
 
@@ -12,19 +12,16 @@
 //-----------------------------------------------------------------------------
 Config::Config()
 {
-    // Set defaults
-    setDefaults();
     // Create config map
     m_cfgMap =
     {
-        { WIFI_CFG_KEY, std::unique_ptr<WifiConfigParam>(new WifiConfigParam()) },
-        { TIME_CFG_KEY, std::unique_ptr<TimeConfigParam>(new TimeConfigParam()) },
-        { WEATHER_CFG_KEY, std::unique_ptr<WeatherConfigParam>(new WeatherConfigParam()) },
-        { INTENV_CFG_KEY, std::unique_ptr<InternalEnvironmentDataConfigParam>(new InternalEnvironmentDataConfigParam()) },
-        { RADIO_CFG_KEY, std::unique_ptr<RadioConfigParam>(new RadioConfigParam()) },
-        { DISPLAY_CFG_KEY, std::unique_ptr<DisplayConfigParam>(new DisplayConfigParam()) },
-        { APP_CFG_KEY, std::unique_ptr<AppConfigParam>(new AppConfigParam()) },
-
+        { CFG_KEY_WIFI, std::unique_ptr<WifiConfigParam>(new WifiConfigParam()) },
+        { CFG_KEY_TIME, std::unique_ptr<TimeConfigParam>(new TimeConfigParam()) },
+        { CFG_KEY_WEATHER, std::unique_ptr<WeatherConfigParam>(new WeatherConfigParam()) },
+        { CFG_KEY_INTENV, std::unique_ptr<InternalEnvironmentDataConfigParam>(new InternalEnvironmentDataConfigParam()) },
+        { CFG_KEY_RADIO, std::unique_ptr<RadioConfigParam>(new RadioConfigParam()) },
+        { CFG_KEY_DISPLAY, std::unique_ptr<DisplayConfigParam>(new DisplayConfigParam()) },
+        { CFG_KEY_APP, std::unique_ptr<AppConfigParam>(new AppConfigParam()) },
     };
 }
 
@@ -41,28 +38,35 @@ void Config::init()
     // The begin() call is required to initialise the NVS library
     prefs.begin("ledclock", false);
 
-    read();
-
-    // Check if sysCfg are valid
-    if (getCurrent().magic == getDefaults().magic && \
-        getCurrent().version == getDefaults().version)
+    ConfigMemoryHeader hdr;
+    if (readHdr(hdr))
     {
-        logger::inf("SysCfg read succesfully\r\n");
-        // Print content
-        printCurrentSysCfg();
-    }
-    else
-    {
-        logger::inf("SysCfg read failed, updating with defaults..\r\n");
-        if (!save(getDefaults()))
+        // Check if memory header is valid
+        if (hdr.magic == m_cfgHeader.magic && \
+            hdr.version == m_cfgHeader.version)
         {
-            logger::inf("Updating SysCfg with defaults failed!, setting current as defaults\r\n");
-            m_currentCfgData = m_defaultCfgData;
+            logger::inf("ConfigMemoryHeader read succesfully\r\n");
+            // Print content
+            printCurrentSystemConfig();
+            return;
         }
         else
         {
-            logger::inf("Updating SysCfg with defaults succeed!\r\n");
+            logger::err("ConfigMemoryHeader has been modified, updating with defaults..\r\n");
         }
+    }
+    else
+    {
+        logger::err("ConfigMemoryHeader read failed, updating with defaults..\r\n");
+    }
+
+    if (!saveHdr(m_cfgHeader))
+    {
+        logger::err("Updating ConfigMemoryHeader with defaults failed!, setting current as defaults\r\n");
+    }
+    else
+    {
+        logger::inf("Updating ConfigMemoryHeader with defaults succeed!\r\n");
     }
 }
 
@@ -72,22 +76,20 @@ void Config::close()
     prefs.end();
 }
 
+
 //------------------------------------------------------------------------------
-const Config::ConfigData& Config::getDefaults()
+const ConfigParamBase& Config::getCfgParam(ConfigParamKey key)
 {
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
-    return m_defaultCfgData;
+    if (m_cfgMap.find(key) != m_cfgMap.end())
+    {
+        return *m_cfgMap[key].get();
+    }
+    throw std::invalid_argument("Invalid key applied");
 }
 
 //------------------------------------------------------------------------------
-Config::ConfigData& Config::getCurrent()
-{
-    rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
-    return m_currentCfgData;
-}
-
-//------------------------------------------------------------------------------
-const Config::ConfigParamMap& Config::getCfgMap()
+const ConfigParamMap& Config::getCfgMap()
 {
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
     return m_cfgMap;
@@ -101,21 +103,14 @@ bool Config::save(ConfigParamKey key, const void *cfg)
     const auto cfgDataIt = m_cfgMap.find(key);
     if (cfgDataIt != m_cfgMap.end())
     {
-        // Check if cfg are upto date, do not write them
-        if (memcmp(cfgDataIt->second, &m_currentCfgData, sizeof(ConfigData)) == 0)
-        {
-            logger::inf("Current Cfg is equal to provided sysCfg, NVS save skipped!\r\n");
-            m_currentCfgData = sysCfg;
-            return false;
-        }
+
         // Set the NVS data ready for writing
-        size_t ret = prefs.putBytes("syscfg", (const void*)&sysCfg, sizeof(sysCfg));
+        size_t ret = prefs.putBytes(key, cfg, cfgDataIt->second->cfgDataSize());
 
         // Write the data to NVS
-        if (ret == sizeof(sysCfg))
+        if (ret == cfgDataIt->second->cfgDataSize())
         {
-            logger::inf("SysCfg saved in NVS succesfully\r\n");
-            m_currentCfgData = sysCfg;
+            logger::inf("ConfigData for %s saved in NVS succesfully\r\n", key);
             return true;
         }
     }
@@ -123,88 +118,54 @@ bool Config::save(ConfigParamKey key, const void *cfg)
 }
 
 //------------------------------------------------------------------------------
-bool Config::read()
+bool Config::read(ConfigParamKey key, void *data)
 {
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
-    size_t ret = prefs.getBytes("syscfg", &m_currentCfgData, sizeof(m_currentCfgData));
-    if (ret == sizeof(m_currentCfgData))
+    const auto cfgDataIt = m_cfgMap.find(key);
+    if (data && cfgDataIt != m_cfgMap.end())
     {
-        logger::inf("SysCfg read from NVS succesfully\r\n");
+        size_t ret = prefs.getBytes(key, data, cfgDataIt->second->cfgDataSize());
+        if (ret == cfgDataIt->second->cfgDataSize())
+        {
+            logger::inf("ConfigData for %s read from NVS succesfully\r\n", key);
+            return true;
+        }
+    }
+    return false;
+}
+
+//------------------------------------------------------------------------------
+bool Config::saveHdr(const Config::ConfigMemoryHeader& hdr)
+{
+    rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
+    size_t ret = prefs.putBytes(Config::ConfigMemoryHeader::hdrKey, (const void*)&hdr, sizeof(hdr));
+    if (ret == sizeof(hdr))
+    {
+        logger::inf("ConfigData for %s saved in NVS succesfully\r\n", ConfigMemoryHeader::hdrKey);
         return true;
     }
     return false;
 }
 
 //------------------------------------------------------------------------------
-void Config::setDefaults()
+bool Config::readHdr(ConfigMemoryHeader& hdr)
 {
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
-    // Modify according to your application
-    // MAGIC
-    m_defaultCfgData =
+    size_t ret = prefs.getBytes(Config::ConfigMemoryHeader::hdrKey, &hdr, sizeof(hdr));
+    if (ret == sizeof(hdr))
     {
-        .magic   = 0x4C554B36,  // LUK6
-        .version = 0x0000000A,
-    };
-
-    // WIFI
-    WifiConfigData wifi;
-#ifdef DEV_CFG
-    memcpy(wifi.ssid, DEV_CFG_WIFI_SSID, sizeof(wifi.ssid));
-    memcpy(wifi.pass, DEV_CFG_WIFI_PASS, sizeof(wifi.passwd));
-#else
-    memcpy(wifi.ssid, "admin", sizeof(wifi.ssid));
-    memcpy(wifi.passwd, "admin", sizeof(wifi.passwd));
-#endif
-    memcpy(wifi.apHostname, "ledclock", sizeof(wifi.apHostname));
-    memcpy(wifi.apPasswd, "admin123", sizeof(wifi.apPasswd));
-    m_defaultCfgData.wifi = wifi;
-
-    // TIME
-    TimeConfigData time = {
-        2,
-        1,// {"CET", Last, Sun, Oct, 3, 60},  // Central European Standard Time
-        2,// {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
-        true,
-        0,
-        (1000*3600),
-        "time.google.com",
-        "pl.pool.ntp.org",
-        "pool.ntp.org"
-    };
-    m_defaultCfgData.time = time;
-
-    // DISPLAY
-    DisplayConfigData display = {false, 0, 30, 1};
-    m_defaultCfgData.display = display;
-
-    // RADIO_SENSOR
-    RadioConfigData radio = {false, 1800, 3000, 1, 5};
-    m_defaultCfgData.radio = radio;
-
-    // INTERNAL ENVIRONMENT DATA
-    InternalEnvironmentDataConfigData intEnv = {false, 900, 1};
-    m_defaultCfgData.intEnv = intEnv;
-
-    // WEATHER
-    WeatherConfigData weather;
-#ifdef DEV_CFG
-    memcpy(weather.owmAppid, DEV_CFG_WEATHER_OWM_APPID, OWM_APPID_MAXLEN);
-#endif
-    m_defaultCfgData.weather = weather;
-
-    // APP
-    AppConfigData app;
-    m_defaultCfgData.app = app;
+        logger::inf("ConfigData for %s read from NVS succesfully\r\n", Config::ConfigMemoryHeader::hdrKey);
+        return true;
+    }
+    return false;
 }
 
 //------------------------------------------------------------------------------
-void Config::printCurrentSysCfg()
+void Config::printCurrentSystemConfig()
 {
-    logger::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
-    logger::inf("SysCfg size: %d bytes", sizeof(getCurrent()));
-    logger::inf("magic: 0x%08x", getCurrent().magic);
-    logger::inf("version: 0x%08x", getCurrent().version);
+    logger::inf("SYSTEM_CONFIG: <<CURRENT APP SETTINGS>>");
+    logger::inf("magic: 0x%08x", m_cfgHeader.magic);
+    logger::inf("version: 0x%08x", m_cfgHeader.version);
     for (auto& cfg: m_cfgMap)
     {
         logger::inf(cfg.second->toStr().c_str());

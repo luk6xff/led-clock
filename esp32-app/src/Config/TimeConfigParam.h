@@ -1,18 +1,10 @@
 #pragma once
 
-#include "ConfigParam.h"
-#include "ConfigTypes.h"
 #include "Config.h"
 #include <Timezone.h>
 
 
-
-
-
-
-class Config;
-
-class TimeConfigParam : public ConfigParam<TimeConfigData, Config>
+class TimeConfigParam : public ConfigParam<TimeConfigData>
 {
 public:
 
@@ -32,7 +24,6 @@ public:
 
     TimeConfigParam();
     bool setConfigFromJson(const JsonObject& json) override;
-    void getConfigAsStr(String& configPayload) override;
     String toStr() override;
 
 private:

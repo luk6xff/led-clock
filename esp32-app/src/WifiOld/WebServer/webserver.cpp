@@ -247,7 +247,7 @@ void WebServer::setCfgSaveHandlers()
 {
     m_cfgSaveHandleMap = {
 
-        {WIFI_CFG_KEY, [this](const JsonObject& json)
+        {CFG_KEY_WIFI, [this](const JsonObject& json)
             {
                 WifiSettings cfg = AppCfg.getCurrent().wifi;
                 // LU_TODO add return value from parser
@@ -257,7 +257,7 @@ void WebServer::setCfgSaveHandlers()
             }
         },
 
-        {TIME_CFG_KEY , [this](const JsonObject& json)
+        {CFG_KEY_TIME , [this](const JsonObject& json)
             {
                 SystemTimeSettings cfg = AppCfg.getCurrent().time;
                 cfg.fromJson(json);
@@ -266,7 +266,7 @@ void WebServer::setCfgSaveHandlers()
             }
         },
 
-        {WEATHER_CFG_KEY, [this](const JsonObject& json)
+        {CFG_KEY_WEATHER, [this](const JsonObject& json)
             {
                 WeatherSettings cfg = AppCfg.getCurrent().weather;
                 cfg.fromJson(json);
@@ -275,7 +275,7 @@ void WebServer::setCfgSaveHandlers()
             }
         },
 
-        {INTENV_CFG_KEY, [this](const JsonObject& json)
+        {CFG_KEY_INTENV, [this](const JsonObject& json)
             {
                 InternalEnvDataSettings cfg = AppCfg.getCurrent().intEnv;
                 cfg.fromJson(json);
@@ -284,7 +284,7 @@ void WebServer::setCfgSaveHandlers()
             }
         },
 
-        {RADIO_CFG_KEY, [this](const JsonObject& json)
+        {CFG_KEY_RADIO, [this](const JsonObject& json)
             {
                 RadioSensorSettings cfg = AppCfg.getCurrent().radioSensor;
                 cfg.fromJson(json);
@@ -293,7 +293,7 @@ void WebServer::setCfgSaveHandlers()
             }
         },
 
-        {DISPLAY_CFG_KEY, [this](const JsonObject& json)
+        {CFG_KEY_DISPLAY, [this](const JsonObject& json)
             {
                 DisplaySettings cfg = AppCfg.getCurrent().display;
                 cfg.fromJson(json);
@@ -302,7 +302,7 @@ void WebServer::setCfgSaveHandlers()
             }
         },
 
-        {APP_CFG_KEY , [this](const JsonObject& json)
+        {CFG_KEY_APP , [this](const JsonObject& json)
             {
                 AppSettings cfg = AppCfg.getCurrent().other;
                 cfg.fromJson(json);
@@ -320,43 +320,43 @@ void WebServer::setCfgReadHandlers()
 {
     m_cfgReadHandleMap = {
 
-        {WIFI_CFG_KEY, [this]()
+        {CFG_KEY_WIFI, [this]()
             {
                 return AppCfg.getCurrent().wifi.toJson();
             }
         },
 
-        {TIME_CFG_KEY , [this]()
+        {CFG_KEY_TIME , [this]()
             {
                 return AppCfg.getCurrent().time.toJson();
             }
         },
 
-        {WEATHER_CFG_KEY, [this]()
+        {CFG_KEY_WEATHER, [this]()
             {
                 return AppCfg.getCurrent().weather.toJson();
             }
         },
 
-        {INTENV_CFG_KEY, [this]()
+        {CFG_KEY_INTENV, [this]()
             {
                 return AppCfg.getCurrent().intEnv.toJson();
             }
         },
 
-        {RADIO_CFG_KEY, [this]()
+        {CFG_KEY_RADIO, [this]()
             {
                 return AppCfg.getCurrent().radioSensor.toJson();
             }
         },
 
-        {DISPLAY_CFG_KEY, [this]()
+        {CFG_KEY_DISPLAY, [this]()
             {
                 return AppCfg.getCurrent().display.toJson();
             }
         },
 
-        {APP_CFG_KEY , [this]()
+        {CFG_KEY_APP , [this]()
             {
                 return AppCfg.getCurrent().other.toJson();
             }

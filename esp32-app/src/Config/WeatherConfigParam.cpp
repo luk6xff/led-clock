@@ -2,7 +2,7 @@
 #include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
-WeatherConfigParam::WeatherConfigParam() : ConfigParam(RADIO_CFG_KEY, Cfg)
+WeatherConfigParam::WeatherConfigParam() : ConfigParam(CFG_KEY_RADIO, Cfg)
 {
     setCfgParamsMap();
 }
@@ -16,10 +16,10 @@ bool WeatherConfigParam::setConfigFromJson(const JsonObject& json)
     if (unpackFromJson(dataFromServer, json))
     {
         logger::dbg("WeatherConfigParam::unpackFromJson - SUCCESS");
-        if (m_cfgHndl.getCurrent().weather != dataFromServer)
+        if (std::memcmp(&m_cfgData, &dataFromServer, cfgDataSize()) != 0)
         {
             logger::dbg("Storing new WeatherConfigData settings");
-            return m_cfgHndl.save(dataFromServer);
+            return m_cfgHndl.save(key(), &dataFromServer);
         }
         logger::dbg("Storing WeatherConfigData settings skipped, no change detected");
         return false;
@@ -27,13 +27,6 @@ bool WeatherConfigParam::setConfigFromJson(const JsonObject& json)
 
     logger::err("WeatherConfigParam::unpackFromJson - ERROR");
     return false;
-}
-
-//------------------------------------------------------------------------------
-void WeatherConfigParam::getConfigAsStr(String& configPayload)
-{
-    // Extract config data from application
-    configPayload = packToJson(m_cfgHndl.getCurrent().weather);
 }
 
 //------------------------------------------------------------------------------

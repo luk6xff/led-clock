@@ -4,7 +4,6 @@
 
 #include <Arduino.h>
 
-
 // APP
 #include "Config/AppConfigParam.h"
 #include "app_context.h"
@@ -47,7 +46,7 @@ void App::setup()
     logger::init();
     printMotd();
     Cfg.init();
-    AppCtx.setAppLang(Cfg.getCurrent().app.appLang);
+    AppCtx.setAppLang(static_cast<AppConfigParam*>(&Cfg.getCfgParam(CFG_KEY_APP)).appLang);
     createTasks();
     runTasks();
 }

@@ -140,7 +140,7 @@ static void test5()
 
     struct WifiSettings
     {
-        #define WIFI_CFG_KEY            "dev-cfg-wifi"
+        #define CFG_KEY_WIFI            "dev-cfg-wifi"
         #define WIFI_CFG_VAL_SSID       "wifi-ssid"
         #define WIFI_CFG_VAL_PASS       "wifi-pass"
         #define WIFI_CFG_VAL_AP_PASS    "wifi-ap-pass"
@@ -165,7 +165,7 @@ static void test5()
         {
             StaticJsonDocument<256> doc;
             std::string json;
-            JsonArray arr = doc.createNestedArray(WIFI_CFG_KEY);
+            JsonArray arr = doc.createNestedArray(CFG_KEY_WIFI);
             JsonObject obj = arr.createNestedObject();
             obj[WIFI_CFG_VAL_SSID] = ssid;
             obj = arr.createNestedObject();
@@ -178,7 +178,7 @@ static void test5()
 
         void fromJson(const JsonObject& json)
         {
-            JsonArray arr = json[WIFI_CFG_KEY].as<JsonArray>();
+            JsonArray arr = json[CFG_KEY_WIFI].as<JsonArray>();
             for (const auto& v : arr)
             {
                 if (v[WIFI_CFG_VAL_SSID])
@@ -246,7 +246,7 @@ static void test6()
     std::cout << "<<< TEST 6 >>>" << std::endl;
 
 ///> WIFI SETTINGS
-    #define WIFI_CFG_KEY                "dev-cfg-wifi"
+    #define CFG_KEY_WIFI                "dev-cfg-wifi"
     #define WIFI_CFG_VAL_SSID           "wifi-ssid"
     #define WIFI_CFG_VAL_PASS           "wifi-pass"
     #define WIFI_CFG_VAL_AP_HOSTNAME    "wifi-ap-hostname"
@@ -271,7 +271,7 @@ static void test6()
         {
             const std::string colon = ":";
             const std::string comma =", ";
-            return std::string(WIFI_CFG_KEY)+colon+comma + \
+            return std::string(CFG_KEY_WIFI)+colon+comma + \
                     std::string(WIFI_CFG_VAL_SSID)+colon+std::string(ssid)+comma + \
                     std::string(WIFI_CFG_VAL_PASS)+colon+std::string(pass)+comma  + \
                     std::string(WIFI_CFG_VAL_AP_HOSTNAME)+colon+std::string(ap_hostname)+comma  + \
@@ -282,7 +282,7 @@ static void test6()
         {
             StaticJsonDocument<512> doc;
             std::string json;
-            JsonArray arr = doc.createNestedArray(WIFI_CFG_KEY);
+            JsonArray arr = doc.createNestedArray(CFG_KEY_WIFI);
             JsonObject obj = arr.createNestedObject();
             obj[WIFI_CFG_VAL_SSID] = ssid;
             obj = arr.createNestedObject();
@@ -297,7 +297,7 @@ static void test6()
 
         void fromJson(const JsonObject& json)
         {
-            JsonArray arr = json[WIFI_CFG_KEY].as<JsonArray>();
+            JsonArray arr = json[CFG_KEY_WIFI].as<JsonArray>();
             for (const auto& v : arr)
             {
                 if (v[WIFI_CFG_VAL_SSID])
@@ -331,7 +331,7 @@ static void test6()
 
 
 ///> RADIO SETTINGS
-    #define RADIO_CFG_KEY                   "dev-cfg-radio"
+    #define CFG_KEY_RADIO                   "dev-cfg-radio"
     #define RADIO_CFG_VAL_UPDATE_INTERVAL   "radio-update-interval"
     #define RADIO_CFG_VAL_CRIT_VBATT        "radio-crit-vbatt"
 
@@ -344,7 +344,7 @@ static void test6()
         {
             StaticJsonDocument<256> doc;
             std::string json;
-            JsonArray arr = doc.createNestedArray(RADIO_CFG_KEY);
+            JsonArray arr = doc.createNestedArray(CFG_KEY_RADIO);
             JsonObject obj = arr.createNestedObject();
             obj[RADIO_CFG_VAL_UPDATE_INTERVAL] = update_data_interval / 60; // Convert from seconds to minutes on server.
             obj = arr.createNestedObject();
@@ -355,7 +355,7 @@ static void test6()
 
         void fromJson(const JsonObject& json)
         {
-            JsonArray arr = json[RADIO_CFG_KEY].as<JsonArray>();
+            JsonArray arr = json[CFG_KEY_RADIO].as<JsonArray>();
             for (const auto& v : arr)
             {
                 if (v[RADIO_CFG_VAL_UPDATE_INTERVAL])
@@ -375,7 +375,7 @@ static void test6()
         {
             const std::string colon = ":";
             const std::string comma =", ";
-            return std::string(RADIO_CFG_KEY)+colon+comma + \
+            return std::string(CFG_KEY_RADIO)+colon+comma + \
                     std::string(RADIO_CFG_VAL_UPDATE_INTERVAL)+colon+std::to_string(update_data_interval)+comma + \
                     std::string(RADIO_CFG_VAL_CRIT_VBATT)+colon+std::to_string(crit_vbatt_level);
         }
@@ -387,7 +387,7 @@ static void test6()
 
 
 ///> TIME_SETTINGS
-    #define TIME_CFG_KEY                    "dev-cfg-time"
+    #define CFG_KEY_TIME                    "dev-cfg-time"
     #define TIME_CFG_VAL_DATE               "time-date"
     #define TIME_CFG_VAL_CLK                "time-clock"
     #define TIME_CFG_VAL_TZ_NUM             "time-timezone-num"
@@ -508,7 +508,7 @@ static void test6()
         {
             StaticJsonDocument<512+128> doc;
             std::string json;
-            JsonArray arr = doc.createNestedArray(TIME_CFG_KEY);
+            JsonArray arr = doc.createNestedArray(CFG_KEY_TIME);
             JsonObject obj = arr.createNestedObject();
             obj[TIME_CFG_VAL_DATE] = "2020-11-20";
             obj = arr.createNestedObject();
@@ -534,7 +534,7 @@ static void test6()
 
         void fromJson(const JsonObject& json)
         {
-            JsonArray arr = json[TIME_CFG_KEY].as<JsonArray>();
+            JsonArray arr = json[CFG_KEY_TIME].as<JsonArray>();
             for (const auto& v : arr)
             {
                 if (v[TIME_CFG_VAL_TZ_NUM])
@@ -682,7 +682,7 @@ static void test6()
         {
             const std::string colon = ":";
             const std::string comma =", ";
-            return std::string(TIME_CFG_KEY)+colon+comma + \
+            return std::string(CFG_KEY_TIME)+colon+comma + \
                     std::string(TIME_CFG_VAL_TZ_NUM)+colon+std::to_string(timezoneNum)+comma + \
                     std::string(TIME_CFG_VAL_TZ_1)+colon+std::string(stdStart.toStr())+comma  + \
                     std::string(TIME_CFG_VAL_TZ_2)+colon+std::string(dstStart.toStr())+comma  + \
@@ -698,7 +698,7 @@ static void test6()
 
 
 //DISPLAY_SETTINGS
-    #define DISPLAY_CFG_KEY                 "dev-cfg-display"
+    #define CFG_KEY_DISPLAY                 "dev-cfg-display"
     #define DISPLAY_CFG_VAL_AUTO_INTENSITY  "display-auto-intensity"
     #define DISPLAY_CFG_VAL_INTENSITY_VALUE "display-intensity-val"
     #define DISPLAY_CFG_VAL_ANIM_SPEED      "display-anim-speed"
@@ -730,7 +730,7 @@ static void test6()
         {
             StaticJsonDocument<512> doc;
             std::string json;
-            JsonArray arr = doc.createNestedArray(DISPLAY_CFG_KEY);
+            JsonArray arr = doc.createNestedArray(CFG_KEY_DISPLAY);
             JsonObject obj = arr.createNestedObject();
             obj[DISPLAY_CFG_VAL_AUTO_INTENSITY] = enableAutoIntenisty;
             obj = arr.createNestedObject();
@@ -745,7 +745,7 @@ static void test6()
 
         void fromJson(const JsonObject& json)
         {
-            JsonArray arr = json[DISPLAY_CFG_KEY].as<JsonArray>();
+            JsonArray arr = json[CFG_KEY_DISPLAY].as<JsonArray>();
             for (const auto& v : arr)
             {
                 if (v[DISPLAY_CFG_VAL_AUTO_INTENSITY])

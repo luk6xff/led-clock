@@ -2,7 +2,7 @@
 #include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
-InternalEnvironmentDataConfigParam::InternalEnvironmentDataConfigParam() : ConfigParam(INTENV_CFG_KEY, Cfg)
+InternalEnvironmentDataConfigParam::InternalEnvironmentDataConfigParam() : ConfigParam(CFG_KEY_INTENV, Cfg)
 {
     setCfgParamsMap();
 }
@@ -16,10 +16,10 @@ bool InternalEnvironmentDataConfigParam::setConfigFromJson(const JsonObject& jso
     if (unpackFromJson(dataFromServer, json))
     {
         logger::dbg("InternalEnvironmentDataConfigParam::unpackFromJson - SUCCESS");
-        if (m_cfgHndl.getCurrent().time != dataFromServer)
+        if (std::memcmp(&m_cfgData, &dataFromServer, cfgDataSize()) != 0)
         {
             logger::dbg("Storing new InternalEnvironmentDataConfigData settings");
-            return m_cfgHndl.save(cfg);
+            return m_cfgHndl.save(key(), &dataFromServer);
         }
         logger::dbg("Storing InternalEnvironmentDataConfigData settings skipped, no change detected");
         return false;
@@ -27,13 +27,6 @@ bool InternalEnvironmentDataConfigParam::setConfigFromJson(const JsonObject& jso
 
     logger::err("InternalEnvironmentDataConfigParam::unpackFromJson - ERROR");
     return false;
-}
-
-//------------------------------------------------------------------------------
-void InternalEnvironmentDataConfigParam::getConfigAsStr(String& configPayload)
-{
-    // Extract config data from application
-    configPayload = packToJson(m_cfgHndl.getCurrent().intEnv);
 }
 
 //------------------------------------------------------------------------------

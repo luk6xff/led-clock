@@ -2,7 +2,7 @@
 #include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
-DisplayConfigParam::DisplayConfigParam() : ConfigParam(DISPLAY_CFG_KEY, Cfg)
+DisplayConfigParam::DisplayConfigParam() : ConfigParam(CFG_KEY_DISPLAY, Cfg)
 {
     setCfgParamsMap();
 }
@@ -16,10 +16,10 @@ bool DisplayConfigParam::setConfigFromJson(const JsonObject& json)
     if (unpackFromJson(dataFromServer, json))
     {
         logger::dbg("DisplayConfigParam::unpackFromJson - SUCCESS");
-        if (m_cfgHndl.getCurrent().display != dataFromServer)
+        if (std::memcmp(&m_cfgData, &dataFromServer, cfgDataSize()) != 0)
         {
             logger::dbg("Storing new DisplayConfigData settings");
-            return m_cfgHndl.save(dataFromServer);
+            return m_cfgHndl.save(key(), &dataFromServer);
         }
         logger::dbg("Storing DisplayConfigData settings skipped, no change detected");
         return false;
@@ -27,13 +27,6 @@ bool DisplayConfigParam::setConfigFromJson(const JsonObject& json)
 
     logger::err("DisplayConfigParam::unpackFromJson - ERROR");
     return false;
-}
-
-//------------------------------------------------------------------------------
-void DisplayConfigParam::getConfigAsStr(String& configPayload)
-{
-    // Extract config data from application
-    configPayload = packToJson(m_cfgHndl.getCurrent().display);
 }
 
 //------------------------------------------------------------------------------
@@ -102,7 +95,7 @@ String DisplayConfigParam::packToJson(const DisplayConfigData& data)
 {
     StaticJsonDocument<512> doc;
     String json;
-    JsonArray arr = doc.createNestedArray(DISPLAY_CFG_KEY);
+    JsonArray arr = doc.createNestedArray(CFG_KEY_DISPLAY);
     JsonObject obj = arr.createNestedObject();
     obj[cfgParamKey(DisplayKeys::DISPLAY_ENABLE_AUTO_INTENSITY)] = data.enableAutoIntenisty;
     obj = arr.createNestedObject();

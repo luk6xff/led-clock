@@ -59,7 +59,7 @@ void DisplayTask::run()
         }
     }
 
-    m_disp.setDisplaySpeedValue(m_displayCfg.animSpeed);
+    m_disp.setDisplaySpeedValue(m_displayCfg.animationSpeed);
 
     for(;;)
     {

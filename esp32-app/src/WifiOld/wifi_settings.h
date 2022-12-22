@@ -5,7 +5,7 @@
 #include <string>
 
 
-#define WIFI_CFG_KEY                "dev-cfg-wifi"
+#define CFG_KEY_WIFI                "dev-cfg-wifi"
 #define WIFI_CFG_VAL_SSID           "wifi-ssid"
 #define WIFI_CFG_VAL_PASS           "wifi-pass"
 #define WIFI_CFG_VAL_AP_HOSTNAME    "wifi-ap-hostname"
@@ -31,7 +31,7 @@ struct WifiSettings
     {
         const String colon = ":";
         const String comma =", ";
-        return String(WIFI_CFG_KEY)+colon+comma + \
+        return String(CFG_KEY_WIFI)+colon+comma + \
                 String(WIFI_CFG_VAL_SSID)+colon+String(ssid)+comma + \
                 String(WIFI_CFG_VAL_PASS)+colon+String(pass)+comma  + \
                 String(WIFI_CFG_VAL_AP_HOSTNAME)+colon+String(ap_hostname)+comma  + \
@@ -42,7 +42,7 @@ struct WifiSettings
     {
         StaticJsonDocument<512> doc;
         std::string json;
-        JsonArray arr = doc.createNestedArray(WIFI_CFG_KEY);
+        JsonArray arr = doc.createNestedArray(CFG_KEY_WIFI);
         JsonObject obj = arr.createNestedObject();
         obj[WIFI_CFG_VAL_SSID] = ssid;
         obj = arr.createNestedObject();
@@ -57,7 +57,7 @@ struct WifiSettings
 
     void fromJson(const JsonObject& json)
     {
-        JsonArray arr = json[WIFI_CFG_KEY].as<JsonArray>();
+        JsonArray arr = json[CFG_KEY_WIFI].as<JsonArray>();
         for (const auto& v : arr)
         {
             if (v[WIFI_CFG_VAL_SSID])

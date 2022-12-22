@@ -2,7 +2,7 @@
 #include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
-AppConfigParam::AppConfigParam() : ConfigParam(INTENV_CFG_KEY, Cfg)
+AppConfigParam::AppConfigParam() : ConfigParam(CFG_KEY_INTENV, Cfg)
 {
     setCfgParamsMap();
 }
@@ -16,10 +16,10 @@ bool AppConfigParam::setConfigFromJson(const JsonObject& json)
     if (unpackFromJson(dataFromServer, json))
     {
         logger::dbg("AppConfigParam::unpackFromJson - SUCCESS");
-        if (m_cfgHndl.getCurrent().app != dataFromServer)
+        if (std::memcmp(&m_cfgData, &dataFromServer, cfgDataSize()) != 0)
         {
             logger::dbg("Storing new AppConfigData settings");
-            return m_cfgHndl.save(dataFromServer);
+            return m_cfgHndl.save(key(), &dataFromServer);
         }
         logger::dbg("Storing AppConfigData settings skipped, no change detected");
         return false;
@@ -27,13 +27,6 @@ bool AppConfigParam::setConfigFromJson(const JsonObject& json)
 
     logger::err("AppConfigParam::unpackFromJson - ERROR");
     return false;
-}
-
-//------------------------------------------------------------------------------
-void AppConfigParam::getConfigAsStr(String& configPayload)
-{
-    // Extract config data from application
-    configPayload = packToJson(m_cfgHndl.getCurrent().app);
 }
 
 //------------------------------------------------------------------------------

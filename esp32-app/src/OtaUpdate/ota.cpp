@@ -2,7 +2,7 @@
 #include <functional>
 #include <esp_partition.h>
 #include <Update.h>
-#include "DebugUtils.h"
+#include "Rtos/logger.h"
 #include "App/app_context.h"
 
 using namespace std::placeholders;

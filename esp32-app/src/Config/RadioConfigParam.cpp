@@ -3,7 +3,7 @@
 #include <cstring>
 
 //------------------------------------------------------------------------------
-RadioConfigParam::RadioConfigParam() : ConfigParam(RADIO_CFG_KEY, Cfg)
+RadioConfigParam::RadioConfigParam() : ConfigParam(CFG_KEY_RADIO, Cfg)
 {
     setCfgParamsMap();
 }
@@ -17,10 +17,10 @@ bool RadioConfigParam::setConfigFromJson(const JsonObject& json)
     if (unpackFromJson(dataFromServer, json))
     {
         logger::dbg("RadioConfigParam::unpackFromJson - SUCCESS");
-        if (std::memcmp(&(m_cfgHndl.getCurrent().radio), &dataFromServer, sizeof(dataFromServer)) != 0)
+        if (std::memcmp(&m_cfgData, &dataFromServer, cfgDataSize()) != 0)
         {
             logger::dbg("Storing new RadioConfigData settings");
-            return m_cfgHndl.save(dataFromServer);
+            return m_cfgHndl.save(key(), &dataFromServer);
         }
         logger::dbg("Storing RadioConfigData settings skipped, no change detected");
         return false;
@@ -28,13 +28,6 @@ bool RadioConfigParam::setConfigFromJson(const JsonObject& json)
 
     logger::err("RadioConfigParam::unpackFromJson - ERROR");
     return false;
-}
-
-//------------------------------------------------------------------------------
-void RadioConfigParam::getConfigAsStr(String& configPayload)
-{
-    // Extract config data from application
-    configPayload = packToJson(m_cfgHndl.getCurrent().radio);
 }
 
 //------------------------------------------------------------------------------

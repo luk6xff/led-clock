@@ -1,12 +1,12 @@
 #pragma once
 
 #include "ConfigParam.h"
+#include "ConfigDataTypes.h"
 #include "ConfigTypes.h"
 #include "Config.h"
 
-class Config;
 
-class DisplayConfigParam : public ConfigParam<DisplayConfigData, Config>
+class DisplayConfigParam : public ConfigParam<DisplayConfigData>
 {
 public:
 
@@ -20,7 +20,6 @@ public:
 
     DisplayConfigParam();
     bool setConfigFromJson(const JsonObject& json) override;
-    void getConfigAsStr(String& configPayload) override;
     String toStr() override;
 
 private:
