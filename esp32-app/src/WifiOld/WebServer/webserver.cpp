@@ -9,9 +9,9 @@
 #include <FS.h>
 #include <SPIFFS.h>
 #include <ESPmDNS.h>
-#include "App/rtos_utils.h"
+#include "Rtos/RtosUtils.h"
 #include "Wifi/wifi_task.h"
-#include "Rtos/log.h"
+#include "Rtos/logger.h"
 #include "App/devinfo.h"
 #include "AsyncJson.h"
 #include <functional>
@@ -45,8 +45,8 @@ bool WebServer::start()
     while (attempt < wifiConnectAttempts && !success)
     {
         attempt++;
-        log::inf((""));
-        log::inf("Wifi connection attempt num: %d", attempt);
+        logger::inf((""));
+        logger::inf("Wifi connection attempt num: %d", attempt);
         success = wifiConnect(AppCfg.getCurrent().wifi.ssid, AppCfg.getCurrent().wifi.pass);
     }
 
@@ -56,13 +56,13 @@ bool WebServer::start()
     }
     else
     {
-        log::inf("");
-        log::inf("Wifi connection could not be established");
+        logger::inf("");
+        logger::inf("Wifi connection could not be established");
     }
 
     if (m_wifiMode != WifiMode::STATION)
     {
-        log::inf("WifiMode AP (Captive Portal) starting...");
+        logger::inf("WifiMode AP (Captive Portal) starting...");
         runCaptivePortal();
     };
     return success;
@@ -108,7 +108,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
             }
         }
         request->send(errorCode, "application/json", response);
-        log::inf("/dev-cfg-save response: %s", response.c_str());
+        logger::inf("/dev-cfg-save response: %s", response.c_str());
     });
     server.addHandler(cfgSaveHandler);
 
@@ -136,7 +136,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         }
 
         request->send(errorCode, "application/json", response.c_str());
-        log::inf("/dev-cfg-read response: %s", response.c_str());
+        logger::inf("/dev-cfg-read response: %s", response.c_str());
     });
 
 
@@ -150,7 +150,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
             AsyncWebParameter *p = request->getParam("dt", true);
             String val = p->value();
             const uint32_t t = (uint32_t)val.toInt();
-            log::dbg("Received DT value: %s, %d", val.c_str(), t);
+            logger::dbg("Received DT value: %s, %d", val.c_str(), t);
             DateTime dt(t);
             if (AppCtx.putDateTimeMsg(dt))
             {
@@ -160,7 +160,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         }
 
         request->send(errorCode, "application/json", response.c_str());
-        log::inf("/dev-app-set-dt response: %s", response.c_str());
+        logger::inf("/dev-app-set-dt response: %s", response.c_str());
     });
 
 
@@ -181,7 +181,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         String resp;
         serializeJson(doc, resp);
         request->send(errorCode, "application/json", resp.c_str());
-        log::inf("/dev-app-get-dt response: %s", resp.c_str());
+        logger::inf("/dev-app-get-dt response: %s", resp.c_str());
     });
 
 
@@ -199,10 +199,10 @@ void WebServer::registerHandlers(AsyncWebServer& server)
             response = "{\"status\":\"success\"}";
             errorCode = 200;
             AppCtx.putDisplayMsg(txt.c_str(), txt.length());
-            log::inf("/dev-app-print-text TXT: %s", txt.c_str());
+            logger::inf("/dev-app-print-text TXT: %s", txt.c_str());
         }
         request->send(errorCode, "application/json", response);
-        log::inf("/dev-app-print-text response: %s", response.c_str());
+        logger::inf("/dev-app-print-text response: %s", response.c_str());
     });
     server.addHandler(appPrintTextHandler);
 
@@ -210,7 +210,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
     // App reset
     server.on("/dev-app-reset", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send(200, "text/plain", "success");
-        log::inf("App is being restarted...");
+        logger::inf("App is being restarted...");
         ESP.restart();
     });
 
@@ -252,7 +252,7 @@ void WebServer::setCfgSaveHandlers()
                 WifiSettings cfg = AppCfg.getCurrent().wifi;
                 // LU_TODO add return value from parser
                 cfg.fromJson(json);
-                log::inf("%s", cfg.toJson().c_str());
+                logger::inf("%s", cfg.toJson().c_str());
                 return AppCfg.saveWifiSettings(cfg);
             }
         },
@@ -261,7 +261,7 @@ void WebServer::setCfgSaveHandlers()
             {
                 SystemTimeSettings cfg = AppCfg.getCurrent().time;
                 cfg.fromJson(json);
-                log::inf("%s", cfg.toJson().c_str());
+                logger::inf("%s", cfg.toJson().c_str());
                 return AppCfg.saveSystemTimeSettings(cfg);
             }
         },
@@ -270,7 +270,7 @@ void WebServer::setCfgSaveHandlers()
             {
                 WeatherSettings cfg = AppCfg.getCurrent().weather;
                 cfg.fromJson(json);
-                log::inf("%s", cfg.toJson().c_str());
+                logger::inf("%s", cfg.toJson().c_str());
                 return AppCfg.saveWeatherSettings(cfg);
             }
         },
@@ -279,7 +279,7 @@ void WebServer::setCfgSaveHandlers()
             {
                 InternalEnvDataSettings cfg = AppCfg.getCurrent().intEnv;
                 cfg.fromJson(json);
-                log::inf("%s", cfg.toJson().c_str());
+                logger::inf("%s", cfg.toJson().c_str());
                 return AppCfg.saveIntEnvDataSettings(cfg);
             }
         },
@@ -288,7 +288,7 @@ void WebServer::setCfgSaveHandlers()
             {
                 RadioSensorSettings cfg = AppCfg.getCurrent().radioSensor;
                 cfg.fromJson(json);
-                log::inf("%s", cfg.toJson().c_str());
+                logger::inf("%s", cfg.toJson().c_str());
                 return AppCfg.saveRadioSensorSettings(cfg);
             }
         },
@@ -297,7 +297,7 @@ void WebServer::setCfgSaveHandlers()
             {
                 DisplaySettings cfg = AppCfg.getCurrent().display;
                 cfg.fromJson(json);
-                log::inf("%s", cfg.toJson().c_str());
+                logger::inf("%s", cfg.toJson().c_str());
                 return AppCfg.saveDisplaySettings(cfg);
             }
         },
@@ -308,7 +308,7 @@ void WebServer::setCfgSaveHandlers()
                 cfg.fromJson(json);
                 // Update language globally
                 AppCtx.setAppLang(cfg.appLang);
-                log::inf("%s", cfg.toJson().c_str());
+                logger::inf("%s", cfg.toJson().c_str());
                 return AppCfg.saveAppSettings(cfg);
             }
         },
@@ -398,21 +398,21 @@ bool WebServer::wifiConnected()
 //------------------------------------------------------------------------------
 bool WebServer::wifiConnect(const char* ssid, const char* password)
 {
-    log::inf("%s Waiting for WiFi to connect", MODULE_NAME);
+    logger::inf("%s Waiting for WiFi to connect", MODULE_NAME);
 
     bool connected = false;
     int retry = 0;
     const int wifiConnectRetries = 5;
 
     WiFi.begin(ssid, password[0] == '\0' ? NULL : password);
-    log::inf("%s WIFI: ssid:%s, pass:%s", MODULE_NAME, ssid, password);
+    logger::inf("%s WIFI: ssid:%s, pass:%s", MODULE_NAME, ssid, password);
     while (retry < wifiConnectRetries && !connected)
     {
-        log::inf(".");
+        logger::inf(".");
         connected = wifiConnected();
         if (connected)
         {
-            log::inf("%s Connected to:%s, IPaddress:%s", MODULE_NAME,
+            logger::inf("%s Connected to:%s, IPaddress:%s", MODULE_NAME,
                 WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
 
             m_wifiMode = WifiMode::STATION;
@@ -442,7 +442,7 @@ bool WebServer::createWebServer()
         // Init filesystem
         if (!SPIFFS.begin(true))
         {
-            log::err("Error on SPIFFS begin!");
+            logger::err("Error on SPIFFS begin!");
             return false;
         }
 
@@ -452,7 +452,7 @@ bool WebServer::createWebServer()
         // Run mdns service
         if (!MDNS.begin(k_apHostname))
         {
-            log::err("Error setting up MDNS responder!");
+            logger::err("Error setting up MDNS responder!");
             return false;
         }
         else
@@ -472,7 +472,7 @@ bool WebServer::startAP()
     bool ret;
     m_wifiMode = WifiMode::AP;
 
-    log::inf("Starting Access Point");
+    logger::inf("Starting Access Point");
     WiFi.mode(WIFI_OFF);
     WiFi.softAPdisconnect(true);
     WiFi.disconnect(true);
@@ -486,26 +486,26 @@ bool WebServer::startAP()
     }
     if (apPass == "" || apPass.length() < 8 || apPass.length() > 63)
     {
-        log::inf("AccessPoint set password is INVALID or <8 or >63 chars, default `admin123` set instead");
+        logger::inf("AccessPoint set password is INVALID or <8 or >63 chars, default `admin123` set instead");
         apPass = "admin123";
     }
 
     ret = WiFi.softAP(apHostname.c_str(), apPass.c_str());
     if (!ret)
     {
-        log::err("Error occured during setting Wifi.softAP!");
+        logger::err("Error occured during setting Wifi.softAP!");
         return false;
     }
 
-    log::inf("Setting softAP Hostname: %s", apHostname.c_str());
+    logger::inf("Setting softAP Hostname: %s", apHostname.c_str());
     ret = WiFi.softAPsetHostname(apHostname.c_str());
     if (!ret)
     {
-        log::err("Hostname: AP set failed!");
+        logger::err("Hostname: AP set failed!");
     }
     else
     {
-        log::inf("Hostname: AP: %s", WiFi.softAPgetHostname());
+        logger::inf("Hostname: AP: %s", WiFi.softAPgetHostname());
     }
 
     IPAddress localIp(192,168,6,6);
@@ -514,19 +514,19 @@ bool WebServer::startAP()
     ret = WiFi.softAPConfig(localIp, gateway, subnetMask);
     if (!ret)
     {
-        log::err("WiFi.softAPConfig set failed!");
+        logger::err("WiFi.softAPConfig set failed!");
         return false;
     }
 
     delay(500);  // Need to wait to get IP
-    log::inf("AP Name: %s", k_apHostname);
-    log::inf("AP IP address: %s", WiFi.softAPIP().toString().c_str());
+    logger::inf("AP Name: %s", k_apHostname);
+    logger::inf("AP IP address: %s", WiFi.softAPIP().toString().c_str());
 
     m_dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     ret = m_dnsServer.start(k_dnsPort, "*", localIp);
     if (!ret)
     {
-        log::err("dnsServer.start failed!");
+        logger::err("dnsServer.start failed!");
         return false;
     }
     return true;

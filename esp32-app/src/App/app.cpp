@@ -1,10 +1,12 @@
 #include "app.h"
+#include "app_vars.h"
+#include "Config/Config.h"
 
 #include <Arduino.h>
 
+
 // APP
-#include "utils.h"
-#include "app_config.h"
+#include "Config/AppConfigParam.h"
 #include "app_context.h"
 
 // MISC
@@ -29,7 +31,7 @@ App::App()
 //------------------------------------------------------------------------------
 App::~App()
 {
-    AppCfg.close();
+    Cfg.close();
 }
 
 //------------------------------------------------------------------------------
@@ -42,10 +44,10 @@ App& App::instance()
 //------------------------------------------------------------------------------
 void App::setup()
 {
-    log::init();
+    logger::init();
     printMotd();
-    AppCfg.init();
-    AppCtx.setAppLang(AppCfg.getCurrent().other.appLang);
+    Cfg.init();
+    AppCtx.setAppLang(Cfg.getCurrent().app.appLang);
     createTasks();
     runTasks();
 }
@@ -61,15 +63,15 @@ void App::createTasks()
 {
     // Create all the tasks
     m_appStatusTask = std::unique_ptr<AppStatusTask>(new AppStatusTask());
-    m_wifiTask = std::unique_ptr<WifiTask>(new WifiTask(AppCfg.getCurrent().wifi));
-    m_ntpTask = std::unique_ptr<NtpTask>(new NtpTask(AppCfg.getCurrent().time.ntp,
+    m_wifiTask = std::unique_ptr<WifiTask>(new WifiTask(Cfg.getCurrent().wifi));
+    m_ntpTask = std::unique_ptr<NtpTask>(new NtpTask(Cfg.getCurrent().time,
                                             m_wifiTask->getWifiEvtHandle()));
-    m_intEnvDataTask = std::unique_ptr<IntEnvDataTask>(new IntEnvDataTask(AppCfg.getCurrent().intEnv));
-    m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(AppCfg.getCurrent().time,
+    m_intEnvDataTask = std::unique_ptr<IntEnvDataTask>(new IntEnvDataTask(Cfg.getCurrent().intEnv));
+    m_clockTask = std::unique_ptr<ClockTask>(new ClockTask(Cfg.getCurrent().time,
                                                 m_ntpTask->getNtpTimeQ()));
-    m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask(AppCfg.getCurrent().display, m_clockTask->getTimeQ()));
-    m_weatherTask = std::unique_ptr<WeatherTask>(new WeatherTask(AppCfg.getCurrent().weather));
-    m_radioSensorTask = std::unique_ptr<RadioSensorTask>(new RadioSensorTask(AppCfg.getCurrent().radioSensor));
+    m_dispTask = std::unique_ptr<DisplayTask>(new DisplayTask(Cfg.getCurrent().display, m_clockTask->getTimeQ()));
+    m_weatherTask = std::unique_ptr<WeatherTask>(new WeatherTask(Cfg.getCurrent().weather));
+    m_radioSensorTask = std::unique_ptr<RadioSensorTask>(new RadioSensorTask(Cfg.getCurrent().radio));
 }
 
 //------------------------------------------------------------------------------
@@ -120,7 +122,7 @@ void App::runTasks()
 //------------------------------------------------------------------------------
 void App::printMotd()
 {
-    log::inf("\r\nStarting <LUK6XFF LED_CLOCK 2020>\r\nSystem running on CPU %d at %d MHz.\r\nApp Version %s.\r\nFree heap memory %d\r\n",
+    logger::inf("\r\nStarting <LUK6XFF LED_CLOCK 2020>\r\nSystem running on CPU %d at %d MHz.\r\nApp Version %s.\r\nFree heap memory %d\r\n",
         xPortGetCoreID(),
         ESP.getCpuFreqMHz(),
         APP_VERSION,

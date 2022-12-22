@@ -1,6 +1,6 @@
 #include "radio.h"
 #include "hw_config.h"
-#include "Rtos/log.h"
+#include "Rtos/logger.h"
 #include <functional>
 
 //------------------------------------------------------------------------------
@@ -14,8 +14,8 @@
 QueueHandle_t Radio::msgSensorDataQ = nullptr;
 
 //------------------------------------------------------------------------------
-Radio::Radio(RadioSensorSettings& radioSensorCfg)
-    : cfg(radioSensorCfg)
+Radio::Radio(RadioConfigData& radioCfg)
+    : cfg(radioCfg)
     , spi(HSPI)
 {
     // Set arduino_dev
@@ -37,7 +37,7 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
     uint8_t attempts = 0;
     while (!lora_arduino_init(&dev, &arduino_dev) && (attempts++ < attempts_num))
     {
-        log::dbg("LORA Radio cannot be detected!, check your connections.");
+        logger::dbg("LORA Radio cannot be detected!, check your connections.");
         lora_delay_ms(2000);
     }
     lora_on_receive(&dev, &Radio::on_rx_done);
@@ -47,14 +47,14 @@ Radio::Radio(RadioSensorSettings& radioSensorCfg)
     {
         .hdr = {'L','U','6'},
         .status = MSG_NO_ERROR,
-        .crit_vbatt_level     = cfg.crit_vbatt_level,     //[mV]
-        .update_data_interval = cfg.update_data_interval, //[s]
+        .crit_vbatt_level     = cfg.critVbattLevel     //[mV]
+        .update_data_interval = cfg.dataUpdateInterval, //[s]
     };
 
     msgSensorDataQ = xQueueCreate(4, sizeof(radio_msg_queue_data));
     if (!msgSensorDataQ)
     {
-        log::err("RADIO: msgSensorDataQ has not been created!.");
+        logger::err("RADIO: msgSensorDataQ has not been created!.");
     }
 
     // Switch into RX mode
@@ -93,7 +93,7 @@ void Radio::restart()
     uint8_t attempts = 0;
     while (!lora_arduino_init(&dev, &arduino_dev) && (attempts++ < attempts_num))
     {
-        log::dbg("LORA Radio cannot be detected!, check your connections.");
+        logger::dbg("LORA Radio cannot be detected!, check your connections.");
         lora_delay_ms(2000);
     }
 
@@ -123,29 +123,29 @@ radio_msg_sensor_frame_status Radio::parse_incoming_msg_sensor(uint8_t *payload,
     radio_msg_sensor_frame_status status = MSG_NO_ERROR;
     if (mf->checksum != checksum)
     {
-        log::err("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x", mf->checksum, checksum);
+        logger::err("INVALID CHECKSUM!, Incoming_Checksum: 0x%x, Computed_Checksum: 0x%x", mf->checksum, checksum);
         status = MSG_CHECKSUM_ERROR;
     }
     else
     {
         if (~(mf->status & MSG_NO_ERROR))
         {
-            log::dbg("MSG_NO_ERROR");
-            log::dbg("VBATT:%d[mV], T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]", mf->vbatt, mf->temperature, mf->pressure, mf->humidity);
+            logger::dbg("MSG_NO_ERROR");
+            logger::dbg("VBATT:%d[mV], T:%3.1f[C], P:%3.1f[Pa], H:%3.1f[%%]", mf->vbatt, mf->temperature, mf->pressure, mf->humidity);
         }
         else if (mf->status & MSG_READ_ERROR)
         {
-            log::err("MSG_READ_ERROR");
+            logger::err("MSG_READ_ERROR");
             status = MSG_READ_ERROR;
         }
         else if (mf->status & MSG_INIT_ERROR)
         {
-            log::err("MSG_INIT_ERROR");
+            logger::err("MSG_INIT_ERROR");
             status = MSG_INIT_ERROR;
         }
         if (mf->status & MSG_BATT_LOW)
         {
-            log::err("MSG_BATT_LOW");
+            logger::err("MSG_BATT_LOW");
             status = MSG_BATT_LOW;
         }
     }
@@ -156,7 +156,7 @@ radio_msg_sensor_frame_status Radio::parse_incoming_msg_sensor(uint8_t *payload,
 //------------------------------------------------------------------------------
 void Radio::on_tx_done(void *args)
 {
-    log::dbg("> on_tx_done");
+    logger::dbg("> on_tx_done");
 }
 
 //-----------------------------------------------------------------------------
@@ -218,17 +218,17 @@ err:
 //-----------------------------------------------------------------------------
 void Radio::on_tx_timeout(void *args)
 {
-    log::dbg("> on_tx_timeout");
+    logger::dbg("> on_tx_timeout");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_timeout(void *args)
 {
-    log::dbg("> on_rx_timeout");
+    logger::dbg("> on_rx_timeout");
 }
 
 //-----------------------------------------------------------------------------
 void Radio::on_rx_error(void *args)
 {
-    log::dbg("> on_rx_error");
+    logger::dbg("> on_rx_error");
 }

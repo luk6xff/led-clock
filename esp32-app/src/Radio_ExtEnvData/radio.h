@@ -1,7 +1,7 @@
 #ifndef __RADIO_H__
 #define __RADIO_H__
 
-#include "radio_settings.h"
+#include "Config/RadioConfigParam.h"
 #include "../LORA/platform/arduino/lora-arduino.h"
 
 /**
@@ -71,7 +71,7 @@ class Radio final
 {
 
 public:
-    explicit Radio(RadioSensorSettings& radioSensorCfg);
+    explicit Radio(RadioConfigData& radioSensorCfg);
     void sendResponseToSensor();
 
     void restart();
@@ -95,7 +95,7 @@ public:
     static QueueHandle_t msgSensorDataQ;
 
 private:
-    RadioSensorSettings& cfg;
+    RadioConfigData& cfg;
     SPIClass spi;
     lora dev;
     lora_arduino arduino_dev;

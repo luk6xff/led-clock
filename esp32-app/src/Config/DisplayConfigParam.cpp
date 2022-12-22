@@ -1,7 +1,5 @@
-#pragma once
-
 #include "DisplayConfigParam.h"
-
+#include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
 DisplayConfigParam::DisplayConfigParam() : ConfigParam(DISPLAY_CFG_KEY, Cfg)
@@ -17,17 +15,17 @@ bool DisplayConfigParam::setConfig(const JsonObject& json)
 
     if (unpackFromJson(dataFromServer, json))
     {
-        log::dbg("DisplayConfigParam::unpackFromJson - SUCCESS");
-        if (m_cfgHndl.getCurrent().time != dataFromServer)
+        logger::dbg("DisplayConfigParam::unpackFromJson - SUCCESS");
+        if (m_cfgHndl.getCurrent().display != dataFromServer)
         {
-            log::dbg("Storing new DisplayConfigData settings");
-            return m_cfgHndl.save(cfg);
+            logger::dbg("Storing new DisplayConfigData settings");
+            return m_cfgHndl.save(dataFromServer);
         }
-        log::dbg("Storing DisplayConfigData settings skipped, no change detected");
+        logger::dbg("Storing DisplayConfigData settings skipped, no change detected");
         return false;
     }
 
-    log::err("DisplayConfigParam::unpackFromJson - ERROR");
+    logger::err("DisplayConfigParam::unpackFromJson - ERROR");
     return false;
 }
 
@@ -106,13 +104,13 @@ String DisplayConfigParam::packToJson(const DisplayConfigData& data)
     String json;
     JsonArray arr = doc.createNestedArray(DISPLAY_CFG_KEY);
     JsonObject obj = arr.createNestedObject();
-    obj[cfgParamKey(DisplayKeys::DisplayKeys::DISPLAY_ENABLE_AUTO_INTENSITY)] = data.enableAutoIntenisty;
+    obj[cfgParamKey(DisplayKeys::DISPLAY_ENABLE_AUTO_INTENSITY)] = data.enableAutoIntenisty;
     obj = arr.createNestedObject();
-    obj[cfgParamKey(DisplayKeys::DisplayKeys::DISPLAY_INTENSITY_VALUE)] = data.intensityValue;
+    obj[cfgParamKey(DisplayKeys::DISPLAY_INTENSITY_VALUE)] = data.intensityValue;
     obj = arr.createNestedObject();
-    obj[cfgParamKey(DisplayKeys::DisplayKeys::DISPLAY_ANIMATION_SPEED)] = data.animationSpeed;
+    obj[cfgParamKey(DisplayKeys::DISPLAY_ANIMATION_SPEED)] = data.animationSpeed;
     obj = arr.createNestedObject();
-    obj[cfgParamKey(DisplayKeys::DisplayKeys::DISPLAY_TIME_FORMAT)] = data.timeFormat;
+    obj[cfgParamKey(DisplayKeys::DISPLAY_TIME_FORMAT)] = data.timeFormat;
     serializeJson(doc, json);
     return json;
 }

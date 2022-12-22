@@ -13,15 +13,9 @@
 
 
 
-#define WIFI_CONFIG_LEN 32
 
-struct WifiConfigData
-{
-    char ssid[WIFI_CONFIG_LEN];
-    char passwd[WIFI_CONFIG_LEN];
-    char apHostname[WIFI_CONFIG_LEN];
-    char apPasswd[WIFI_CONFIG_LEN];
-};
+
+class Config;
 
 class WifiConfigParam : public ConfigParam<WifiConfigData, Config>
 {

@@ -1,6 +1,6 @@
 #include "wifi_task.h"
-#include "App/rtos_utils.h"
-#include "Rtos/log.h"
+#include "Rtos/RtosUtils.h"
+#include "Rtos/logger.h"
 #include "App/app_context.h"
 
 #include "wifi_manager.h"
@@ -14,7 +14,7 @@
 #define MODULE_NAME "[WIFI]"
 
 //------------------------------------------------------------------------------
-WifiTask::WifiTask(const WifiSettings& wifiCfg)
+WifiTask::WifiTask(const WifiConfigData& wifiCfg)
     : Task("WifiTask", WIFI_TASK_STACK_SIZE, WIFI_TASK_PRIORITY, CONFIG_ARDUINO_RUNNING_CORE)
     , m_wifiCfg(wifiCfg)
 {
@@ -22,7 +22,7 @@ WifiTask::WifiTask(const WifiSettings& wifiCfg)
     m_wifiEvt = xEventGroupCreate();
     if (!m_wifiEvt)
     {
-        log::err("%s event group create failed!", MODULE_NAME);
+        logger::err("%s event group create failed!", MODULE_NAME);
     }
 }
 
@@ -70,7 +70,7 @@ void WifiTask::run()
                 captivePortalTimeoutCnt = 0;
                 if (wifiMgr.start())
                 {
-                    log::inf("%s Succesfully connected to wifi, server is running", MODULE_NAME);
+                    logger::inf("%s Succesfully connected to wifi, server is running", MODULE_NAME);
                     xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
                 }
             }
@@ -79,11 +79,11 @@ void WifiTask::run()
         // Lost wifi connection, try to reconnect
         if (wifiMgr.isStationModeActive() && !wifiMgr.isConnected())
         {
-            log::err("%s Connection failed, waiting for %d seconds...",
+            logger::err("%s Connection failed, waiting for %d seconds...",
                         MODULE_NAME, WIFI_TIMEOUT_MS/1000);
             if (wifiMgr.start())
             {
-                log::inf("%s Wifi reconnected!", MODULE_NAME);
+                logger::inf("%s Wifi reconnected!", MODULE_NAME);
             }
         }
 

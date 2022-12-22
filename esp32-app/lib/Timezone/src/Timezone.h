@@ -26,6 +26,17 @@ enum month_t {Jan=1, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec};
 // or when standard time begins.
 struct TimeChangeRule
 {
+
+    TimeChangeRule(char _abbrev[6], uint8_t _week, uint8_t _dow, uint8_t _month, uint8_t _hour, int _offset)
+    : week(_week)
+    , dow(_dow)
+    , month(_month)
+    , hour(_hour)
+    , offset(_offset)
+    {
+        memcpy(abbrev, _abbrev, 6);
+    }
+
     char abbrev[6];    // five chars max
     uint8_t week;      // First, Second, Third, Fourth, or Last week of the month
     uint8_t dow;       // day of week, 1=Sun, 2=Mon, ... 7=Sat
@@ -54,6 +65,7 @@ class Timezone
     public:
         Timezone(TimeChangeRule dstStart, TimeChangeRule stdStart);
         Timezone(TimeChangeRule stdTime);
+        Timezone();
         Timezone(int address);
         time_t toLocal(time_t utc);
         time_t toLocal(time_t utc, TimeChangeRule **tcr);

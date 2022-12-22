@@ -1,8 +1,8 @@
 #include "ntp_task.h"
 #include "system_time.h"
-#include "App/rtos_utils.h"
+#include "Rtos/RtosUtils.h"
 #include "Wifi/wifi_task.h"
-#include "Rtos/log.h"
+#include "Rtos/logger.h"
 #include "App/app_context.h"
 
 //------------------------------------------------------------------------------
@@ -12,7 +12,7 @@
 #define MODULE_NAME "[NTP]"
 
 //------------------------------------------------------------------------------
-NtpTask::NtpTask(NtpSettings& ntpCfg, const EventGroupHandle_t& wifiEvtHandle)
+NtpTask::NtpTask(TimeConfigData& ntpCfg, const EventGroupHandle_t& wifiEvtHandle)
     : Task("NtpTask", NTP_TASK_STACK_SIZE, NTP_TASK_PRIORITY, CONFIG_ARDUINO_RUNNING_CORE)
     , m_ntpCfg(ntpCfg)
     , m_wifiEvtHandle(wifiEvtHandle)
@@ -20,7 +20,7 @@ NtpTask::NtpTask(NtpSettings& ntpCfg, const EventGroupHandle_t& wifiEvtHandle)
     m_ntpTimeQ = xQueueCreate(1, sizeof(DateTime));
     if (!m_ntpTimeQ)
     {
-        log::err("%s m_ntpTimeQ has not been created!.", MODULE_NAME);
+        logger::err("%s m_ntpTimeQ has not been created!.", MODULE_NAME);
     }
 }
 
@@ -81,13 +81,13 @@ void NtpTask::run()
             if (ntp.updateTime())
             {
                 DateTime dt(ntp.getCurrentTime());
-                log::dbg("%s UTC:%s", MODULE_NAME, dt.timestamp().c_str());
+                logger::dbg("%s UTC:%s", MODULE_NAME, dt.timestamp().c_str());
                 // Update in Systime clock task
                 if (m_ntpTimeQ)
                 {
                     xQueueOverwrite(m_ntpTimeQ, &dt);
                 }
-                sleepTime = (m_ntpCfg.updateInterval / portTICK_PERIOD_MS);
+                sleepTime = (m_ntpCfg.ntpUpdateInterval / portTICK_PERIOD_MS);
             }
         }
 

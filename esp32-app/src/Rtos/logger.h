@@ -2,7 +2,7 @@
 
 #include "DebugUtils.h"
 
-namespace log
+namespace logger
 {
 
     /**

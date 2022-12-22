@@ -1,5 +1,5 @@
 #include "InternalEnvironmentDataConfigParam.h"
-
+#include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
 InternalEnvironmentDataConfigParam::InternalEnvironmentDataConfigParam() : ConfigParam(INTENV_CFG_KEY, Cfg)
@@ -15,17 +15,17 @@ bool InternalEnvironmentDataConfigParam::setConfig(const JsonObject& json)
 
     if (unpackFromJson(dataFromServer, json))
     {
-        log::dbg("InternalEnvironmentDataConfigParam::unpackFromJson - SUCCESS");
+        logger::dbg("InternalEnvironmentDataConfigParam::unpackFromJson - SUCCESS");
         if (m_cfgHndl.getCurrent().time != dataFromServer)
         {
-            log::dbg("Storing new InternalEnvironmentDataConfigData settings");
+            logger::dbg("Storing new InternalEnvironmentDataConfigData settings");
             return m_cfgHndl.save(cfg);
         }
-        log::dbg("Storing InternalEnvironmentDataConfigData settings skipped, no change detected");
+        logger::dbg("Storing InternalEnvironmentDataConfigData settings skipped, no change detected");
         return false;
     }
 
-    log::err("InternalEnvironmentDataConfigParam::unpackFromJson - ERROR");
+    logger::err("InternalEnvironmentDataConfigParam::unpackFromJson - ERROR");
     return false;
 }
 
@@ -33,7 +33,7 @@ bool InternalEnvironmentDataConfigParam::setConfig(const JsonObject& json)
 void InternalEnvironmentDataConfigParam::getConfig(String& configPayload)
 {
     // Extract config data from application
-    configPayload = packToJson(m_cfgHndl.getCurrent().internalEnvironmentData);
+    configPayload = packToJson(m_cfgHndl.getCurrent().intEnv);
 }
 
 //------------------------------------------------------------------------------
@@ -42,8 +42,8 @@ String InternalEnvironmentDataConfigParam::toStr()
     const String colon = ":";
     const String comma = ", ";
     return key()+colon+comma + \
-            cfgParamKey(InternalEnvironmentDataKeys::INTERNAL_ENVIRONMENT_DATA_ENABLED)+colon+String(m_cfgData.dataUpdateInterval)+comma + \
-            cfgParamKey(InternalEnvironmentDataKeys::INTERNAL_ENVIRONMENT_DATA_UPDATE_INTERVAL)+colon+String(m_cfgData.critVbattLevel)+comma  + \
+            cfgParamKey(InternalEnvironmentDataKeys::INTERNAL_ENVIRONMENT_DATA_ENABLED)+colon+String(m_cfgData.enabled)+comma + \
+            cfgParamKey(InternalEnvironmentDataKeys::INTERNAL_ENVIRONMENT_DATA_UPDATE_INTERVAL)+colon+String(m_cfgData.dataUpdateInterval)+comma  + \
             cfgParamKey(InternalEnvironmentDataKeys::INTERNAL_ENVIRONMENT_MSG_DISP_REPEAT_NUM)+colon+String(m_cfgData.msgDispRepeatNum);
 }
 

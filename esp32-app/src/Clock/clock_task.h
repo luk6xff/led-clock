@@ -5,7 +5,7 @@
 class ClockTask : public Task
 {
 public:
-    explicit ClockTask(SystemTimeSettings& timeCfg,
+    explicit ClockTask(TimeConfigData& timeCfg,
                         const QueueHandle_t& ntpTimeQ);
 
     const QueueHandle_t& getTimeQ();
@@ -15,7 +15,7 @@ private:
     bool pushTimeMsg(const DateTime& dt);
 
 private:
-    SystemTimeSettings& m_timeCfg;
+    TimeConfigData& m_timeCfg;
     const QueueHandle_t& m_ntpTimeQ;
     const QueueHandle_t& m_extTimeQ;
     QueueHandle_t m_timeQ;

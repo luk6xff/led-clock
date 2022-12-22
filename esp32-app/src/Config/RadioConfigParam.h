@@ -4,16 +4,7 @@
 #include "ConfigTypes.h"
 #include "Config.h"
 
-
-struct RadioConfigData
-{
-    bool enabled;
-    uint32_t dataUpdateInterval;        // [s] in seconds
-    uint32_t critVbattLevel;            // [mV]
-    uint32_t msgDispRepeatNum;          // How many times incoming message shall be displayed
-    uint32_t lastMsgDispEveryMinutes;   // How often shall be last sensor msg displayed in minutes [min]
-};
-
+class Config;
 
 class RadioConfigParam : public ConfigParam<RadioConfigData, Config>
 {

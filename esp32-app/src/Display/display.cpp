@@ -1,7 +1,7 @@
 
 #include "display.h"
 #include "fonts.h"
-#include "Rtos/log.h"
+#include "Rtos/logger.h"
 
 
 //------------------------------------------------------------------------------
@@ -103,11 +103,11 @@ void Display::processAutoIntensityLevelControl()
 
     // Measure light
     const float lightVal = m_lightSensor.getIlluminance();
-    log::dbg("LightSensor - Illuminance value: %f", lightVal);
+    logger::dbg("LightSensor - Illuminance value: %f", lightVal);
 
     if (lightVal == -1)
     {
-        log::err("LightSensor - Illuminance value error!");
+        logger::err("LightSensor - Illuminance value error!");
         return;
     }
 
@@ -220,7 +220,7 @@ bool Display::printTime(const DateTime& dt, DateTimePrintMode tpm, bool timeDots
 
         default:
         {
-            log::err("Invalid Print time mode");
+            logger::err("Invalid Print time mode");
             break;
         }
     }
@@ -234,7 +234,7 @@ bool Display::printMsg(const char *msg, const size_t msgSize)
 
     if (!msg)
     {
-        log::dbg("Invalid msg to be displayed");
+        logger::dbg("Invalid msg to be displayed");
     }
     else
     {
@@ -258,7 +258,7 @@ String Display::utf8Ascii(const char *s)
 
     uint8_t prev_c = '\0';
     String cp;
-    //log::dbg("Converting: %s from UTF-8 to Extended ASCII...", s);
+    //logger::dbg("Converting: %s from UTF-8 to Extended ASCII...", s);
 
     while (*s != '\0')
     {
@@ -281,7 +281,7 @@ String Display::utf8Ascii(const char *s)
                 case 0x82: if (tmp_c == 0xAC) c = 0x80; // Euro symbol special case
             }
             prev_c = tmp_c;   // save last char
-            //log::dbg("Converted:0x%x[%d] to:0x%x[%d]", tmp_c, tmp_c, c, c);
+            //logger::dbg("Converted:0x%x[%d] to:0x%x[%d]", tmp_c, tmp_c, c, c);
         }
 
         if (c != '\0')
@@ -290,7 +290,7 @@ String Display::utf8Ascii(const char *s)
         }
     }
     cp += '\0';   // terminate the new string
-    //log::dbg(">>>> CP: %s", cp.c_str());
+    //logger::dbg(">>>> CP: %s", cp.c_str());
     return cp;
 }
 

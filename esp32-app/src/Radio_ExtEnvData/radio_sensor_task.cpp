@@ -1,5 +1,5 @@
 #include "radio_sensor_task.h"
-#include "Rtos/log.h"
+#include "Rtos/logger.h"
 #include "App/app_context.h"
 
 //------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ RadioSensorTask::RadioSensorTask(RadioSensorSettings& radioSensorCfg)
     m_radioSensorQ = xQueueCreate(3, sizeof(RadioSensorData));
     if (!m_radioSensorQ)
     {
-        log::err("%s m_radioSensorQ has not been created!.", MODULE_NAME);
+        logger::err("%s m_radioSensorQ has not been created!.", MODULE_NAME);
     }
 
     // Create radio health state task
@@ -33,7 +33,7 @@ RadioSensorTask::RadioSensorTask(RadioSensorSettings& radioSensorCfg)
                                     &m_radioHealthStateTask.task);
     if (ret != pdPASS)
     {
-        log::err("%s m_radioHealthStateTask start failed", MODULE_NAME);
+        logger::err("%s m_radioHealthStateTask start failed", MODULE_NAME);
     }
 }
 
@@ -67,13 +67,13 @@ void RadioSensorTask::run()
         const BaseType_t rc = xQueueReceive(Radio::msgSensorDataQ, &msg, 0);
         if (rc == pdTRUE)
         {
-            log::dbg(">>>radio_msg_queue_data received:");
-            log::dbg("received from: 0x%x", msg.hdr.sender_id);
-            log::dbg("sent to: 0x%x", msg.hdr.receiver_id);
-            log::dbg("message ID: 0x%x", msg.hdr.msg_id);
-            log::dbg("payload length: %d", msg.hdr.payload_len);
-            log::dbg("RSSI: %d", msg.rssi);
-            log::dbg("SNR: %f", msg.snr);
+            logger::dbg(">>>radio_msg_queue_data received:");
+            logger::dbg("received from: 0x%x", msg.hdr.sender_id);
+            logger::dbg("sent to: 0x%x", msg.hdr.receiver_id);
+            logger::dbg("message ID: 0x%x", msg.hdr.msg_id);
+            logger::dbg("payload length: %d", msg.hdr.payload_len);
+            logger::dbg("RSSI: %d", msg.rssi);
+            logger::dbg("SNR: %f", msg.snr);
             radio_msg_sensor_frame_status ret = Radio::parse_incoming_msg_sensor((uint8_t*)&(msg.frame), sizeof(msg.frame));
             // Send response to the sensor
             m_radioSensor.sendResponseToSensor();
@@ -161,7 +161,7 @@ void RadioSensorTask::healtStateCheckCb(void *arg)
             if (((millis() - rhst->lastRadioMsgReceivedTimeMs) / 1000) > rhst->resetTimeoutSecs)
             {
                 // No Frame received for too long, restart radio
-                log::dbg("%s No Radio frame msg received for too long:[%d] seconds, restarting radio...", MODULE_NAME, rhst->resetTimeoutSecs);
+                logger::dbg("%s No Radio frame msg received for too long:[%d] seconds, restarting radio...", MODULE_NAME, rhst->resetTimeoutSecs);
                 // Update status
                 AppCtx.setAppStatus(AppStatusType::EXT_DATA_SENSOR_ERROR);
                 rhst->radioHandle->restart();

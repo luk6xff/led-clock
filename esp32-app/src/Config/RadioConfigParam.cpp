@@ -1,5 +1,6 @@
 #include "RadioConfigParam.h"
-
+#include "Rtos/logger.h"
+#include <cstring>
 
 //------------------------------------------------------------------------------
 RadioConfigParam::RadioConfigParam() : ConfigParam(RADIO_CFG_KEY, Cfg)
@@ -15,17 +16,17 @@ bool RadioConfigParam::setConfig(const JsonObject& json)
 
     if (unpackFromJson(dataFromServer, json))
     {
-        log::dbg("RadioConfigParam::unpackFromJson - SUCCESS");
-        if (m_cfgHndl.getCurrent().time != dataFromServer)
+        logger::dbg("RadioConfigParam::unpackFromJson - SUCCESS");
+        if (std::memcmp(&(m_cfgHndl.getCurrent().radio), &dataFromServer, sizeof(dataFromServer)) != 0)
         {
-            log::dbg("Storing new RadioConfigData settings");
-            return m_cfgHndl.save(cfg);
+            logger::dbg("Storing new RadioConfigData settings");
+            return m_cfgHndl.save(dataFromServer);
         }
-        log::dbg("Storing RadioConfigData settings skipped, no change detected");
+        logger::dbg("Storing RadioConfigData settings skipped, no change detected");
         return false;
     }
 
-    log::err("RadioConfigParam::unpackFromJson - ERROR");
+    logger::err("RadioConfigParam::unpackFromJson - ERROR");
     return false;
 }
 
@@ -33,7 +34,7 @@ bool RadioConfigParam::setConfig(const JsonObject& json)
 void RadioConfigParam::getConfig(String& configPayload)
 {
     // Extract config data from application
-    configPayload = packToJson(m_cfgHndl.getCurrent().time);
+    configPayload = packToJson(m_cfgHndl.getCurrent().radio);
 }
 
 //------------------------------------------------------------------------------

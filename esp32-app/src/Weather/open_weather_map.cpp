@@ -2,7 +2,7 @@
 
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include "Rtos/log.h"
+#include "Rtos/logger.h"
 
 String PATH_SEPERATOR = "/";
 
@@ -31,13 +31,13 @@ bool OpenWeatherMapOneCall::doUpdate(OpenWeatherMapOneCallData *data, String pat
   this->data = data;
   JsonStreamingParser parser;
   parser.setListener(this);
-  log::dbg("[HTTP] Requesting resource at http://%s:%u%s\n", host.c_str(), port, path.c_str());
+  logger::dbg("[HTTP] Requesting resource at http://%s:%u%s\n", host.c_str(), port, path.c_str());
 
   WiFiClient client;
   if (client.connect(host.c_str(), port)) {
     bool isBody = false;
     char c;
-    log::dbg("[HTTP] connected, now GETting data");
+    logger::dbg("[HTTP] connected, now GETting data");
     client.print("GET " + path + " HTTP/1.1\r\n"
                                  "Host: " +
                  host + "\r\n"
@@ -46,7 +46,7 @@ bool OpenWeatherMapOneCall::doUpdate(OpenWeatherMapOneCallData *data, String pat
     while (client.connected() || client.available()) {
       if (client.available()) {
         if ((millis() - lost_do) > lostTest) {
-          log::dbg("[HTTP] lost in client with a timeout");
+          logger::dbg("[HTTP] lost in client with a timeout");
           client.stop();
           //ESP.restart(); LU_TODO
           return false;
@@ -64,7 +64,7 @@ bool OpenWeatherMapOneCall::doUpdate(OpenWeatherMapOneCallData *data, String pat
     }
     client.stop();
   } else {
-    log::dbg("[HTTP] failed to connect to host");
+    logger::dbg("[HTTP] failed to connect to host");
     return false;
   }
   this->data = nullptr;
@@ -73,12 +73,12 @@ bool OpenWeatherMapOneCall::doUpdate(OpenWeatherMapOneCallData *data, String pat
 
 void OpenWeatherMapOneCall::whitespace(char c)
 {
-  log::dbg("whitespace");
+  logger::dbg("whitespace");
 }
 
 void OpenWeatherMapOneCall::startDocument()
 {
-  log::dbg("start document");
+  logger::dbg("start document");
 }
 
 void OpenWeatherMapOneCall::key(String key)

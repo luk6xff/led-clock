@@ -1,6 +1,6 @@
 #include "wifi_task.h"
-#include "App/rtos_utils.h"
-#include "Rtos/log.h"
+#include "Rtos/RtosUtils.h"
+#include "Rtos/logger.h"
 #include "App/app_context.h"
 
 #include "WebServer/webserver.h"
@@ -22,7 +22,7 @@ WifiTask::WifiTask(const WifiSettings& wifiCfg)
     m_wifiEvt = xEventGroupCreate();
     if (!m_wifiEvt)
     {
-        log::err("%s event group create failed!", MODULE_NAME);
+        logger::err("%s event group create failed!", MODULE_NAME);
     }
 }
 
@@ -72,7 +72,7 @@ void WifiTask::run()
                 captivePortalTimeoutCnt = 0;
                 if (server.start())
                 {
-                    log::inf("%s Succesfully connected to wifi, server is running", MODULE_NAME);
+                    logger::inf("%s Succesfully connected to wifi, server is running", MODULE_NAME);
                     xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
                 }
             }
@@ -81,20 +81,20 @@ void WifiTask::run()
         // Lost connection, try to reconnect
         if (server.isStationModeActive() && !server.wifiConnected())
         {
-            log::err("%s Connection failed, waiting for %d seconds...",
+            logger::err("%s Connection failed, waiting for %d seconds...",
                         MODULE_NAME, WIFI_TIMEOUT_MS/1000);
             vTaskDelay(WIFI_TIMEOUT_MS / portTICK_PERIOD_MS);
             wifiConnectionFailureCnt++;
             if (wifiConnectionFailureCnt >= 3)
             {
-                log::inf("%s Starting CaptivePortal...", MODULE_NAME);
+                logger::inf("%s Starting CaptivePortal...", MODULE_NAME);
                 if (server.runCaptivePortal())
                 {
-                    log::inf("%s CaptivePortal is running", MODULE_NAME);
+                    logger::inf("%s CaptivePortal is running", MODULE_NAME);
                 }
                 else
                 {
-                    log::dbg("%s CaptivePortal start failure!", MODULE_NAME);
+                    logger::dbg("%s CaptivePortal start failure!", MODULE_NAME);
                 }
 
                 wifiConnectionFailureCnt = 0;

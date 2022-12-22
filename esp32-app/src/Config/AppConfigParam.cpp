@@ -1,5 +1,5 @@
 #include "AppConfigParam.h"
-
+#include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
 AppConfigParam::AppConfigParam() : ConfigParam(INTENV_CFG_KEY, Cfg)
@@ -15,17 +15,17 @@ bool AppConfigParam::setConfig(const JsonObject& json)
 
     if (unpackFromJson(dataFromServer, json))
     {
-        log::dbg("AppConfigParam::unpackFromJson - SUCCESS");
+        logger::dbg("AppConfigParam::unpackFromJson - SUCCESS");
         if (m_cfgHndl.getCurrent().app != dataFromServer)
         {
-            log::dbg("Storing new AppConfigData settings");
+            logger::dbg("Storing new AppConfigData settings");
             return m_cfgHndl.save(dataFromServer);
         }
-        log::dbg("Storing AppConfigData settings skipped, no change detected");
+        logger::dbg("Storing AppConfigData settings skipped, no change detected");
         return false;
     }
 
-    log::err("AppConfigParam::unpackFromJson - ERROR");
+    logger::err("AppConfigParam::unpackFromJson - ERROR");
     return false;
 }
 

@@ -1,7 +1,7 @@
 #include "weather_task.h"
-#include "App/rtos_utils.h"
+#include "Rtos/RtosUtils.h"
 #include "Wifi/wifi_task.h"
-#include "Rtos/log.h"
+#include "Rtos/logger.h"
 #include "App/app_context.h"
 
 //------------------------------------------------------------------------------
@@ -11,14 +11,14 @@
 #define MODULE_NAME "[WEAT]"
 
 //------------------------------------------------------------------------------
-WeatherTask::WeatherTask(const WeatherSettings& weatherCfg)
+WeatherTask::WeatherTask(const WeatherConfigData& weatherCfg)
     : Task("WeatherTask", WEATHER_TASK_STACK_SIZE, WEATHER_TASK_PRIORITY, CONFIG_ARDUINO_RUNNING_CORE)
     , m_weatherCfg(weatherCfg)
 {
     m_weatherQ = xQueueCreate(1, sizeof(WeatherData));
     if (!m_weatherQ)
     {
-        log::err("%s m_weatherQ has not been created!.", MODULE_NAME);
+        logger::err("%s m_weatherQ has not been created!.", MODULE_NAME);
     }
 }
 
@@ -70,18 +70,18 @@ void WeatherTask::run()
         {
             String msg;
 
-            log::dbg("Current Weather: ");
-            log::dbg("%s %s", String(openWeatherMapOneCallData.current.temp, 1).c_str(), (true ? "°C" : "°F") );
-            log::dbg("%s", openWeatherMapOneCallData.current.weatherDescription.c_str());
-            log::dbg("Forecasts: ");
+            logger::dbg("Current Weather: ");
+            logger::dbg("%s %s", String(openWeatherMapOneCallData.current.temp, 1).c_str(), (true ? "°C" : "°F") );
+            logger::dbg("%s", openWeatherMapOneCallData.current.weatherDescription.c_str());
+            logger::dbg("Forecasts: ");
 
             for (int i = 0; i < 2; i++)
             {
                 if (openWeatherMapOneCallData.daily[i].dt > 0)
                 {
-                    log::dbg("dt: %s", String(openWeatherMapOneCallData.daily[i].dt).c_str());
-                    log::dbg("temp: %s %s",String(openWeatherMapOneCallData.daily[i].tempDay, 1).c_str(), (true ? "°C" : "°F") );
-                    log::dbg("desc: %s",  openWeatherMapOneCallData.daily[i].weatherDescription.c_str());
+                    logger::dbg("dt: %s", String(openWeatherMapOneCallData.daily[i].dt).c_str());
+                    logger::dbg("temp: %s %s",String(openWeatherMapOneCallData.daily[i].tempDay, 1).c_str(), (true ? "°C" : "°F") );
+                    logger::dbg("desc: %s",  openWeatherMapOneCallData.daily[i].weatherDescription.c_str());
                 }
             }
 
@@ -108,7 +108,7 @@ void WeatherTask::run()
         }
         else
         {
-            log::err("%s Weather forecasts read failed!", MODULE_NAME);
+            logger::err("%s Weather forecasts read failed!", MODULE_NAME);
         }
 
 

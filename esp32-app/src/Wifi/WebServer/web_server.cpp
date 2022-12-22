@@ -11,7 +11,7 @@
 #include <Update.h>
 #include <ESPmDNS.h>
 #include "AsyncJson.h"
-#include "Rtos/log.h"
+#include "Rtos/logger.h"
 #include "App/devinfo.h"
 #include "App/app_context.h"
 #include "App/app_vars.h"
@@ -50,7 +50,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         m_Config.getConfig(payload);
         WebServer::RequestResponseData resp = prepareJsonResponse(WebServer::RequestResponseType::SUCCESS, payload);
         request->send(resp.errorCode, resp.type, resp.payload);
-        log::dbg("/dev-cfg-read response: %s", resp.payload.c_str());
+        logger::dbg("/dev-cfg-read response: %s", resp.payload.c_str());
     });
 
     // Configuration save handler
@@ -64,15 +64,15 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         if (m_Config.setConfig(jsonObj))
         {
             resp = prepareJsonResponse(WebServer::RequestResponseType::SUCCESS, emptyPayload);
-            log::inf("/dev-cfg-save SUCCESS");
+            logger::inf("/dev-cfg-save SUCCESS");
         }
         else
         {
             resp = prepareJsonResponse(WebServer::RequestResponseType::ERROR, emptyPayload);
-            log::inf("/dev-cfg-save ERROR");
+            logger::inf("/dev-cfg-save ERROR");
         }
         request->send(resp.errorCode, resp.type, resp.payload);
-        log::dbg("/dev-cfg-save response: %s", resp.payload.c_str());
+        logger::dbg("/dev-cfg-save response: %s", resp.payload.c_str());
     });
     server.addHandler(cfgSetHandler);
 
@@ -87,7 +87,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
             AsyncWebParameter *p = request->getParam("dt", true);
             String val = p->value();
             const uint32_t t = (uint32_t)val.toInt();
-            log::dbg("Received DT value: %s, %d", val.c_str(), t);
+            logger::dbg("Received DT value: %s, %d", val.c_str(), t);
             DateTime dt(t);
             if (AppCtx.putDateTimeMsg(dt))
             {
@@ -97,7 +97,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         }
 
         request->send(errorCode, "application/json", response.c_str());
-        log::inf("/dev-app-set-dt response: %s", response.c_str());
+        logger::inf("/dev-app-set-dt response: %s", response.c_str());
     });
 
 
@@ -118,7 +118,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
         String resp;
         serializeJson(doc, resp);
         request->send(errorCode, "application/json", resp.c_str());
-        log::inf("/dev-app-get-dt response: %s", resp.c_str());
+        logger::inf("/dev-app-get-dt response: %s", resp.c_str());
     });
 
 
@@ -136,10 +136,10 @@ void WebServer::registerHandlers(AsyncWebServer& server)
             response = "{\"status\":\"success\"}";
             errorCode = 200;
             AppCtx.putDisplayMsg(txt.c_str(), txt.length());
-            log::inf("/dev-app-print-text TXT: %s", txt.c_str());
+            logger::inf("/dev-app-print-text TXT: %s", txt.c_str());
         }
         request->send(errorCode, "application/json", response);
-        log::inf("/dev-app-print-text response: %s", response.c_str());
+        logger::inf("/dev-app-print-text response: %s", response.c_str());
     });
     server.addHandler(appPrintTextHandler);
 
@@ -147,7 +147,7 @@ void WebServer::registerHandlers(AsyncWebServer& server)
     // App reset
     server.on("/dev-app-reset", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", "success");
-        log::inf("App is being restarted...");
+        logger::inf("App is being restarted...");
         ESP.restart();
     });
 
@@ -224,7 +224,7 @@ WebServer::RequestResponseData WebServer::prepareJsonResponse(WebServer::Request
 //------------------------------------------------------------------------------
 void WebServer::printOtaUpdateProgress(size_t prg, size_t sz)
 {
-    log::inf("Progress: %d%%\n", (prg*100) / m_otaFileContentLen);
+    logger::inf("Progress: %d%%\n", (prg*100) / m_otaFileContentLen);
 }
 
 //------------------------------------------------------------------------------
@@ -238,7 +238,7 @@ bool WebServer::startWebServer()
         // Init filesystem
         if (!SPIFFS.begin(true))
         {
-            log::err("Error on SPIFFS begin!");
+            logger::err("Error on SPIFFS begin!");
             return false;
         }
 
@@ -251,7 +251,7 @@ bool WebServer::startWebServer()
         // Run mdns service
         if (!MDNS.begin(k_apHostname))
         {
-            log::err("Error setting up MDNS responder!");
+            logger::err("Error setting up MDNS responder!");
             return false;
         }
         else
@@ -260,7 +260,7 @@ bool WebServer::startWebServer()
         }
 
         m_webServerRunning = true;
-        log::inf("--> WebServer is running...");
+        logger::inf("--> WebServer is running...");
     }
 
     return m_webServerRunning;

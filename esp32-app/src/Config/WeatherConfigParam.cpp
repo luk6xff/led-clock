@@ -1,5 +1,5 @@
 #include "WeatherConfigParam.h"
-
+#include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
 WeatherConfigParam::WeatherConfigParam() : ConfigParam(RADIO_CFG_KEY, Cfg)
@@ -15,17 +15,17 @@ bool WeatherConfigParam::setConfig(const JsonObject& json)
 
     if (unpackFromJson(dataFromServer, json))
     {
-        log::dbg("WeatherConfigParam::unpackFromJson - SUCCESS");
+        logger::dbg("WeatherConfigParam::unpackFromJson - SUCCESS");
         if (m_cfgHndl.getCurrent().weather != dataFromServer)
         {
-            log::dbg("Storing new WeatherConfigData settings");
+            logger::dbg("Storing new WeatherConfigData settings");
             return m_cfgHndl.save(dataFromServer);
         }
-        log::dbg("Storing WeatherConfigData settings skipped, no change detected");
+        logger::dbg("Storing WeatherConfigData settings skipped, no change detected");
         return false;
     }
 
-    log::err("WeatherConfigParam::unpackFromJson - ERROR");
+    logger::err("WeatherConfigParam::unpackFromJson - ERROR");
     return false;
 }
 
@@ -106,10 +106,10 @@ bool WeatherConfigParam::unpackFromJson(WeatherConfigData& cfgData, const JsonOb
         }
         else if (v[cfgParamKey(WeatherKeys::WEATHER_OWM_CITY_LONGITUDE)])
         {
-            cfgData.owmCitylongitude = v[cfgParamKey(WeatherKeys::WEATHER_OWM_CITY_LONGITUDE)].as<float>();
-            if (cfgData.owmCitylongitude < -180.f || cfgData.owmCitylongitude > 180.f)
+            cfgData.owmCityLongitude = v[cfgParamKey(WeatherKeys::WEATHER_OWM_CITY_LONGITUDE)].as<float>();
+            if (cfgData.owmCityLongitude< -180.f || cfgData.owmCityLongitude > 180.f)
             {
-                cfgData.owmCitylongitude = 20.708694;
+                cfgData.owmCityLongitude = 20.708694;
             }
         }
     }

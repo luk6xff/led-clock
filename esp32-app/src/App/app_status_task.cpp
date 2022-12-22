@@ -1,6 +1,6 @@
 #include "App/app_status_task.h"
-#include "App/rtos_utils.h"
-#include "Rtos/log.h"
+#include "Rtos/RtosUtils.h"
+#include "Rtos/logger.h"
 #include "App/app_context.h"
 
 //------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
         {
             const String msg(tr(M_ERROR) + col + spc + tr(M_RADIO_ERROR));
             AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
-            log::err("APP_STATUS: RADIO_ERROR-%s",tr(M_RADIO_ERROR));
+            logger::err("APP_STATUS: RADIO_ERROR-%s",tr(M_RADIO_ERROR));
         }
     },
     {
@@ -40,7 +40,7 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
                 AppCtx.putDisplayCmd(APP_DISPLAY_CLEAR_CMD);
                 AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
             }
-            log::err("APP_STATUS: RTC_ERROR-%s",tr(M_RTC_ERROR));
+            logger::err("APP_STATUS: RTC_ERROR-%s",tr(M_RTC_ERROR));
         }
     },
     {
@@ -48,7 +48,7 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
         {
             const String msg(tr(M_ERROR) + col + spc + tr(M_DISP_ERROR));
             AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
-            log::err("APP_STATUS: DISP_ERROR-%s",tr(M_DISP_ERROR));
+            logger::err("APP_STATUS: DISP_ERROR-%s",tr(M_DISP_ERROR));
         }
     },
     {
@@ -61,7 +61,7 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
             {
                 AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
             }
-            log::err("APP_STATUS: EXT_DATA_SENSOR_ERROR-%s",tr(M_EXT_DATA_SENSOR_ERROR));
+            logger::err("APP_STATUS: EXT_DATA_SENSOR_ERROR-%s",tr(M_EXT_DATA_SENSOR_ERROR));
         }
     },
     {
@@ -78,7 +78,7 @@ const AppStateActionsMap AppStatusTask::k_stateActions =
                 once = true;
             }
             AppCtx.putDisplayMsg(msg.c_str(), msg.length(), 0);
-            log::inf("APP_STATUS: OTA_UPDATE_RUNNING-%s",tr(M_OTA_UPDATE_RUNNING));
+            logger::inf("APP_STATUS: OTA_UPDATE_RUNNING-%s",tr(M_OTA_UPDATE_RUNNING));
         }
     },
 
@@ -102,7 +102,7 @@ void AppStatusTask::run()
         const AppStatusValue currentAppStatus = AppCtx.appStatus();
         if (lastAppStatus != currentAppStatus)
         {
-            log::inf("%s AppStatus changed from:[0x%x] to:[0x%x]", MODULE_NAME, lastAppStatus, currentAppStatus);
+            logger::inf("%s AppStatus changed from:[0x%x] to:[0x%x]", MODULE_NAME, lastAppStatus, currentAppStatus);
             lastAppStatus = currentAppStatus;
         }
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "Rtos/task.h"
-#include "display_settings.h"
+#include "Config/DisplayConfigParam.h"
 #include "display.h"
 
 
@@ -15,7 +15,7 @@ class DisplayTask : public Task
 {
 
 public:
-    explicit DisplayTask(const DisplaySettings& displayCfg,
+    explicit DisplayTask(const DisplayConfigData& displayCfg,
                         const QueueHandle_t& timeQ);
     DisplayTask(const DisplayTask& disp) = delete;
     DisplayTask& operator=(const DisplayTask& disp) = delete;
@@ -28,7 +28,7 @@ protected:
 private:
     Display::MAX72xxConfig m_dispCfg;
     Display::DateTimePrintMode m_timeDispMode;
-    const DisplaySettings& m_displayCfg;
+    const DisplayConfigData& m_displayCfg;
     const QueueHandle_t& m_timeQ;
     Display m_disp;
     DisplayTimerTask m_lightSensorTimerTask;

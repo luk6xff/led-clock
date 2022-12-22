@@ -1,5 +1,5 @@
 #include "TimeConfigParam.h"
-
+#include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
 TimeConfigParam::TimeConfigParam() : ConfigParam(TIME_CFG_KEY, Cfg)
@@ -15,17 +15,17 @@ bool TimeConfigParam::setConfig(const JsonObject& json)
 
     if (unpackFromJson(dataFromServer, json))
     {
-        log::dbg("TimeConfigParam::unpackFromJson - SUCCESS");
+        logger::dbg("TimeConfigParam::unpackFromJson - SUCCESS");
         if (m_cfgHndl.getCurrent().time != dataFromServer)
         {
-            log::dbg("Storing new TimeConfigData settings");
+            logger::dbg("Storing new TimeConfigData settings");
             return m_cfgHndl.save(cfg);
         }
-        log::dbg("Storing TimeConfigData settings skipped, no change detected");
+        logger::dbg("Storing TimeConfigData settings skipped, no change detected");
         return false;
     }
 
-    log::err("TimeConfigParam::unpackFromJson - ERROR");
+    logger::err("TimeConfigParam::unpackFromJson - ERROR");
     return false;
 }
 

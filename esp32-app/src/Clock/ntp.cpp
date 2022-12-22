@@ -1,11 +1,11 @@
 #include "ntp.h"
-#include "Rtos/log.h"
+#include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
 Ntp::Ntp(const TimeConfigData& config)
     : m_config(config)
-    , m_ntpClient(m_ntpUDP, m_config.poolServerNames[0],
-                    m_config.timeOffset, m_config.updateInterval)
+    , m_ntpClient(m_ntpUDP, m_config.ntpPoolServerNames[0],
+                    m_config.ntpTimeOffset, m_config.ntpUpdateInterval)
 {
 
 }

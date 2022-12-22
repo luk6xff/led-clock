@@ -1,5 +1,5 @@
 #include "int_env_data_task.h"
-#include "Rtos/log.h"
+#include "Rtos/logger.h"
 #include "App/app_context.h"
 
 //------------------------------------------------------------------------------
@@ -9,7 +9,7 @@
 #define MODULE_NAME "[IENV]"
 
 //------------------------------------------------------------------------------
-IntEnvDataTask::IntEnvDataTask(InternalEnvDataSettings& intEnvSettings)
+IntEnvDataTask::IntEnvDataTask(InternalEnvironmentDataConfigData& intEnvSettings)
     : Task("IntEnvDataTask", INT_ENV_DATA_TASK_STACK_SIZE, INT_ENV_DATA_TASK_PRIORITY, 1)
     , m_intEnvCfg(intEnvSettings)
 {
@@ -31,9 +31,9 @@ void IntEnvDataTask::run()
             continue;
         }
 
-        if (m_intEnvCfg.update_data_interval == 0) // If internal env data sensor disabled
+        if (m_intEnvCfg.dataUpdateInterval == 0) // If internal env data sensor disabled
         {
-            log::inf("%s IntEnvData task not active! update_data_interval=0", MODULE_NAME);
+            logger::inf("%s IntEnvData task not active! dataUpdateInterval=0", MODULE_NAME);
             // Sleep longer
             vTaskDelay(k_waitForDataSecs);
         }
@@ -42,12 +42,12 @@ void IntEnvDataTask::run()
             InternalEnvData msg;
             if (m_intEnvDataSensor.getData(msg))
             {
-                log::inf("%s IntEnvData received: temperature:%3.2f, humidity:%3.2f, pressure:%3.2f", MODULE_NAME, msg.temperature, msg.humidity, msg.pressure);
+                logger::inf("%s IntEnvData received: temperature:%3.2f, humidity:%3.2f, pressure:%3.2f", MODULE_NAME, msg.temperature, msg.humidity, msg.pressure);
                 pushIntEnvDataMsg(msg);
             }
 
             // Sleep for some time
-            const uint32_t k_sleepTimeSecs = m_intEnvCfg.update_data_interval;
+            const uint32_t k_sleepTimeSecs = m_intEnvCfg.dataUpdateInterval;
             const TickType_t k_sleepTime = ((k_sleepTimeSecs * 1000) / portTICK_PERIOD_MS);
             vTaskDelay(k_sleepTime);
         }
@@ -68,7 +68,7 @@ bool IntEnvDataTask::pushIntEnvDataMsg(const InternalEnvData& data)
                 tr(M_SENSOR_PRESS) + col + String(uint32_t(data.pressure/100)) + tr(M_COMMON_PRESSURE_HPA) + com + spc + \
                 tr(M_SENSOR_HUMID) + col + String(uint8_t(data.humidity)) + tr(M_COMMON_PERCENT));
 
-    return AppCtx.putDisplayMsg(msg.c_str(), msg.length(), m_intEnvCfg.msg_disp_repeat_num);
+    return AppCtx.putDisplayMsg(msg.c_str(), msg.length(), m_intEnvCfg.msgDispRepeatNum);
 }
 
 //------------------------------------------------------------------------------

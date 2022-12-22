@@ -4,15 +4,7 @@
 #include "ConfigTypes.h"
 #include "Config.h"
 
-
-
-struct InternalEnvironmentDataConfigData
-{
-    bool enabled;                 // is functionality active
-    uint32_t dataUpdateInterval; // [s] in seconds
-    uint32_t msgDispRepeatNum;   // How many times incoming message shall be displayed
-};
-
+class Config;
 
 class InternalEnvironmentDataConfigParam : public ConfigParam<InternalEnvironmentDataConfigData, Config>
 {

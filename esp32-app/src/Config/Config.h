@@ -9,7 +9,7 @@
 #include <map>
 #include <memory>
 #include <Preferences.h>
-#include "RtosUtils/rtos_utils.h"
+#include "Rtos/RtosUtils.h"
 // Add all the params
 #include "WifiConfigParam.h"
 #include "TimeConfigParam.h"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Rtos/task.h"
-#include "wifi_settings.h"
+#include "Config/WifiConfigParam.h"
 #include <WiFiMulti.h>
 #include <WiFi.h>
 
@@ -17,14 +17,14 @@ public:
     };
 
 public:
-    explicit WifiTask(const WifiSettings& wifiCfg);
+    explicit WifiTask(const WifiConfigData& wifiCfg);
     const EventGroupHandle_t& getWifiEvtHandle();
 
 private:
     virtual void run() override;
 
 private:
-    const WifiSettings& m_wifiCfg;
+    const WifiConfigData& m_wifiCfg;
     WiFiMulti m_wifiMulti;
     EventGroupHandle_t m_wifiEvt;
 

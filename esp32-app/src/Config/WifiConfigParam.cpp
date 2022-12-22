@@ -1,5 +1,5 @@
 #include "WifiConfigParam.h"
-
+#include "Rtos/logger.h"
 
 //------------------------------------------------------------------------------
 WifiConfigParam::WifiConfigParam() : ConfigParam(WIFI_CFG_KEY, Cfg)
@@ -15,17 +15,17 @@ bool WifiConfigParam::setConfig(const JsonObject& json)
 
     if (unpackFromJson(dataFromServer, json))
     {
-        log::dbg("WifiConfigParam::unpackFromJson - SUCCESS");
+        logger::dbg("WifiConfigParam::unpackFromJson - SUCCESS");
         if (m_cfgHndl.getCurrent().wifi != dataFromServer)
         {
-            log::dbg("Storing new WifiConfigParam settings");
+            logger::dbg("Storing new WifiConfigParam settings");
             return m_cfgHndl.save(cfg);
         }
-        log::dbg("Storing WifiConfigParam settings skipped, no change detected");
+        logger::dbg("Storing WifiConfigParam settings skipped, no change detected");
         return false;
     }
 
-    log::err("WifiConfigParam::unpackFromJson - ERROR");
+    logger::err("WifiConfigParam::unpackFromJson - ERROR");
     return false;
 }
 

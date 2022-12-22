@@ -1,6 +1,6 @@
 #include "int_env_data_sensor.h"
 #include "hw_config.h"
-#include "App/rtos_utils.h"
+#include "Rtos/RtosUtils.h"
 
 //-----------------------------------------------------------------------------
 InternalEnvironmentDataSensor::InternalEnvironmentDataSensor()

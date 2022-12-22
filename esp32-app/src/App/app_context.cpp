@@ -1,5 +1,5 @@
 #include "app_context.h"
-#include "utils.h"
+#include "Rtos/logger.h"
 #include <type_traits>
 #include "day_info_runner.h"
 
@@ -30,7 +30,7 @@ bool AppContext::putDisplayMsg(const char *msg, size_t msgLen, uint8_t msgRepeat
 
     if (!m_displayMsgQ)
     {
-        log::err("%s m_displayMsgQ has not been created!.", MODULE_NAME);
+        logger::err("%s m_displayMsgQ has not been created!.", MODULE_NAME);
         return ret;
     }
 
@@ -54,14 +54,14 @@ bool AppContext::putDisplayMsg(const char *msg, size_t msgLen, uint8_t msgRepeat
             ret = xQueueSendToBack(m_displayMsgQ, &dispMsg, 0) == pdPASS;
             if (!ret)
             {
-                log::err("%s dispMsg queue is full!, available space %d.", MODULE_NAME, uxQueueSpacesAvailable(m_displayMsgQ));
+                logger::err("%s dispMsg queue is full!, available space %d.", MODULE_NAME, uxQueueSpacesAvailable(m_displayMsgQ));
                 free((void*)msgData);
                 break;
             }
             else
             {
                 ret = true;
-                log::inf("%s dispMsg: %s sent succesfully!", MODULE_NAME, msgData);
+                logger::inf("%s dispMsg: %s sent succesfully!", MODULE_NAME, msgData);
             }
         }
     }
@@ -97,19 +97,19 @@ bool AppContext::putDisplayCmd(const AppDisplayCmd cmd)
 
     if (!m_displayCmdQ)
     {
-        log::err("%s m_displayCmdQ has not been created!.", MODULE_NAME);
+        logger::err("%s m_displayCmdQ has not been created!.", MODULE_NAME);
         return ret;
     }
 
     ret = xQueueSendToBack(m_displayCmdQ, &cmd, 0) == pdPASS;
     if (!ret)
     {
-        log::err("%s dispCmd queue is full!", MODULE_NAME);
+        logger::err("%s dispCmd queue is full!", MODULE_NAME);
     }
     else
     {
         ret = true;
-        log::inf("%s dispCmd: %d sent succesfully!", MODULE_NAME, cmd);
+        logger::inf("%s dispCmd: %d sent succesfully!", MODULE_NAME, cmd);
     }
 
     return ret;
@@ -127,16 +127,16 @@ bool AppContext::putDateTimeMsg(const DateTime& dt)
     rtos::LockGuard<rtos::Mutex> lock(m_timeDataMtx);
     if (!m_timeDataQ)
     {
-        log::err("%s m_timeDataQ has not been created!.", MODULE_NAME);
+        logger::err("%s m_timeDataQ has not been created!.", MODULE_NAME);
         return false;
     }
     if (!const_cast<DateTime&>(dt).isValid())
     {
-        log::err("%s timeData:%s is invalid, sending skipped", MODULE_NAME,
+        logger::err("%s timeData:%s is invalid, sending skipped", MODULE_NAME,
                     const_cast<DateTime&>(dt).timestamp().c_str());
         return false;
     }
-    log::err("%s timeData: %s.", MODULE_NAME, const_cast<DateTime&>(dt).timestamp().c_str());
+    logger::err("%s timeData: %s.", MODULE_NAME, const_cast<DateTime&>(dt).timestamp().c_str());
     return xQueueSendToBack(m_timeDataQ, &dt, 0) == pdPASS;
 }
 

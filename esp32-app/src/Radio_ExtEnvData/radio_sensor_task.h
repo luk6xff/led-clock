@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Rtos/task.h"
-#include "App/rtos_utils.h"
+#include "Rtos/RtosUtils.h"
 #include "radio.h"
 
 struct RadioSensorData
@@ -26,7 +26,7 @@ struct RadioHealthStateTask
 class RadioSensorTask : public Task
 {
 public:
-    explicit RadioSensorTask(RadioSensorSettings& radioSensorCfg);
+    explicit RadioSensorTask(RadioConfigData& radioCfg);
     const QueueHandle_t& getRadioSensorQ();
 
     static void healtStateCheckCb(void *arg);
@@ -36,7 +36,7 @@ private:
     bool pushRadioSensorMsg(const RadioSensorData& dt);
 
 private:
-    RadioSensorSettings& m_radioSensorCfg;
+    RadioConfigData& m_radioCfg;
     Radio m_radioSensor;
     QueueHandle_t m_radioSensorQ;
     RadioHealthStateTask m_radioHealthStateTask;

@@ -1,5 +1,5 @@
 #include "Config.h"
-#include "RtosUtils/utils.h"
+#include "Rtos/logger.h"
 
 
 #undef USE_DEVEL_CFG
@@ -25,7 +25,7 @@ Config::Config()
         { DISPLAY_CFG_KEY, std::unique_ptr<DisplayConfigParam>(new DisplayConfigParam()) },
         { APP_CFG_KEY, std::unique_ptr<AppConfigParam>(new AppConfigParam()) },
 
-    }
+    };
 }
 
 //------------------------------------------------------------------------------
@@ -47,21 +47,21 @@ void Config::init()
     if (getCurrent().magic == getDefaults().magic && \
         getCurrent().version == getDefaults().version)
     {
-        log::inf("SysCfg read succesfully\r\n");
+        logger::inf("SysCfg read succesfully\r\n");
         // Print content
         printCurrentSysCfg();
     }
     else
     {
-        log::inf("SysCfg read failed, updating with defaults..\r\n");
+        logger::inf("SysCfg read failed, updating with defaults..\r\n");
         if (!save(getDefaults()))
         {
-            log::inf("Updating SysCfg with defaults failed!, setting current as defaults\r\n");
+            logger::inf("Updating SysCfg with defaults failed!, setting current as defaults\r\n");
             m_currentCfgData = m_defaultCfgData;
         }
         else
         {
-            log::inf("Updating SysCfg with defaults succeed!\r\n");
+            logger::inf("Updating SysCfg with defaults succeed!\r\n");
         }
     }
 }
@@ -100,7 +100,7 @@ bool Config::save(const ConfigData& sysCfg)
     // Check if sysCfg are upto date, do not write them
     if (memcmp(&sysCfg, &m_currentCfgData, sizeof(ConfigData)) == 0)
     {
-        log::inf("Current Cfg is equal to provided sysCfg, NVS save skipped!\r\n");
+        logger::inf("Current Cfg is equal to provided sysCfg, NVS save skipped!\r\n");
         m_currentCfgData = sysCfg;
         return false;
     }
@@ -110,7 +110,7 @@ bool Config::save(const ConfigData& sysCfg)
     // Write the data to NVS
     if (ret == sizeof(sysCfg))
     {
-        log::inf("SysCfg saved in NVS succesfully\r\n");
+        logger::inf("SysCfg saved in NVS succesfully\r\n");
         m_currentCfgData = sysCfg;
         return true;
     }
@@ -124,7 +124,7 @@ bool Config::read()
     size_t ret = prefs.getBytes("syscfg", &m_currentCfgData, sizeof(m_currentCfgData));
     if (ret == sizeof(m_currentCfgData))
     {
-        log::inf("SysCfg read from NVS succesfully\r\n");
+        logger::inf("SysCfg read from NVS succesfully\r\n");
         return true;
     }
     return false;
@@ -196,18 +196,18 @@ void Config::setDefaults()
 //------------------------------------------------------------------------------
 void Config::printCurrentSysCfg()
 {
-    log::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
-    log::inf("SysCfg size: %d bytes", sizeof(getCurrent()));
-    log::inf("magic: 0x%08x", getCurrent().magic);
-    log::inf("version: 0x%08x", getCurrent().version);
-    log::inf(getCurrent().wifi.toStr().c_str());
-    log::inf(getCurrent().time.toStr().c_str());
-    log::inf(getCurrent().display.toStr().c_str());
-    log::inf(getCurrent().radio.toStr().c_str());
-    log::inf(getCurrent().intEnv.toStr().c_str());
-    log::inf(getCurrent().weather.toStr().c_str());
-    log::inf(getCurrent().app.toStr().c_str());
-    log::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
+    logger::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
+    logger::inf("SysCfg size: %d bytes", sizeof(getCurrent()));
+    logger::inf("magic: 0x%08x", getCurrent().magic);
+    logger::inf("version: 0x%08x", getCurrent().version);
+    logger::inf(getCurrent().wifi.toStr().c_str());
+    logger::inf(getCurrent().time.toStr().c_str());
+    logger::inf(getCurrent().display.toStr().c_str());
+    logger::inf(getCurrent().radio.toStr().c_str());
+    logger::inf(getCurrent().intEnv.toStr().c_str());
+    logger::inf(getCurrent().weather.toStr().c_str());
+    logger::inf(getCurrent().app.toStr().c_str());
+    logger::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
 }
 
 //------------------------------------------------------------------------------

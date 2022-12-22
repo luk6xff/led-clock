@@ -2,12 +2,16 @@
 
 #include <map>
 #include <ArduinoJson.h>
+#include <cstring>
+
+using ParamsKey = uint32_t;
+using ParamsMap = std::map<uint32_t, const char*>;
 
 class ConfigParamBase
 {
 public:
 
-    ConfigParamBase(const char* key)
+    explicit ConfigParamBase(const char* key)
     : m_key(key)
     {
     }
@@ -27,10 +31,7 @@ class ConfigParam : public ConfigParamBase
 
 public:
 
-    using ParamsKey = uint32_t;
-    using ParamsMap = std::map<uint32_t, const char*>;
-
-    ConfigParam(const char* key, ConfigHndlType& cfgHndl),
+    ConfigParam(const char* key, ConfigHndlType& cfgHndl)
         : ConfigParamBase(key)
         , m_cfgHndl(cfgHndl)
     {

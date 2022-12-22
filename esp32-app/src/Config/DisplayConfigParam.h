@@ -4,31 +4,7 @@
 #include "ConfigTypes.h"
 #include "Config.h"
 
-
-struct DisplayConfigData
-{
-    DisplayConfigData()
-        : enableAutoIntenisty(true)
-        , intensityValue(0)
-        , animationSpeed(70)
-        , timeFormat(1)
-    {
-    }
-
-    DisplayConfigData(bool enableOnOff, uint8_t intensityValue,
-                    uint8_t animationSpeed,  uint8_t timeFormat)
-        : enableAutoIntenisty(enableOnOff)
-        , intensityValue(intensityValue)
-        , animationSpeed(animationSpeed)
-        , timeFormat(timeFormat)
-    {
-    }
-
-    uint8_t enableAutoIntenisty;
-    uint8_t intensityValue;
-    uint8_t animationSpeed;
-    uint8_t timeFormat; // [s] in seconds
-};
+class Config;
 
 class DisplayConfigParam : public ConfigParam<DisplayConfigData, Config>
 {

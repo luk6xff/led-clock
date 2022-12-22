@@ -6,20 +6,11 @@
 #include <Timezone.h>
 
 
-#define NTP_SERVER_NAME_MAXLEN 32
 
 
-struct TimeConfigData
-{
-    uint32_t timezoneNum;
-    int32_t stdTimezone1UtcOffset;  // Standard time, difference in hours. eg. CET  - Central European Time (UTC+1)
-    int32_t dstTimezone2UtcOffset;  // Summer time, difference in hours. eg. CEST - Central European daylight saving time (summer UTC+2)
-    uint32_t ntpEnabled;
-    int32_t ntpTimeOffset;          // in [min]
-    uint32_t ntpUpdateInterval;     // in [ms]
-    char ntpPoolServerNames[3][NTP_SERVER_NAME_MAXLEN];
-};
 
+
+class Config;
 
 class TimeConfigParam : public ConfigParam<TimeConfigData, Config>
 {

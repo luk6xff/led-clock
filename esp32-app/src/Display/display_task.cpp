@@ -1,7 +1,7 @@
 #include "display_task.h"
 #include "hw_config.h"
-#include "App/rtos_utils.h"
-#include "Rtos/log.h"
+#include "Rtos/RtosUtils.h"
+#include "Rtos/logger.h"
 #include "App/app_context.h"
 #include <cstring>
 
@@ -12,7 +12,7 @@
 #define MODULE_NAME "[DISP]"
 
 //------------------------------------------------------------------------------
-DisplayTask::DisplayTask(const DisplaySettings& displayCfg,
+DisplayTask::DisplayTask(const DisplayConfigData& displayCfg,
                             const QueueHandle_t& timeQ)
     : Task("DisplayTask", DISPLAY_TASK_STACK_SIZE, DISPLAY_TASK_PRIORITY, 0)
     , m_dispCfg {   DISPLAY_MAX72XX_HW_TYPE,
@@ -55,7 +55,7 @@ void DisplayTask::run()
                                     &m_lightSensorTimerTask.timerTask);
         if (ret != pdPASS)
         {
-            log::err("%s DT:%s", MODULE_NAME, "m_lightSensorTimerTask start failed");
+            logger::err("%s DT:%s", MODULE_NAME, "m_lightSensorTimerTask start failed");
         }
     }
 
@@ -83,7 +83,7 @@ void DisplayTask::run()
                 {
                     timeMsgUnlockTimer++;
                 }
-                log::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
+                logger::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
             }
         }
 
@@ -94,7 +94,7 @@ void DisplayTask::run()
         {
             switch (cmd)
             {
-                log::dbg("%s APP_DISPLAY_CMD received: 0x%x", MODULE_NAME, cmd);
+                logger::dbg("%s APP_DISPLAY_CMD received: 0x%x", MODULE_NAME, cmd);
                 case APP_DISPLAY_CLEAR_CMD:
                 {
                     m_disp.clear();
@@ -126,7 +126,7 @@ void DisplayTask::run()
             {
                 if (m_disp.printMsg(dispMsg.msg, dispMsg.msgLen))
                 {
-                    log::dbg("%s MSG removed from DISP queue:%s", MODULE_NAME, dispMsg.msg);
+                    logger::dbg("%s MSG removed from DISP queue:%s", MODULE_NAME, dispMsg.msg);
                     // Clear the print time counter
                     timeMsgUnlockTimer = 0;
 

@@ -1,7 +1,7 @@
 #ifndef __INTERNAL_ENV_DATA_H__
 #define __INTERNAL_ENV_DATA_H__
 
-#include "int_env_data_settings.h"
+#include "Config/InternalEnvironmentDataConfigParam.h"
 
 /**
  * @brief Internal measured data structure

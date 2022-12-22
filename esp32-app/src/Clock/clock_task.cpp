@@ -1,5 +1,5 @@
 #include "clock_task.h"
-#include "Rtos/log.h"
+#include "Rtos/logger.h"
 #include "App/app_context.h"
 
 //------------------------------------------------------------------------------
@@ -9,7 +9,7 @@
 #define MODULE_NAME "[CLCK]"
 
 //------------------------------------------------------------------------------
-ClockTask::ClockTask(SystemTimeSettings& timeCfg,
+ClockTask::ClockTask(TimeConfigData& timeCfg,
                     const QueueHandle_t& ntpTimeQ)
     : Task("ClockTask", CLOCK_TASK_STACK_SIZE, CLOCK_TASK_PRIORITY, 0)
     , m_timeCfg(timeCfg)
@@ -20,9 +20,9 @@ ClockTask::ClockTask(SystemTimeSettings& timeCfg,
     m_timeQ = xQueueCreate(16, sizeof(DateTime));
     if (!m_timeQ)
     {
-        log::err("%s m_timeQ has not been created!.", MODULE_NAME);
+        logger::err("%s m_timeQ has not been created!.", MODULE_NAME);
     }
-    log::dbg("%s ClockTask::ClockTask created!", MODULE_NAME);
+    logger::dbg("%s ClockTask::ClockTask created!", MODULE_NAME);
 }
 
 //------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ void ClockTask::run()
             {
                 if (pushTimeMsg(dt))
                 {
-                    log::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
+                    logger::dbg("%s DT:%s", MODULE_NAME, dt.timestamp().c_str());
                     // Update System time
                     AppCtx.setAppDt(dt);
                 }
@@ -66,7 +66,7 @@ void ClockTask::run()
         else
         {
             AppCtx.setAppStatus(AppStatusType::RTC_ERROR);
-            log::err("%s Invalid DateTime read from RTC: %s", MODULE_NAME, dt.timestamp().c_str());
+            logger::err("%s Invalid DateTime read from RTC: %s", MODULE_NAME, dt.timestamp().c_str());
         }
 
         if (m_ntpTimeQ)
@@ -75,7 +75,7 @@ void ClockTask::run()
             const BaseType_t rc = xQueueReceive(m_ntpTimeQ, &dt, 0);
             if (rc == pdPASS)
             {
-                log::dbg("%s UTC:%s", MODULE_NAME, dt.timestamp().c_str());
+                logger::dbg("%s UTC:%s", MODULE_NAME, dt.timestamp().c_str());
                 time.setUtcTime(dt);
             }
         }
@@ -86,7 +86,7 @@ void ClockTask::run()
             const BaseType_t rc = xQueueReceive(m_extTimeQ, &dt, 0);
             if (rc == pdPASS)
             {
-                log::dbg("%s EXT UTC time src: %s", MODULE_NAME, dt.timestamp().c_str());
+                logger::dbg("%s EXT UTC time src: %s", MODULE_NAME, dt.timestamp().c_str());
                 time.setUtcTime(dt);
             }
         }

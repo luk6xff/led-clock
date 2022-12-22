@@ -31,6 +31,16 @@ Timezone::Timezone(TimeChangeRule stdTime)
         initTimeChanges();
 }
 
+/*----------------------------------------------------------------------*
+ * Create a Timezone empty object                                       *
+ *----------------------------------------------------------------------*/
+Timezone::Timezone()
+    : m_dst({ "DST", 0, 1,  3, 2, 1*60 })
+    , m_std({ "STD", 0, 1, 10, 3, 2*60 })
+{
+        initTimeChanges();
+}
+
 #ifdef __AVR__
 /*----------------------------------------------------------------------*
  * Create a Timezone object from time change rules stored in EEPROM     *
