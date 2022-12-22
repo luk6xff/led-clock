@@ -42,6 +42,7 @@ String RadioConfigParam::toStr()
     const String colon = ":";
     const String comma = ", ";
     return key()+colon+comma + \
+            cfgParamKey(RadioKeys::RADIO_ENABLED)+colon+String(m_cfgData.enabled)+comma + \
             cfgParamKey(RadioKeys::RADIO_DATA_UPDATE_INTERVAL)+colon+String(m_cfgData.dataUpdateInterval)+comma + \
             cfgParamKey(RadioKeys::RADIO_CRITICAL_VBATT)+colon+String(m_cfgData.critVbattLevel)+comma  + \
             cfgParamKey(RadioKeys::RADIO_MSG_DISP_REPEAT_NUM)+colon+String(m_cfgData.msgDispRepeatNum)+comma  + \
@@ -52,6 +53,7 @@ String RadioConfigParam::toStr()
 void RadioConfigParam::setCfgParamsMap()
 {
     m_cfgParamsMap = {
+        { RadioKeys::RADIO_ENABLED,                     "radio-enabled" },
         { RadioKeys::RADIO_DATA_UPDATE_INTERVAL,        "radio-update-interval" },
         { RadioKeys::RADIO_CRITICAL_VBATT,              "radio-crit-vbatt" },
         { RadioKeys::RADIO_MSG_DISP_REPEAT_NUM,         "radio-msg-disp-repeat-num" },
@@ -68,7 +70,11 @@ bool RadioConfigParam::unpackFromJson(RadioConfigData& cfgData, const JsonObject
     JsonArray arr = json[key()].as<JsonArray>();
     for (const auto& v : arr)
     {
-        if (v[cfgParamKey(RadioKeys::RADIO_DATA_UPDATE_INTERVAL)])
+        if (v[cfgParamKey(RadioKeys::RADIO_ENABLED)])
+        {
+            cfgData.enabled = v[cfgParamKey(RadioKeys::RADIO_ENABLED)].as<bool>();
+        }
+        else if (v[cfgParamKey(RadioKeys::RADIO_DATA_UPDATE_INTERVAL)])
         {
             cfgData.dataUpdateInterval = v[cfgParamKey(RadioKeys::RADIO_DATA_UPDATE_INTERVAL)].as<uint32_t>();
             if (cfgData.dataUpdateInterval == 0)
@@ -102,6 +108,8 @@ String RadioConfigParam::packToJson(const RadioConfigData& data)
     String json;
     JsonArray arr = doc.createNestedArray(key());
     JsonObject obj = arr.createNestedObject();
+    obj[cfgParamKey(RadioKeys::RADIO_ENABLED)] = data.enabled;
+    obj = arr.createNestedObject();
     obj[cfgParamKey(RadioKeys::RADIO_DATA_UPDATE_INTERVAL)] = data.dataUpdateInterval / 60; // Convert from seconds to minutes on server.
     obj = arr.createNestedObject();
     obj[cfgParamKey(RadioKeys::RADIO_CRITICAL_VBATT)] = data.critVbattLevel;

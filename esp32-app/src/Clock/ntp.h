@@ -8,23 +8,22 @@
 
 
 #pragma once
-#include "App/utils.h"
+#include "Rtos/log.h"
 #include <NTPClient.h>
 #include <WiFiUdp.h>
-#include "system_time_settings.h"
+#include "Config/TimeConfigParam.h"
 
 class Ntp final
 {
 
 public:
-    Ntp();
-    explicit Ntp(const NtpSettings& config);
+    explicit Ntp(const TimeConfigData& config);
     bool updateTime();
     uint64_t getCurrentTime();
     String getCurrentTimeString() const;
 
 private:
-    const NtpSettings& m_config;
+    const TimeConfigData& m_config;
     WiFiUDP m_ntpUDP;
     NTPClient m_ntpClient;
 };

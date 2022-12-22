@@ -1,8 +1,8 @@
 #pragma once
 
-#include "config_param.h"
-#include "config_types.h"
-#include "config.h"
+#include "ConfigParam.h"
+#include "ConfigTypes.h"
+#include "Config.h"
 
 
 #undef USE_DEVEL_CFG

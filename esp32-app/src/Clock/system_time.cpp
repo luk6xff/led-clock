@@ -1,11 +1,11 @@
 #include "system_time.h"
 #include "hw_config.h"
 #include "App/rtos_utils.h"
-#include "App/utils.h"
+#include "Rtos/log.h"
 #include "App/app_context.h"
 
 //------------------------------------------------------------------------------
-SystemTime::SystemTime(SystemTimeSettings& timeSettings)
+SystemTime::SystemTime(TimeConfigData& timeSettings)
     : m_timeSettings(timeSettings)
     , m_timezone(m_timeSettings.dstStart, m_timeSettings.stdStart)
 {

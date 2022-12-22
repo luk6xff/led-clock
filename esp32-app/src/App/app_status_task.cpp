@@ -1,6 +1,6 @@
 #include "App/app_status_task.h"
 #include "App/rtos_utils.h"
-#include "App/utils.h"
+#include "Rtos/log.h"
 #include "App/app_context.h"
 
 //------------------------------------------------------------------------------

@@ -1,18 +1,8 @@
 #include "ntp.h"
-#include "App/utils.h"
-
-
-//------------------------------------------------------------------------------
-Ntp::Ntp()
-    : m_config(NtpSettings())
-    , m_ntpClient(m_ntpUDP, m_config.poolServerNames[0],
-                    m_config.timeOffset, m_config.updateInterval)
-{
-
-}
+#include "Rtos/log.h"
 
 //------------------------------------------------------------------------------
-Ntp::Ntp(const NtpSettings& config)
+Ntp::Ntp(const TimeConfigData& config)
     : m_config(config)
     , m_ntpClient(m_ntpUDP, m_config.poolServerNames[0],
                     m_config.timeOffset, m_config.updateInterval)

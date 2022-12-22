@@ -1,8 +1,8 @@
 #pragma once
 
-#include "config_param.h"
-#include "config_types.h"
-#include "config.h"
+#include "ConfigParam.h"
+#include "ConfigTypes.h"
+#include "Config.h"
 
 
 struct WeatherConfigData
@@ -10,19 +10,15 @@ struct WeatherConfigData
     #define OWM_APPID_MAXLEN        48
     #define OWM_CITY_NAME_MAXLEN    32
 
-
-// WeatherConfigData()
-//     : enabled(true)
-//     , updateInterval(3600)
-// {
-//     memset(owmCityName, 0, OWM_CITY_NAME_MAXLEN);
-//     memset(owmAppid, 0, OWM_APPID_MAXLEN);
-//     memcpy(owmAppid, "INVALID_KEY", OWM_APPID_MAXLEN);
-//     memcpy(owmCityName, "Ubiad", OWM_CITY_NAME_MAXLEN);
-//     owmCityLatitude(49.692167), // Ubiad, PL
-//     owmCityLongitude(20.708694)
-// }
-
+    WeatherConfigData()
+    : enabled(true)
+    , updateInterval(3600)
+    , owmAppid("INVALID_KEY")
+    , owmCityName("Ubiad")
+    , owmCityLatitude(49.692167), // Ubiad, PL
+    , owmCityLongitude(20.708694)
+    {
+    }
 
     bool enabled;
     uint32_t updateInterval; // [s] in seconds

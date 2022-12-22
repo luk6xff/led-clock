@@ -16,6 +16,8 @@
 #include "DisplayConfigParam.h"
 #include "RadioConfigParam.h"
 #include "InternalEnvironmentDataConfigParam.h"
+#include "WeatherConfigParam.h"
+#include "AppConfigParam.h"
 
 
 #define Cfg Config::instance()
@@ -36,8 +38,8 @@ public:
         DisplayConfigData display;
         RadioConfigData radio;
         InternalEnvironmentDataConfigData intEnv;
-        // WeatherSettins weather;
-        // AppSettings other;
+        WeatherConfigData weather;
+        AppConfigData app;
     };
 
 public:

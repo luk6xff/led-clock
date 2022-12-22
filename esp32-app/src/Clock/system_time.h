@@ -2,7 +2,7 @@
 #define __SYSTEM_TIME_H__
 
 #include <RTClib.h>
-#include "system_time_settings.h"
+#include "Config/TimeConfigParam.h"
 
 
 
@@ -10,7 +10,7 @@ class SystemTime final
 {
 
 public:
-    explicit SystemTime(SystemTimeSettings &timeSettings);
+    explicit SystemTime(TimeConfigData &timeSettings);
     bool init();
     void setTime(const DateTime& dt);
     void setUtcTime(const DateTime& dt);
@@ -30,7 +30,7 @@ private:
 
 private:
     RTC_DS3231 m_rtc;
-    SystemTimeSettings &m_timeSettings;
+    TimeConfigData &m_timeSettings;
     Timezone m_timezone;
     TimezoneType m_lastTimezone;
 };

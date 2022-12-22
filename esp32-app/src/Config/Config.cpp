@@ -1,4 +1,4 @@
-#include "config.h"
+#include "Config.h"
 #include "RtosUtils/utils.h"
 
 
@@ -19,6 +19,12 @@ Config::Config()
     {
         { WIFI_CFG_KEY, std::unique_ptr<WifiConfigParam>(new WifiConfigParam()) },
         { TIME_CFG_KEY, std::unique_ptr<TimeConfigParam>(new TimeConfigParam()) },
+        { WEATHER_CFG_KEY, std::unique_ptr<WeatherConfigParam>(new WeatherConfigParam()) },
+        { INTENV_CFG_KEY, std::unique_ptr<InternalEnvironmentDataConfigParam>(new InternalEnvironmentDataConfigParam()) },
+        { RADIO_CFG_KEY, std::unique_ptr<RadioConfigParam>(new RadioConfigParam()) },
+        { DISPLAY_CFG_KEY, std::unique_ptr<DisplayConfigParam>(new DisplayConfigParam()) },
+        { APP_CFG_KEY, std::unique_ptr<AppConfigParam>(new AppConfigParam()) },
+
     }
 }
 
@@ -133,7 +139,7 @@ void Config::setDefaults()
     m_defaultCfgData =
     {
         .magic   = 0x4C554B36,  // LUK6
-        .version = 0x00000007,
+        .version = 0x0000000A,
     };
 
     // WIFI
@@ -152,8 +158,8 @@ void Config::setDefaults()
     // TIME
     TimeConfigData time = {
         2,
-        {"CET", Last, Sun, Oct, 3, 60},  // Central European Standard Time
-        {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
+        1,// {"CET", Last, Sun, Oct, 3, 60},  // Central European Standard Time
+        2,// {"CEST", Last, Sun, Mar, 2, 120}, // Central European Summer Time
         true,
         0,
         (1000*3600),
@@ -163,29 +169,28 @@ void Config::setDefaults()
     };
     m_defaultCfgData.time = time;
 
-//     // WEATHER
-//     WeatherSystemConfig weatherCfg;
-// #ifdef DEV_CFG
-//     memcpy(weatherCfg.owmAppid, DEV_CFG_WEATHER_OWM_APPID, OWM_APPID_MAXLEN);
-// #endif
-//     m_defaultCfgData.weather = weatherCfg;
+    // DISPLAY
+    DisplayConfigData display = {false, 0, 30, 1};
+    m_defaultCfgData.display = display;
 
-//     // RADIO_SENSOR
-//     RadioSensorSystemConfig radioSensorCfg = {1800, 3000, 1, 5};
-//     m_defaultCfgData.radioSensor = radioSensorCfg;
+    // RADIO_SENSOR
+    RadioConfigData radio = {false, 1800, 3000, 1, 5};
+    m_defaultCfgData.radio = radio;
 
-//     // INTERNAL ENVIRONMENT DATA
-//     InternalEnvDataSystemConfig intEnvCfg = {900, 1};
-//     m_defaultCfgData.intEnv = intEnvCfg;
+    // INTERNAL ENVIRONMENT DATA
+    InternalEnvironmentDataConfigData intEnv = {false, 900, 1};
+    m_defaultCfgData.intEnv = intEnv;
 
-//     // DISPLAY
-//     DisplaySystemConfig displayCfg = {false, 0, 30, 1};
-//     m_defaultCfgData.display = displayCfg;
+    // WEATHER
+    WeatherConfigData weather;
+#ifdef DEV_CFG
+    memcpy(weather.owmAppid, DEV_CFG_WEATHER_OWM_APPID, OWM_APPID_MAXLEN);
+#endif
+    m_defaultCfgData.weather = weather;
 
-//     // OTHER
-//     AppSystemConfig otherCfg = { I18N_POLISH };
-//     m_defaultCfgData.other = otherCfg;
-
+    // APP
+    AppConfigData app = { I18N_POLISH };
+    m_defaultCfgData.app = app;
 }
 
 //------------------------------------------------------------------------------
@@ -195,13 +200,13 @@ void Config::printCurrentSysCfg()
     log::inf("SysCfg size: %d bytes", sizeof(getCurrent()));
     log::inf("magic: 0x%08x", getCurrent().magic);
     log::inf("version: 0x%08x", getCurrent().version);
-    // log::inf(getCurrent().wifi.toStr().c_str());
-    // log::inf(getCurrent().time.toStr().c_str());
-    // log::inf(getCurrent().weather.toStr().c_str());
-    // log::inf(getCurrent().radioSensor.toStr().c_str());
-    // log::inf(getCurrent().intEnv.toStr().c_str());
-    // log::inf(getCurrent().display.toStr().c_str());
-    // log::inf(getCurrent().other.toStr().c_str());
+    log::inf(getCurrent().wifi.toStr().c_str());
+    log::inf(getCurrent().time.toStr().c_str());
+    log::inf(getCurrent().display.toStr().c_str());
+    log::inf(getCurrent().radio.toStr().c_str());
+    log::inf(getCurrent().intEnv.toStr().c_str());
+    log::inf(getCurrent().weather.toStr().c_str());
+    log::inf(getCurrent().app.toStr().c_str());
     log::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
 }
 
