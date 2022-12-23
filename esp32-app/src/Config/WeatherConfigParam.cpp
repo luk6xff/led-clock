@@ -1,5 +1,6 @@
 #include "WeatherConfigParam.h"
 #include "Rtos/logger.h"
+#include "Config.h"
 
 //------------------------------------------------------------------------------
 WeatherConfigParam::WeatherConfigParam() : ConfigParam(CFG_KEY_RADIO, Cfg)

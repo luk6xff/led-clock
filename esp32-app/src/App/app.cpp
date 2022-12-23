@@ -46,7 +46,7 @@ void App::setup()
     logger::init();
     printMotd();
     Cfg.init();
-    AppCtx.setAppLang(static_cast<AppConfigParam*>(&Cfg.getCfgParam(CFG_KEY_APP)).appLang);
+    AppCtx.setAppLang((reinterpret_cast<AppConfigParam)(Cfg.getCfgParam(CFG_KEY_APP)).getData().appLang);
     createTasks();
     runTasks();
 }

@@ -1,5 +1,6 @@
 #include "DisplayConfigParam.h"
 #include "Rtos/logger.h"
+#include "Config.h"
 
 //------------------------------------------------------------------------------
 DisplayConfigParam::DisplayConfigParam() : ConfigParam(CFG_KEY_DISPLAY, Cfg)

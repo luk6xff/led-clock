@@ -1,5 +1,6 @@
 #include "WifiConfigParam.h"
 #include "Rtos/logger.h"
+#include "Config.h"
 
 //------------------------------------------------------------------------------
 WifiConfigParam::WifiConfigParam()

@@ -1,9 +1,8 @@
 #pragma once
 
+#include "ConfigTypes.h"
 #include "ConfigParam.h"
 #include "ConfigDataTypes.h"
-#include "ConfigTypes.h"
-#include "Config.h"
 
 
 class DisplayConfigParam : public ConfigParam<DisplayConfigData>

@@ -1,5 +1,6 @@
 #include "AppConfigParam.h"
 #include "Rtos/logger.h"
+#include "Config.h"
 
 //------------------------------------------------------------------------------
 AppConfigParam::AppConfigParam() : ConfigParam(CFG_KEY_INTENV, Cfg)

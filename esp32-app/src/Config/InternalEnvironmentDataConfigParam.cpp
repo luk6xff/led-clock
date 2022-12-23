@@ -1,5 +1,6 @@
 #include "InternalEnvironmentDataConfigParam.h"
 #include "Rtos/logger.h"
+#include "Config.h"
 
 //------------------------------------------------------------------------------
 InternalEnvironmentDataConfigParam::InternalEnvironmentDataConfigParam() : ConfigParam(CFG_KEY_INTENV, Cfg)

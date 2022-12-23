@@ -1,6 +1,7 @@
 #include "RadioConfigParam.h"
 #include "Rtos/logger.h"
 #include <cstring>
+#include "Config.h"
 
 //------------------------------------------------------------------------------
 RadioConfigParam::RadioConfigParam() : ConfigParam(CFG_KEY_RADIO, Cfg)

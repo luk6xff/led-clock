@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Config.h"
+#include "ConfigTypes.h"
+#include "ConfigParam.h"
+#include "ConfigDataTypes.h"
 
 
 class RadioConfigParam : public ConfigParam<RadioConfigData>

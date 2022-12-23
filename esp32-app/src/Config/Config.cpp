@@ -15,13 +15,13 @@ Config::Config()
     // Create config map
     m_cfgMap =
     {
-        { CFG_KEY_WIFI, std::unique_ptr<WifiConfigParam>(new WifiConfigParam()) },
-        { CFG_KEY_TIME, std::unique_ptr<TimeConfigParam>(new TimeConfigParam()) },
-        { CFG_KEY_WEATHER, std::unique_ptr<WeatherConfigParam>(new WeatherConfigParam()) },
-        { CFG_KEY_INTENV, std::unique_ptr<InternalEnvironmentDataConfigParam>(new InternalEnvironmentDataConfigParam()) },
-        { CFG_KEY_RADIO, std::unique_ptr<RadioConfigParam>(new RadioConfigParam()) },
-        { CFG_KEY_DISPLAY, std::unique_ptr<DisplayConfigParam>(new DisplayConfigParam()) },
-        { CFG_KEY_APP, std::unique_ptr<AppConfigParam>(new AppConfigParam()) },
+        { CFG_KEY_WIFI, wifi },
+        { CFG_KEY_TIME, time },
+        { CFG_KEY_DISPLAY, display},
+        { CFG_KEY_RADIO, radio },
+        { CFG_KEY_INTENV, intEnv },
+        { CFG_KEY_WEATHER, weather },
+        { CFG_KEY_APP, app },
     };
 }
 
@@ -83,7 +83,7 @@ const ConfigParamBase& Config::getCfgParam(ConfigParamKey key)
     rtos::LockGuard<rtos::Mutex> lk(m_cfgMtx);
     if (m_cfgMap.find(key) != m_cfgMap.end())
     {
-        return *m_cfgMap[key].get();
+        return m_cfgMap[key];
     }
     throw std::invalid_argument("Invalid key applied");
 }
@@ -105,10 +105,10 @@ bool Config::save(ConfigParamKey key, const void *cfg)
     {
 
         // Set the NVS data ready for writing
-        size_t ret = prefs.putBytes(key, cfg, cfgDataIt->second->cfgDataSize());
+        size_t ret = prefs.putBytes(key, cfg, cfgDataIt->second.cfgDataSize());
 
         // Write the data to NVS
-        if (ret == cfgDataIt->second->cfgDataSize())
+        if (ret == cfgDataIt->second.cfgDataSize())
         {
             logger::inf("ConfigData for %s saved in NVS succesfully\r\n", key);
             return true;
@@ -124,8 +124,8 @@ bool Config::read(ConfigParamKey key, void *data)
     const auto cfgDataIt = m_cfgMap.find(key);
     if (data && cfgDataIt != m_cfgMap.end())
     {
-        size_t ret = prefs.getBytes(key, data, cfgDataIt->second->cfgDataSize());
-        if (ret == cfgDataIt->second->cfgDataSize())
+        size_t ret = prefs.getBytes(key, data, cfgDataIt->second.cfgDataSize());
+        if (ret == cfgDataIt->second.cfgDataSize())
         {
             logger::inf("ConfigData for %s read from NVS succesfully\r\n", key);
             return true;
@@ -168,7 +168,7 @@ void Config::printCurrentSystemConfig()
     logger::inf("version: 0x%08x", m_cfgHeader.version);
     for (auto& cfg: m_cfgMap)
     {
-        logger::inf(cfg.second->toStr().c_str());
+        logger::inf(cfg.second.toStr().c_str());
     }
     logger::inf("APP_CONFIG: <<CURRENT APP SETTINGS>>");
 }

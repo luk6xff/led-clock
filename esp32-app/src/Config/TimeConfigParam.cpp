@@ -1,5 +1,6 @@
 #include "TimeConfigParam.h"
 #include "Rtos/logger.h"
+#include "Config.h"
 
 //------------------------------------------------------------------------------
 TimeConfigParam::TimeConfigParam() : ConfigParam(CFG_KEY_TIME, Cfg)
