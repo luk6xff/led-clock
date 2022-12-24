@@ -32,6 +32,7 @@ DisplayTask::DisplayTask(const DisplaySettings& displayCfg,
 void DisplayTask::run()
 {
     const TickType_t k_dispRefreshTime = (50 / portTICK_PERIOD_MS);
+    const char* k_welcomeMessage = "No Hej Zosia !";
     bool timeDots;
     const uint8_t k_timeMsgUnlockTime = 3; // [secs]
     uint8_t timeMsgUnlockTimer = 0; // [secs] Print time not a msg as first for a few seconds
@@ -59,8 +60,11 @@ void DisplayTask::run()
         }
     }
 
+    m_disp.clear();
     m_disp.setDisplaySpeedValue(m_displayCfg.animSpeed);
-
+    AppCtx.putDisplayMsg(k_welcomeMessage, strlen(k_welcomeMessage));
+    // Print welcome message as first
+    timeMsgUnlockTimer = 5;
     for(;;)
     {
         m_disp.update();

@@ -402,9 +402,9 @@ bool WebServer::wifiConnect(const char* ssid, const char* password)
 
     bool connected = false;
     int retry = 0;
-    const int wifiConnectRetries = 5;
-
+    const int wifiConnectRetries = 10;
     WiFi.begin(ssid, password[0] == '\0' ? NULL : password);
+    WiFi.setHostname(k_apHostname);
     utils::inf("%s WIFI: ssid:%s, pass:%s", MODULE_NAME, ssid, password);
     while (retry < wifiConnectRetries && !connected)
     {

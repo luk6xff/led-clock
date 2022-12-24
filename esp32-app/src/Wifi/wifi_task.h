@@ -22,6 +22,7 @@ public:
 
 private:
     virtual void run() override;
+    void resetWifi();
 
 private:
     const WifiSettings& m_wifiCfg;

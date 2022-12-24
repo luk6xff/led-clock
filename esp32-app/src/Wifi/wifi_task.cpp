@@ -41,6 +41,7 @@ void WifiTask::run()
     size_t captivePortalTimeoutCnt = 0; //seconds
 
     WebServer server(m_wifiCfg.ap_hostname);
+    resetWifi();
     if (server.start())
     {
         xEventGroupSetBits(m_wifiEvt, WifiEvent::WIFI_CONNECTED);
@@ -70,6 +71,7 @@ void WifiTask::run()
             if (captivePortalTimeoutCnt++ > captivePortalTimeout)
             {
                 captivePortalTimeoutCnt = 0;
+                resetWifi();
                 if (server.start())
                 {
                     utils::inf("%s Succesfully connected to wifi, server is running", MODULE_NAME);
@@ -88,6 +90,7 @@ void WifiTask::run()
             if (wifiConnectionFailureCnt >= 3)
             {
                 utils::inf("%s Starting CaptivePortal...", MODULE_NAME);
+                resetWifi();
                 if (server.runCaptivePortal())
                 {
                     utils::inf("%s CaptivePortal is running", MODULE_NAME);
@@ -111,5 +114,13 @@ void WifiTask::run()
     }
 }
 
+//------------------------------------------------------------------------------
+void WifiTask::resetWifi()
+{
+    WiFi.mode(WIFI_OFF);
+    WiFi.softAPdisconnect(true);
+    WiFi.disconnect(true);
+    delay(1000);
+}
 
 //------------------------------------------------------------------------------
