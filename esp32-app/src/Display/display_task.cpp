@@ -32,7 +32,7 @@ DisplayTask::DisplayTask(const DisplaySettings& displayCfg,
 void DisplayTask::run()
 {
     const TickType_t k_dispRefreshTime = (50 / portTICK_PERIOD_MS);
-    const char* k_welcomeMessage = "No Hej Zosia !";
+    const char* k_welcomeMessage = "No Hej Justynko !";
     bool timeDots;
     const uint8_t k_timeMsgUnlockTime = 3; // [secs]
     uint8_t timeMsgUnlockTimer = 0; // [secs] Print time not a msg as first for a few seconds
