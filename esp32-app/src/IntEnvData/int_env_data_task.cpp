@@ -13,32 +13,14 @@ IntEnvDataTask::IntEnvDataTask(InternalEnvDataSettings& intEnvSettings)
     : Task("IntEnvDataTask", INT_ENV_DATA_TASK_STACK_SIZE, INT_ENV_DATA_TASK_PRIORITY, 1)
     , m_intEnvCfg(intEnvSettings)
 {
-    m_intEnvDataComm.intEnvQ = xQueueCreate(1, sizeof(InternalEnvData));
-    if (!m_intEnvDataComm.intEnvQ)
-    {
-        utils::err("%s m_intEnvQ has not been created!.", MODULE_NAME);
-    }
 
-    // Create Event Group
-    m_intEnvDataComm.intEvtH = xEventGroupCreate();
-    if (!m_intEnvDataComm.intEvtH)
-    {
-        utils::err("%s event group create failed!", MODULE_NAME);
-    }
-}
-
-//------------------------------------------------------------------------------
-const IntEnvDataComm& IntEnvDataTask::getComm()
-{
-    return m_intEnvDataComm;
 }
 
 //------------------------------------------------------------------------------
 void IntEnvDataTask::run()
 {
     const TickType_t k_waitForDataSecs = ((10 * 1000) / portTICK_PERIOD_MS);
-    InternalEnvData msg;
-
+    m_intEnvDataSensor.init();
     for(;;)
     {
         // Disable if OTA Update
@@ -56,12 +38,10 @@ void IntEnvDataTask::run()
         }
         else
         {
-            // Set event group
-            xEventGroupSetBits(m_intEnvDataComm.intEvtH, IntEnvDataEvent::INTERNAL_ENV_DATA_REQ);
-            const BaseType_t rc = xQueueReceive(m_intEnvDataComm.intEnvQ, &msg, k_waitForDataSecs);
-            if (rc == pdTRUE)
+            InternalEnvData msg;
+            if (m_intEnvDataSensor.getData(msg))
             {
-                utils::err("%s IntEnvData received: temperature: %3.2f", MODULE_NAME, msg.temperature);
+                utils::inf("%s IntEnvData received: temperature:%3.2f, humidity:%3.2f, pressure:%3.2f", MODULE_NAME, msg.temperature, msg.humidity, msg.pressure);
                 pushIntEnvDataMsg(msg);
             }
 
@@ -71,16 +51,21 @@ void IntEnvDataTask::run()
             vTaskDelay(k_sleepTime);
         }
     }
+
+    m_intEnvDataSensor.deinit();
 }
 
 //------------------------------------------------------------------------------
 bool IntEnvDataTask::pushIntEnvDataMsg(const InternalEnvData& data)
 {
+
     String col(":");
     String spc(" ");
     String com(",");
     String msg(tr(M_INT_ENV_SENSOR_NAME) + col + spc + \
-                tr(M_SENSOR_TEMP) + col + String(data.temperature, 1) + tr(M_COMMON_DEG_CELS));
+                tr(M_SENSOR_TEMP) + col + String(data.temperature, 1) + tr(M_COMMON_DEG_CELS) + com + spc + \
+                tr(M_SENSOR_PRESS) + col + String(uint32_t(data.pressure/100)) + tr(M_COMMON_PRESSURE_HPA) + com + spc + \
+                tr(M_SENSOR_HUMID) + col + String(uint8_t(data.humidity)) + tr(M_COMMON_PERCENT));
 
     return AppCtx.putDisplayMsg(msg.c_str(), msg.length(), m_intEnvCfg.msg_disp_repeat_num);
 }

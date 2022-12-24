@@ -10,14 +10,12 @@
 
 //------------------------------------------------------------------------------
 ClockTask::ClockTask(SystemTimeSettings& timeCfg,
-                    const QueueHandle_t& ntpTimeQ,
-                    const IntEnvDataComm& intEnvComm)
+                    const QueueHandle_t& ntpTimeQ)
     : Task("ClockTask", CLOCK_TASK_STACK_SIZE, CLOCK_TASK_PRIORITY, 0)
     , m_timeCfg(timeCfg)
     , m_ntpTimeQ(ntpTimeQ)
     , m_extTimeQ(AppCtx.getTimeQHandle())
     , m_timeQ(nullptr)
-    , m_intEnvDataComm(intEnvComm)
 {
     m_timeQ = xQueueCreate(16, sizeof(DateTime));
     if (!m_timeQ)
@@ -93,22 +91,6 @@ void ClockTask::run()
             }
         }
 
-        // Check for Internal Environment data
-        const EventBits_t intEnvDataEv = xEventGroupWaitBits(m_intEnvDataComm.intEvtH, // IntEnv Event group
-                                                            IntEnvDataTask::IntEnvDataEvent::INTERNAL_ENV_DATA_REQ, // Bits to wait for
-                                                            pdTRUE,  // clear on exit
-                                                            pdFALSE, // wait for all bits
-                                                            0); // timeout
-
-        if ((intEnvDataEv & IntEnvDataTask::IntEnvDataEvent::INTERNAL_ENV_DATA_REQ) != 0)
-        {
-            float temperature = time.getTemperature();
-            bool ret = xQueueSendToBack(m_intEnvDataComm.intEnvQ, &temperature, 0) == pdPASS;
-            if (!ret)
-            {
-                utils::err("%s IntEnvData queue is full!, available space %d.", MODULE_NAME, uxQueueSpacesAvailable(m_intEnvDataComm.intEnvQ));
-            }
-        }
         vTaskDelay(timeMeasDelay);
     }
 }

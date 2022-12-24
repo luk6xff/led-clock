@@ -21,20 +21,25 @@ RadioSensorTask::RadioSensorTask(RadioSensorSettings& radioSensorCfg)
         utils::err("%s m_radioSensorQ has not been created!.", MODULE_NAME);
     }
 
-    // Create radio health state task
-    m_radioHealthStateTask.radioHandle = &m_radioSensor;
-    m_radioHealthStateTask.resetTimeoutSecs = m_radioSensorCfg.update_data_interval * 4; // When no radio msg received in 4x update interval, reset the radio
-    m_radioHealthStateTask.lastRadioMsgReceivedTimeMs = millis();
-    BaseType_t ret = xTaskCreate(healtStateCheckCb,
-                                    "RHSTask",
-                                    4096,
-                                    &m_radioHealthStateTask,
-                                    1,
-                                    &m_radioHealthStateTask.task);
-    if (ret != pdPASS)
+    // Check if Radio Task Disabled
+    if (m_radioSensorCfg.update_data_interval > 0)
     {
-        utils::err("%s m_radioHealthStateTask start failed", MODULE_NAME);
+        // Create radio health state task
+        m_radioHealthStateTask.radioHandle = &m_radioSensor;
+        m_radioHealthStateTask.resetTimeoutSecs = m_radioSensorCfg.update_data_interval * 4; // When no radio msg received in 4x update interval, reset the radio
+        m_radioHealthStateTask.lastRadioMsgReceivedTimeMs = millis();
+        BaseType_t ret = xTaskCreate(healtStateCheckCb,
+                                        "RHSTask",
+                                        4096,
+                                        &m_radioHealthStateTask,
+                                        1,
+                                        &m_radioHealthStateTask.task);
+        if (ret != pdPASS)
+        {
+            utils::err("%s m_radioHealthStateTask start failed", MODULE_NAME);
+        }
     }
+
 }
 
 //------------------------------------------------------------------------------
@@ -63,64 +68,73 @@ void RadioSensorTask::run()
             vTaskDelay(k_sleepTime);
             continue;
         }
-
-        const BaseType_t rc = xQueueReceive(Radio::msgSensorDataQ, &msg, 0);
-        if (rc == pdTRUE)
+        // If Radio task disabled
+        if (m_radioSensorCfg.update_data_interval == 0)
         {
-            utils::dbg(">>>radio_msg_queue_data received:");
-            utils::dbg("received from: 0x%x", msg.hdr.sender_id);
-            utils::dbg("sent to: 0x%x", msg.hdr.receiver_id);
-            utils::dbg("message ID: 0x%x", msg.hdr.msg_id);
-            utils::dbg("payload length: %d", msg.hdr.payload_len);
-            utils::dbg("RSSI: %d", msg.rssi);
-            utils::dbg("SNR: %f", msg.snr);
-            radio_msg_sensor_frame_status ret = Radio::parse_incoming_msg_sensor((uint8_t*)&(msg.frame), sizeof(msg.frame));
-            // Send response to the sensor
-            m_radioSensor.sendResponseToSensor();
-            if (ret == MSG_NO_ERROR || ret == MSG_BATT_LOW)
-            {
-                RadioSensorData data =
-                {
-                    .vbatt = msg.frame.vbatt,
-                    .temperature = msg.frame.temperature,
-                    .pressure = msg.frame.pressure,
-                    .humidity = msg.frame.humidity,
-                };
-
-                // Send a radio message to the display
-                pushRadioSensorMsg(data);
-
-                firstValidMsgReceived = true;
-                // Store last message
-                m_lastRadioMsg = data;
-
-                // Clear send last message counters
-                sendLastMsgNumCounter = 0;
-                sendLastMsgCounterSecs = 0;
-
-                // Update status
-                AppCtx.clearAppStatus(AppStatusType::EXT_DATA_SENSOR_ERROR);
-            }
-            {
-                rtos::LockGuard<rtos::Mutex> lock(m_radioHealthStateTask.mtx);
-                m_radioHealthStateTask.lastRadioMsgReceivedTimeMs = millis();
-            }
+            utils::inf("%s RadioSensor task not active! update_data_interval=0", MODULE_NAME);
+            // Sleep longer
+            vTaskDelay(k_sleepTime);
         }
-
-        // Sleep for some time
-        vTaskDelay(k_sleepTime);
-
-        // Display last message
-        if (m_radioSensorCfg.last_msg_disp_every_minutes != 0)
+        else
         {
-            if (firstValidMsgReceived && (sendLastMsgNumCounter < k_sendLastMsgNumber))
+            const BaseType_t rc = xQueueReceive(Radio::msgSensorDataQ, &msg, 0);
+            if (rc == pdTRUE)
             {
-                sendLastMsgCounterSecs += k_sleepTimeSecs;
-                if ((sendLastMsgCounterSecs / 60) >= m_radioSensorCfg.last_msg_disp_every_minutes)
+                utils::dbg(">>>radio_msg_queue_data received:");
+                utils::dbg("received from: 0x%x", msg.hdr.sender_id);
+                utils::dbg("sent to: 0x%x", msg.hdr.receiver_id);
+                utils::dbg("message ID: 0x%x", msg.hdr.msg_id);
+                utils::dbg("payload length: %d", msg.hdr.payload_len);
+                utils::dbg("RSSI: %d", msg.rssi);
+                utils::dbg("SNR: %f", msg.snr);
+                radio_msg_sensor_frame_status ret = Radio::parse_incoming_msg_sensor((uint8_t*)&(msg.frame), sizeof(msg.frame));
+                // Send response to the sensor
+                m_radioSensor.sendResponseToSensor();
+                if (ret == MSG_NO_ERROR || ret == MSG_BATT_LOW)
                 {
-                    pushRadioSensorMsg(m_lastRadioMsg);
-                    sendLastMsgNumCounter++;
+                    RadioSensorData data =
+                    {
+                        .vbatt = msg.frame.vbatt,
+                        .temperature = msg.frame.temperature,
+                        .pressure = msg.frame.pressure,
+                        .humidity = msg.frame.humidity,
+                    };
+
+                    // Send a radio message to the display
+                    pushRadioSensorMsg(data);
+
+                    firstValidMsgReceived = true;
+                    // Store last message
+                    m_lastRadioMsg = data;
+
+                    // Clear send last message counters
+                    sendLastMsgNumCounter = 0;
                     sendLastMsgCounterSecs = 0;
+
+                    // Update status
+                    AppCtx.clearAppStatus(AppStatusType::EXT_DATA_SENSOR_ERROR);
+                }
+                {
+                    rtos::LockGuard<rtos::Mutex> lock(m_radioHealthStateTask.mtx);
+                    m_radioHealthStateTask.lastRadioMsgReceivedTimeMs = millis();
+                }
+            }
+
+            // Sleep for some time
+            vTaskDelay(k_sleepTime);
+
+            // Display last message
+            if (m_radioSensorCfg.last_msg_disp_every_minutes != 0)
+            {
+                if (firstValidMsgReceived && (sendLastMsgNumCounter < k_sendLastMsgNumber))
+                {
+                    sendLastMsgCounterSecs += k_sleepTimeSecs;
+                    if ((sendLastMsgCounterSecs / 60) >= m_radioSensorCfg.last_msg_disp_every_minutes)
+                    {
+                        pushRadioSensorMsg(m_lastRadioMsg);
+                        sendLastMsgNumCounter++;
+                        sendLastMsgCounterSecs = 0;
+                    }
                 }
             }
         }

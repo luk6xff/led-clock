@@ -9,6 +9,8 @@
 typedef struct
 {
 	float temperature;
+	float pressure;
+	float humidity;
 } InternalEnvData;
 
 
